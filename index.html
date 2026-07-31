@@ -1,0 +1,3504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>MLB Game Center & Combo Tracker v7</title>
+  <style>
+    :root {
+      --bg: #08101f;
+      --panel: #101b2f;
+      --panel-2: #14223a;
+      --border: #263a59;
+      --text: #edf4ff;
+      --muted: #91a4c2;
+      --accent: #62a5ff;
+      --accent-2: #8a7dff;
+      --green: #42d392;
+      --yellow: #f4c95d;
+      --red: #ff6b78;
+      --gray: #74839b;
+      --shadow: 0 18px 50px rgba(0, 0, 0, .26);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(98, 165, 255, .17), transparent 32%),
+        radial-gradient(circle at 88% 9%, rgba(138, 125, 255, .13), transparent 27%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .app-shell { max-width: 1320px; margin: 0 auto; padding: 22px 18px 80px; }
+    .topbar {
+      display: flex;
+      gap: 18px;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 22px;
+    }
+    .brand { display: flex; gap: 13px; align-items: center; }
+    .brand-mark {
+      width: 46px; height: 46px; border-radius: 15px;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      font-size: 22px; box-shadow: var(--shadow);
+    }
+    h1 { font-size: 25px; margin: 0; letter-spacing: -.02em; }
+    .subtitle { color: var(--muted); margin-top: 4px; font-size: 13px; }
+    .top-actions { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; }
+    .account-box { display:flex; align-items:center; gap:8px; }
+    .sync-pill { color:var(--muted); font-size:11px; white-space:nowrap; }
+    .sync-pill.good { color:var(--green); }
+    .sync-pill.bad { color:var(--red); }
+    .auth-copy { color:var(--muted); line-height:1.55; margin:0 0 16px; }
+    .auth-status { min-height:20px; margin-top:12px; color:var(--muted); font-size:12px; }
+    .auth-status.bad { color:var(--red); }
+    .auth-status.good { color:var(--green); }
+    .account-email { max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:12px; }
+
+    .btn {
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: rgba(20, 34, 58, .82);
+      color: var(--text);
+      padding: 9px 13px;
+      transition: .18s ease;
+    }
+    .btn:hover { transform: translateY(-1px); border-color: #45628e; }
+    .btn.primary { background: linear-gradient(135deg, #438ff7, #7168f5); border-color: transparent; font-weight: 700; }
+    .btn.danger { color: #ffb5bc; }
+    .btn.small { padding: 6px 9px; font-size: 12px; border-radius: 9px; }
+    .btn.icon { width: 36px; height: 36px; padding: 0; display: grid; place-items: center; }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto auto;
+      gap: 12px;
+      align-items: center;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: rgba(16, 27, 47, .8);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+    }
+    .date-nav { display: flex; align-items: center; gap: 8px; }
+    .date-input, .field input, .field select {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #0d182a;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 11px;
+      outline: none;
+    }
+    .date-input:focus, .field input:focus, .field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(98, 165, 255, .12); }
+    .refresh-meta { text-align: right; color: var(--muted); font-size: 12px; line-height: 1.55; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .stat-card {
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: rgba(16, 27, 47, .75);
+    }
+    .stat-label { color: var(--muted); font-size: 12px; margin-bottom: 7px; }
+    .stat-value { font-size: 24px; font-weight: 800; letter-spacing: -.03em; }
+    .stat-value.green { color: var(--green); }
+    .stat-value.yellow { color: var(--yellow); }
+    .stat-value.red { color: var(--red); }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 21px 0 12px;
+    }
+    .tabs { display: flex; flex-wrap: wrap; gap: 7px; }
+    .tab {
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: transparent;
+      border-radius: 999px;
+      padding: 7px 12px;
+    }
+    .tab.active { color: white; background: #203554; border-color: #39577f; }
+    .section-title { font-size: 16px; margin: 0; }
+
+    .combo-grid { display: grid; gap: 13px; }
+    .combo-card {
+      border: 1px solid var(--border);
+      background: linear-gradient(145deg, rgba(18, 31, 53, .96), rgba(13, 23, 40, .94));
+      border-radius: 18px;
+      padding: 17px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.16);
+    }
+    .combo-card.matched { border-color: rgba(66, 211, 146, .48); }
+    .combo-card.failed { border-color: rgba(255, 107, 120, .42); }
+    .combo-head { display: flex; gap: 14px; justify-content: space-between; align-items: flex-start; }
+    .combo-name { font-size: 17px; font-weight: 780; }
+    .combo-sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .status-pill {
+      white-space: nowrap;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      border: 1px solid currentColor;
+    }
+    .status-matched { color: var(--green); background: rgba(66,211,146,.08); }
+    .status-live { color: var(--yellow); background: rgba(244,201,93,.08); }
+    .status-failed { color: var(--red); background: rgba(255,107,120,.08); }
+    .status-pending { color: #94a6c3; background: rgba(148,166,195,.08); }
+
+    .progress-line { display: flex; gap: 12px; align-items: center; margin: 15px 0 11px; }
+    .progress-track { height: 8px; flex: 1; border-radius: 99px; background: #0a1424; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width .3s ease; }
+    .progress-text { color: var(--muted); font-size: 12px; min-width: 43px; text-align: right; }
+
+    .legs { display: grid; gap: 8px; }
+    .leg-row {
+      display: grid;
+      grid-template-columns: 34px minmax(180px, 1.5fr) minmax(90px, .7fr) minmax(100px, .7fr) auto;
+      gap: 10px;
+      align-items: center;
+      background: rgba(7, 15, 27, .57);
+      border: 1px solid rgba(38, 58, 89, .75);
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .leg-icon { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: #172944; font-size: 13px; }
+    .leg-player { font-weight: 700; font-size: 14px; }
+    .leg-game { color: var(--muted); font-size: 11px; margin-top: 3px; }
+    .leg-market { color: #b9c7dd; font-size: 13px; }
+    .leg-current { font-size: 13px; text-align: right; }
+    .leg-current strong { font-size: 15px; }
+    .leg-state { font-size: 11px; min-width: 68px; text-align: right; font-weight: 800; }
+    .leg-state.hit { color: var(--green); }
+    .leg-state.wait { color: var(--yellow); }
+    .leg-state.fail { color: var(--red); }
+    .combo-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; color: var(--muted); font-size: 11px; }
+    .inline-actions { display: flex; gap: 7px; }
+
+    .empty {
+      border: 1px dashed #365070;
+      border-radius: 18px;
+      padding: 42px 18px;
+      text-align: center;
+      color: var(--muted);
+      background: rgba(16,27,47,.45);
+    }
+    .empty h3 { color: var(--text); margin: 0 0 8px; }
+
+    dialog {
+      width: min(850px, calc(100vw - 24px));
+      max-height: 90vh;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0;
+      color: var(--text);
+      background: #0d1829;
+      box-shadow: 0 30px 100px rgba(0,0,0,.58);
+    }
+    dialog::backdrop { background: rgba(1, 6, 14, .78); backdrop-filter: blur(5px); }
+    .modal-head { position: sticky; top: 0; z-index: 4; display: flex; align-items: center; justify-content: space-between; padding: 17px 18px; border-bottom: 1px solid var(--border); background: rgba(13,24,41,.96); }
+    .modal-title { font-size: 18px; font-weight: 800; }
+    .modal-body { padding: 18px; }
+    .form-grid { display: grid; grid-template-columns: 1.3fr .8fr .8fr; gap: 12px; }
+    .field label { display: block; color: var(--muted); font-size: 12px; margin: 0 0 6px 2px; }
+    .legs-editor { margin-top: 20px; }
+    .editor-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .leg-editor {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(160px, 1.1fr) minmax(180px, 1.2fr) minmax(120px, .8fr) 90px 80px 40px;
+      gap: 8px;
+      align-items: end;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 9px;
+      background: #101d31;
+    }
+    .player-picker { position: relative; }
+    .suggestions {
+      position: absolute;
+      left: 0; right: 0; top: calc(100% + 5px);
+      z-index: 20;
+      max-height: 220px;
+      overflow: auto;
+      border: 1px solid #365070;
+      border-radius: 11px;
+      background: #0b1627;
+      box-shadow: var(--shadow);
+      display: none;
+    }
+    .suggestion { padding: 9px 10px; cursor: pointer; border-bottom: 1px solid rgba(38,58,89,.55); }
+    .suggestion:last-child { border-bottom: 0; }
+    .suggestion:hover { background: #172b49; }
+    .suggestion-name { font-size: 13px; font-weight: 700; }
+    .suggestion-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .loading-note { color: var(--muted); font-size: 11px; margin-top: 5px; }
+    .modal-footer { position: sticky; bottom: 0; display: flex; justify-content: flex-end; gap: 9px; padding: 14px 18px; border-top: 1px solid var(--border); background: rgba(13,24,41,.97); }
+
+    .toast-stack { position: fixed; top: 18px; right: 18px; z-index: 100; display: grid; gap: 9px; }
+    .toast { width: min(360px, calc(100vw - 36px)); border: 1px solid var(--border); border-radius: 13px; padding: 12px 14px; background: #14233a; box-shadow: var(--shadow); animation: slide .22s ease; }
+    .toast.good { border-color: rgba(66,211,146,.55); }
+    .toast.bad { border-color: rgba(255,107,120,.55); }
+    .toast-title { font-weight: 800; font-size: 13px; }
+    .toast-msg { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    @keyframes slide { from { opacity: 0; transform: translateY(-8px); } }
+
+
+    .quick-add-panel {
+      margin-top: 18px;
+      border: 1px solid rgba(98,165,255,.34);
+      border-radius: 16px;
+      padding: 14px;
+      background: linear-gradient(145deg, rgba(24,48,80,.72), rgba(13,28,48,.74));
+    }
+    .quick-add-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .quick-add-title { font-weight: 800; font-size: 14px; }
+    .quick-add-hint { color: var(--muted); font-size: 11px; margin-top: 4px; line-height: 1.45; }
+    .quick-add-grid {
+      display: grid;
+      grid-template-columns: 1.25fr .85fr .75fr 90px;
+      gap: 9px;
+      align-items: end;
+    }
+    .quick-tools {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      margin-top: 10px;
+    }
+    .quick-tools .field { flex: 1; }
+    .quick-roster {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      max-height: 258px;
+      overflow: auto;
+      margin-top: 11px;
+      padding-right: 3px;
+    }
+    .player-check {
+      display: flex;
+      gap: 9px;
+      align-items: center;
+      min-width: 0;
+      padding: 9px 10px;
+      border: 1px solid rgba(38,58,89,.9);
+      border-radius: 11px;
+      background: rgba(7,15,27,.55);
+      cursor: pointer;
+      transition: .16s ease;
+    }
+    .player-check:hover { border-color: #45628e; background: rgba(23,43,73,.65); }
+    .player-check.selected { border-color: rgba(98,165,255,.78); background: rgba(42,82,132,.42); }
+    .player-check input { width: 17px; height: 17px; accent-color: var(--accent); flex: 0 0 auto; }
+    .player-check-main { min-width: 0; }
+    .player-check-name { font-size: 12px; font-weight: 750; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .player-check-meta { color: var(--muted); font-size: 10px; margin-top: 2px; }
+    .quick-add-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-top: 11px;
+      padding-top: 11px;
+      border-top: 1px solid rgba(38,58,89,.7);
+    }
+    .selected-count { color: var(--muted); font-size: 12px; }
+    .quick-empty {
+      grid-column: 1 / -1;
+      padding: 24px 12px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed rgba(54,80,112,.7);
+      border-radius: 11px;
+      font-size: 12px;
+    }
+
+    .notice {
+      margin: 13px 0 0;
+      padding: 10px 12px;
+      border: 1px solid rgba(244,201,93,.32);
+      border-radius: 11px;
+      background: rgba(244,201,93,.06);
+      color: #dbc98d;
+      font-size: 12px;
+      display: none;
+    }
+
+    .dashboard-section {
+      margin-top: 17px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 17px;
+      background:
+        linear-gradient(145deg, rgba(18, 33, 57, .95), rgba(10, 20, 36, .92));
+      box-shadow: var(--shadow);
+    }
+    .dashboard-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 850;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+    .dashboard-title { font-size: 19px; font-weight: 850; letter-spacing: -.02em; }
+    .dashboard-subtitle { color: var(--muted); font-size: 12px; margin-top: 5px; }
+    .dashboard-metrics { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .metric-chip {
+      min-width: 82px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(7, 15, 27, .55);
+      text-align: center;
+    }
+    .metric-chip strong { display: block; font-size: 17px; }
+    .metric-chip span { display: block; color: var(--muted); font-size: 9px; margin-top: 2px; }
+    .game-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 11px; }
+    .game-card {
+      min-width: 0;
+      border: 1px solid rgba(46, 69, 103, .9);
+      border-radius: 16px;
+      padding: 13px;
+      background: linear-gradient(145deg, rgba(20, 36, 61, .86), rgba(10, 20, 35, .9));
+      transition: .18s ease;
+    }
+    .game-card:hover { transform: translateY(-2px); border-color: rgba(98, 165, 255, .66); }
+    .game-card.live { border-color: rgba(244, 201, 93, .58); box-shadow: inset 0 0 0 1px rgba(244,201,93,.08); }
+    .game-card.final { opacity: .92; }
+    .game-card.favorite { border-color: rgba(244,201,93,.72); box-shadow: inset 0 0 0 1px rgba(244,201,93,.10); }
+    .game-card-head { display: flex; align-items: center; justify-content: space-between; gap: 9px; margin-bottom: 10px; }
+    .game-card-head-actions { display:flex; align-items:center; gap:7px; }
+    .favorite-game-btn {
+      width: 28px; height: 28px; padding: 0; border: 1px solid rgba(244,201,93,.3);
+      border-radius: 9px; background: rgba(244,201,93,.06); color: #72819a;
+      font-size: 18px; line-height: 1; cursor: pointer;
+    }
+    .favorite-game-btn:hover, .favorite-game-btn.active { color: var(--yellow); border-color: rgba(244,201,93,.66); background: rgba(244,201,93,.13); }
+    .game-time { color: var(--muted); font-size: 10px; }
+    .game-status {
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 9px;
+      font-weight: 850;
+      letter-spacing: .05em;
+      background: rgba(148,166,195,.1);
+      color: #aebbd0;
+    }
+    .game-status.live { color: var(--yellow); background: rgba(244,201,93,.1); }
+    .game-status.final { color: #b9c7dd; }
+    .team-score-row {
+      display: grid;
+      grid-template-columns: 31px minmax(0, 1fr) auto;
+      gap: 9px;
+      align-items: center;
+      min-height: 42px;
+    }
+    .team-score-row + .team-score-row { margin-top: 4px; }
+    .team-dot {
+      width: 31px; height: 31px;
+      border-radius: 10px;
+      display: grid; place-items: center;
+      font-size: 10px; font-weight: 850;
+      background: linear-gradient(145deg, #29476f, #1b2f4c);
+      border: 1px solid rgba(98,165,255,.24);
+    }
+    .team-name { font-size: 12px; font-weight: 750; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .team-record { color: var(--muted); font-size: 9px; margin-top: 2px; }
+    .team-score { font-size: 23px; line-height: 1; font-weight: 900; min-width: 23px; text-align: right; }
+    .team-score.preview { color: #52647e; }
+    .lineup-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(38,58,89,.72);
+    }
+    .lineup-badge {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      align-items: center;
+      border-radius: 9px;
+      padding: 6px 7px;
+      color: var(--muted);
+      font-size: 9px;
+      background: rgba(7,15,27,.48);
+    }
+    .lineup-badge.ready { color: var(--green); background: rgba(66,211,146,.07); }
+    .game-card-footer { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-top: 10px; }
+    .dashboard-matchup {
+      margin-top: 10px; padding: 10px 11px; border: 1px solid rgba(244,201,93,.46);
+      border-radius: 11px; background: linear-gradient(135deg, rgba(244,201,93,.11), rgba(98,165,255,.08));
+    }
+    .dashboard-matchup-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+    .dashboard-matchup-live { color:#0a1322; background:#f4c95d; border-radius:999px; padding:3px 8px; font-size:10px; font-weight:900; letter-spacing:.08em; }
+    .dashboard-matchup-meta { color:var(--muted); font-size:11px; white-space:nowrap; }
+    .dashboard-matchup-players { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center; gap:8px; }
+    .dashboard-matchup-player { min-width:0; }
+    .dashboard-matchup-player:last-child { text-align:right; }
+    .dashboard-matchup-role { color:var(--muted); font-size:10px; margin-bottom:2px; }
+    .dashboard-matchup-name { color:var(--text); font-size:12px; font-weight:850; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .dashboard-matchup-vs { color:#f4c95d; font-size:11px; font-weight:900; }
+    .game-combo-summary {
+      display: flex; gap: 6px; align-items: center; margin-top: 9px;
+      padding: 7px 8px; border: 1px solid rgba(98,165,255,.36); border-radius: 9px;
+      color: #cfe1ff; background: rgba(98,165,255,.09); font-size: 9px; font-weight: 760;
+    }
+    .game-combo-summary strong { color: white; }
+    .game-venue { min-width: 0; color: var(--muted); font-size: 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .dashboard-empty, .dashboard-loading {
+      grid-column: 1 / -1;
+      padding: 34px 18px;
+      border: 1px dashed #365070;
+      border-radius: 14px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .loading-bar {
+      height: 3px;
+      margin: -17px -17px 14px;
+      overflow: hidden;
+      border-radius: 22px 22px 0 0;
+      background: rgba(98,165,255,.08);
+    }
+    .loading-bar::after {
+      content: "";
+      display: block;
+      width: 38%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      animation: dashboardLoad 1.1s linear infinite;
+    }
+    @keyframes dashboardLoad { from { transform: translateX(-110%); } to { transform: translateX(360%); } }
+
+    .game-dialog { width: min(1120px, calc(100vw - 24px)); }
+    .detail-scoreboard {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 18px;
+      align-items: center;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: linear-gradient(145deg, rgba(24,43,72,.72), rgba(10,21,37,.75));
+    }
+    .detail-team { display: flex; gap: 11px; align-items: center; }
+    .detail-team.home { justify-content: flex-end; text-align: right; }
+    .detail-team .team-dot { width: 42px; height: 42px; border-radius: 13px; }
+    .detail-team-name { font-size: 15px; font-weight: 820; }
+    .detail-team-meta { color: var(--muted); font-size: 10px; margin-top: 3px; }
+    .detail-center { text-align: center; min-width: 130px; }
+    .detail-score { display: flex; justify-content: center; gap: 12px; font-size: 34px; font-weight: 900; line-height: 1; }
+    .detail-state { color: var(--muted); font-size: 10px; margin-top: 6px; }
+    .pitcher-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-top: 10px;
+    }
+    .pitcher-card {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(7,15,27,.46);
+    }
+    .pitcher-label { color: var(--muted); font-size: 9px; margin-bottom: 3px; }
+    .pitcher-name { font-size: 12px; font-weight: 760; }
+    .game-detail-tabs {
+      display: flex;
+      gap: 7px;
+      margin-top: 13px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(7,15,27,.46);
+      overflow-x: auto;
+    }
+    .game-detail-tab {
+      flex: 1;
+      min-width: 118px;
+      border: 0;
+      border-radius: 9px;
+      padding: 8px 11px;
+      color: var(--muted);
+      background: transparent;
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .game-detail-tab.active { color: white; background: #203b61; }
+    .game-detail-section { margin-top: 12px; }
+    .live-summary {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr);
+      gap: 12px;
+    }
+    .live-card { border: 1px solid var(--border); border-radius: 14px; background: rgba(13,24,42,.64); overflow: hidden; }
+    .live-card-head { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 820; }
+    .innings-wrap, .live-table-wrap { overflow-x: auto; }
+    .live-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    .live-table th, .live-table td { padding: 8px 9px; border-bottom: 1px solid rgba(38,58,89,.52); text-align: center; white-space: nowrap; }
+    .live-table th { color: var(--muted); font-size: 8px; letter-spacing: .04em; background: rgba(7,15,27,.36); }
+    .live-table th:first-child, .live-table td:first-child { text-align: left; }
+    .live-table tr:last-child td { border-bottom: 0; }
+    .live-player-name { color: var(--text); font-weight: 740; }
+    .pitching-team-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .pitcher-row.current { background:linear-gradient(90deg,rgba(244,201,93,.14),rgba(244,201,93,.035)); }
+    .pitcher-row.current td:first-child { box-shadow:inset 3px 0 #f4c95d; }
+    .pitcher-name-button { border:0; padding:0; color:var(--text); background:transparent; font:inherit; font-weight:800; text-align:left; cursor:pointer; }
+    .pitcher-name-button:hover { color:#9fc5ff; text-decoration:underline; }
+    .pitcher-badges { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
+    .pitcher-badge { display:inline-flex; align-items:center; padding:2px 5px; border-radius:5px; color:#bcd6ff; background:rgba(98,165,255,.12); border:1px solid rgba(98,165,255,.35); font-size:7px; font-weight:900; letter-spacing:.05em; }
+    .pitcher-badge.live { color:#111827; background:#f4c95d; border-color:#f4c95d; }
+    .pitcher-badge.decision { color:var(--green); background:rgba(66,211,146,.1); border-color:rgba(66,211,146,.42); }
+    .pitching-summary { color:var(--muted); font-size:9px; font-weight:650; }
+    .combo-player-cell { display: flex; gap: 6px; align-items: center; }
+    .combo-player-badge {
+      display: inline-flex; align-items: center; flex: none; padding: 2px 5px;
+      border: 1px solid rgba(98,165,255,.55); border-radius: 5px;
+      color: #bcd6ff; background: rgba(98,165,255,.12); font-size: 7px; font-weight: 900; letter-spacing: .05em;
+    }
+    .combo-player-badge.hit { color: var(--green); border-color: rgba(66,211,146,.55); background: rgba(66,211,146,.1); }
+    .combo-player-badge.fail { color: var(--red); border-color: rgba(255,107,120,.5); background: rgba(255,107,120,.09); }
+    .combo-leg-strip { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+    .combo-leg-chip {
+      padding: 2px 5px; border-radius: 5px; color: #bcd6ff; background: rgba(98,165,255,.11);
+      font-size: 8px; font-weight: 760; white-space: nowrap;
+    }
+    .combo-leg-chip.hit { color: var(--green); background: rgba(66,211,146,.1); }
+    .combo-leg-chip.fail { color: var(--red); background: rgba(255,107,120,.09); }
+    .pa-forecast { display:flex; flex-wrap:wrap; gap:5px; align-items:center; margin-top:5px; color:var(--muted); font-size:9px; line-height:1.35; }
+    .pa-forecast strong { color:#dceaff; border:1px solid rgba(98,165,255,.3); background:rgba(98,165,255,.08); border-radius:999px; padding:2px 6px; }
+    .pa-forecast.high strong { color:var(--green); border-color:rgba(66,211,146,.42); background:rgba(66,211,146,.08); }
+    .pa-forecast.medium strong { color:#ffd166; border-color:rgba(255,209,102,.42); background:rgba(255,209,102,.08); }
+    .pa-forecast.low strong { color:var(--muted); border-color:var(--border); background:rgba(255,255,255,.03); }
+    .live-player-meta { color: var(--muted); font-size: 8px; margin-top: 2px; }
+    .current-matchup { padding: 12px; position: relative; }
+    .matchup-live {
+      display: inline-flex; align-items: center; gap: 5px; margin-bottom: 10px; padding: 3px 7px;
+      border: 1px solid rgba(255,107,120,.5); border-radius: 999px; color: #ff9aa5;
+      background: rgba(255,107,120,.09); font-size: 8px; font-weight: 900; letter-spacing: .08em;
+    }
+    .matchup-live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--red); box-shadow: 0 0 8px var(--red); }
+    .matchup-label { color: var(--muted); font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
+    .matchup-name { margin-top: 3px; font-size: 14px; font-weight: 820; }
+    button.matchup-name { padding: 0; border: 0; color: #eaf2ff; background: none; cursor: pointer; text-align: left; }
+    button.matchup-name:hover { color: var(--accent); }
+    .matchup-vs { margin: 9px 0; color: var(--accent); font-size: 9px; font-weight: 850; }
+    .matchup-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 11px; }
+    .matchup-chip { padding: 3px 7px; border: 1px solid var(--border); border-radius: 999px; color: #c8d8ee; background: rgba(255,255,255,.03); font-size: 8px; font-weight: 750; }
+    .matchup-note { margin-top: 9px; color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .team-switch { display: flex; gap: 7px; margin-bottom: 9px; }
+    .team-switch button { flex: 1; }
+    .live-group + .live-group { margin-top: 12px; }
+    .live-empty { padding: 25px 14px; color: var(--muted); text-align: center; font-size: 10px; }
+    .lineup-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 13px; }
+    .lineup-panel { border: 1px solid var(--border); border-radius: 15px; background: rgba(13,24,42,.64); overflow: hidden; }
+    .lineup-panel-head { display: flex; justify-content: space-between; gap: 9px; align-items: center; padding: 11px 12px; border-bottom: 1px solid var(--border); }
+    .lineup-panel-title { font-weight: 800; font-size: 13px; }
+    .lineup-stat-toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-top: 13px;
+      padding: 10px 12px;
+      border: 1px solid rgba(98,165,255,.38);
+      border-radius: 13px;
+      background: rgba(24,45,75,.32);
+    }
+    .lineup-stat-toolbar label { color: var(--muted); font-size: 10px; }
+    .lineup-stat-select {
+      width: auto;
+      min-width: 150px;
+      padding: 7px 31px 7px 10px;
+      border-radius: 9px;
+      font-size: 11px;
+    }
+    .lineup-list { display: grid; }
+    .lineup-player {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 25px minmax(0, 1fr) auto;
+      gap: 9px;
+      align-items: center;
+      border: 0;
+      border-bottom: 1px solid rgba(38,58,89,.55);
+      padding: 9px 11px;
+      color: var(--text);
+      text-align: left;
+      background: transparent;
+    }
+    .lineup-player:last-child { border-bottom: 0; }
+    .lineup-player:hover { background: rgba(98,165,255,.08); }
+    .bat-order { color: var(--accent); font-size: 11px; font-weight: 850; text-align: center; }
+    .lineup-player-name { min-width: 0; font-size: 12px; font-weight: 720; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lineup-name-row { display: flex; gap: 6px; align-items: center; min-width: 0; }
+    .lineup-player-meta { color: var(--muted); font-size: 9px; margin-top: 2px; }
+    .lineup-stat-result { display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
+    .lineup-stat-value {
+      min-width: 54px;
+      padding: 5px 7px;
+      border: 1px solid rgba(98,165,255,.22);
+      border-radius: 8px;
+      color: #c7d8f1;
+      background: rgba(7,15,27,.5);
+      font-size: 10px;
+      font-weight: 850;
+      text-align: center;
+    }
+    .lineup-stat-value.marked {
+      color: var(--yellow);
+      border-color: rgba(244,201,93,.48);
+      background: rgba(244,201,93,.09);
+    }
+    .stats-arrow { color: var(--muted); }
+    .lineup-placeholder { padding: 26px 14px; color: var(--muted); font-size: 11px; text-align: center; }
+    .player-stats-panel {
+      margin-top: 13px;
+      border: 1px solid rgba(98,165,255,.38);
+      border-radius: 15px;
+      padding: 13px;
+      background: rgba(24,45,75,.42);
+    }
+    .player-stats-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+    .player-stats-name { font-size: 15px; font-weight: 850; }
+    .player-stats-note { color: var(--muted); font-size: 10px; margin-top: 3px; }
+    .player-stat-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 7px; margin-top: 11px; }
+    .player-stat {
+      padding: 9px 7px;
+      border: 1px solid rgba(38,58,89,.78);
+      border-radius: 10px;
+      background: rgba(7,15,27,.48);
+      text-align: center;
+    }
+    .player-stat strong { display: block; font-size: 15px; }
+    .player-stat span { display: block; color: var(--muted); font-size: 8px; margin-top: 3px; }
+    .player-stats-tabs { display: flex; gap: 7px; margin-top: 12px; }
+    .player-stats-tab {
+      padding: 7px 10px;
+      border: 1px solid rgba(98,165,255,.28);
+      border-radius: 9px;
+      color: var(--muted);
+      background: rgba(7,15,27,.45);
+      font: inherit;
+      font-size: 10px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .player-stats-tab.active { color: #fff; border-color: var(--accent); background: rgba(98,165,255,.18); }
+    .pitch-log-summary { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 7px; margin-top: 11px; }
+    .pitch-log-wrap { margin-top: 11px; overflow-x: auto; border: 1px solid rgba(38,58,89,.78); border-radius: 10px; }
+    .pitch-log { width: 100%; min-width: 650px; border-collapse: collapse; font-size: 10px; }
+    .pitch-log th, .pitch-log td { padding: 8px 7px; border-bottom: 1px solid rgba(38,58,89,.62); text-align: center; white-space: nowrap; }
+    .pitch-log th { color: var(--muted); background: rgba(7,15,27,.65); font-size: 8px; }
+    .pitch-log td:first-child, .pitch-log td:nth-child(2) { text-align: left; }
+    .pitch-log tr:last-child td { border-bottom: 0; }
+    .bvp-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 11px; }
+    .bvp-scope { display: flex; gap: 6px; }
+    .bvp-note { color: var(--muted); font-size: 9px; line-height: 1.5; margin-top: 9px; }
+    .sample-pill { display: inline-flex; padding: 3px 6px; border-radius: 999px; font-size: 8px; font-weight: 850; color: var(--muted); background: rgba(116,134,163,.14); border: 1px solid rgba(116,134,163,.24); }
+    .sample-pill.medium { color: var(--yellow); border-color: rgba(255,204,102,.35); background: rgba(255,204,102,.08); }
+    .sample-pill.high { color: var(--green); border-color: rgba(66,211,146,.34); background: rgba(66,211,146,.08); }
+    .bvp-empty { margin-top: 11px; padding: 18px; border: 1px dashed #365070; border-radius: 11px; color: var(--muted); text-align: center; font-size: 11px; }
+
+    @media (max-width: 900px) {
+      .stats-grid { grid-template-columns: repeat(3, 1fr); }
+      .leg-editor { grid-template-columns: 1fr 1fr 1fr; }
+      .leg-editor .remove-wrap { align-self: end; }
+      .quick-add-grid { grid-template-columns: 1fr 1fr; }
+      .quick-roster { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .player-stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .live-summary { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 680px) {
+      .app-shell { padding: 15px 12px 70px; }
+      .topbar { flex-direction: column; }
+      .top-actions { justify-content: flex-start; }
+      .toolbar { grid-template-columns: 1fr; }
+      .refresh-meta { text-align: left; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .form-grid { grid-template-columns: 1fr; }
+      .leg-row { grid-template-columns: 30px 1fr auto; }
+      .leg-row .leg-market { grid-column: 2 / 3; }
+      .leg-row .leg-current { grid-column: 3; grid-row: 1; }
+      .leg-row .leg-state { grid-column: 3; grid-row: 2; }
+      .leg-editor { grid-template-columns: 1fr; }
+      .combo-footer { align-items: flex-end; }
+      .quick-add-grid { grid-template-columns: 1fr; }
+      .quick-tools { align-items: stretch; flex-direction: column; }
+      .quick-tools .btn { width: 100%; }
+      .pitch-log-summary { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .quick-roster { grid-template-columns: 1fr; max-height: 310px; }
+      .quick-add-footer { align-items: stretch; flex-direction: column; }
+      .quick-add-footer .btn { width: 100%; }
+      .dashboard-section { padding: 13px; border-radius: 17px; }
+      .dashboard-head { flex-direction: column; }
+      .dashboard-metrics { width: 100%; justify-content: stretch; }
+      .metric-chip { flex: 1; }
+      .game-grid { grid-template-columns: 1fr; }
+      .detail-scoreboard { grid-template-columns: 1fr; gap: 10px; }
+      .detail-team, .detail-team.home { justify-content: flex-start; text-align: left; }
+      .detail-team.home { flex-direction: row-reverse; justify-content: flex-end; }
+      .detail-center { order: -1; }
+      .pitcher-strip, .lineup-columns { grid-template-columns: 1fr; }
+      .player-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .game-detail-tab { min-width: 105px; }
+      .pitching-team-grid { grid-template-columns:1fr; }
+      .pitching-team-panel { display:none; }
+      .pitching-team-panel.mobile-active { display:block; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">⚾</div>
+        <div>
+          <h1>MLB Game Center & Combo Tracker</h1>
+          <div class="subtitle" data-i18n="subtitle">比分 · 首发阵容 · 球员赛季数据 · Combo 自动追踪</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <div class="account-box">
+          <span class="sync-pill" id="syncStatus">仅保存在本机</span>
+          <span class="account-email" id="accountEmail"></span>
+          <button class="btn" id="accountBtn" type="button">登录 / 同步</button>
+        </div>
+        <button class="btn" id="notifyBtn"><span data-i18n="enableNotifications">🔔 开启通知</span></button>
+        <button class="btn" id="demoBtn" data-i18n="loadDemo">载入演示 Combo</button>
+        <button class="btn" id="exportBtn" data-i18n="export">导出</button>
+        <label class="btn" for="importFile" data-i18n="import">导入</label>
+        <input id="importFile" type="file" accept="application/json" hidden />
+        <button class="btn" id="languageBtn" type="button">EN</button>
+        <button class="btn primary" id="addComboBtn" data-i18n="addCombo">＋ 添加 Combo</button>
+      </div>
+    </header>
+
+    <section class="toolbar">
+      <div class="date-nav">
+        <button class="btn icon" id="prevDate" aria-label="前一天" data-i18n-aria="previousDay">‹</button>
+        <input class="date-input" id="datePicker" type="date" />
+        <button class="btn icon" id="nextDate" aria-label="后一天" data-i18n-aria="nextDay">›</button>
+        <button class="btn small" id="todayBtn" data-i18n="today">今天</button>
+      </div>
+      <button class="btn" id="refreshBtn" data-i18n="refreshNow">↻ 立即检查</button>
+      <div class="refresh-meta">
+        <div><span data-i18n="lastUpdatedLabel">最后更新：</span><span id="lastUpdated">尚未检查</span></div>
+        <div><span data-i18n="nextCheckLabel">下次检查：</span><span id="countdown">03:00</span></div>
+      </div>
+    </section>
+
+    <div class="notice" id="apiNotice"></div>
+
+    <section class="dashboard-section">
+      <div class="loading-bar" id="dashboardLoadingBar" hidden></div>
+      <div class="dashboard-head">
+        <div>
+          <div class="eyebrow">MLB GAME CENTER</div>
+          <div class="dashboard-title" data-i18n="dashboardTitle">比赛综合 Dashboard</div>
+          <div class="dashboard-subtitle" data-i18n="dashboardSubtitle">比分、比赛状态、先发投手与首发阵容公布状态集中查看</div>
+        </div>
+        <div class="dashboard-metrics">
+          <div class="metric-chip"><strong id="gameMetricTotal">0</strong><span data-i18n="gamesToday">当天比赛</span></div>
+          <div class="metric-chip"><strong id="gameMetricLive">0</strong><span data-i18n="gamesLive">正在进行</span></div>
+          <div class="metric-chip"><strong id="gameMetricLineups">0</strong><span data-i18n="lineupsComplete">双方首发齐全</span></div>
+        </div>
+      </div>
+      <div class="game-grid" id="gameGrid">
+        <div class="dashboard-loading" data-i18n="loadingGames">正在读取当天赛程与首发状态…</div>
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <div class="stat-card"><div class="stat-label" data-i18n="statTotal">今日 Combo</div><div class="stat-value" id="statTotal">0</div></div>
+      <div class="stat-card"><div class="stat-label" data-i18n="statMatched">已命中</div><div class="stat-value green" id="statMatched">0</div></div>
+      <div class="stat-card"><div class="stat-label" data-i18n="statLive">进行中</div><div class="stat-value yellow" id="statLive">0</div></div>
+      <div class="stat-card"><div class="stat-label" data-i18n="statPending">未开赛</div><div class="stat-value" id="statPending">0</div></div>
+      <div class="stat-card"><div class="stat-label" data-i18n="statFailed">未命中结束</div><div class="stat-value red" id="statFailed">0</div></div>
+    </section>
+
+    <section>
+      <div class="filter-row">
+        <h2 class="section-title" data-i18n="comboList">Combo 列表</h2>
+        <div class="tabs" id="filterTabs">
+          <button class="tab active" data-filter="ALL" data-i18n="filterAll">全部</button>
+          <button class="tab" data-filter="LIVE" data-i18n="filterLive">进行中</button>
+          <button class="tab" data-filter="MATCHED" data-i18n="filterMatched">已命中</button>
+          <button class="tab" data-filter="PENDING" data-i18n="filterPending">未开赛</button>
+          <button class="tab" data-filter="FAILED" data-i18n="filterFailed">已结束未中</button>
+        </div>
+      </div>
+      <div class="combo-grid" id="comboGrid"></div>
+    </section>
+  </div>
+
+  <dialog id="comboDialog">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">添加 Combo</div>
+      <button class="btn icon" id="closeDialog">×</button>
+    </div>
+    <form id="comboForm">
+      <div class="modal-body">
+        <input type="hidden" id="editingId" />
+        <div class="form-grid">
+          <div class="field">
+            <label for="comboName" data-i18n="comboName">Combo 名称</label>
+            <input id="comboName" required placeholder="例如：Tonight MLB Combo" data-i18n-placeholder="comboNamePlaceholder" />
+          </div>
+          <div class="field">
+            <label for="payoutAmount" data-i18n="payoutAmount">回报金额</label>
+            <input id="payoutAmount" inputmode="decimal" placeholder="例如：172" data-i18n-placeholder="payoutAmountPlaceholder" />
+          </div>
+          <div class="field">
+            <label for="comboDate" data-i18n="date">日期</label>
+            <input id="comboDate" type="date" required />
+          </div>
+          <div class="field">
+            <label for="comboMode" data-i18n="comboRule">组合规则</label>
+            <select id="comboMode">
+              <option value="ALL" data-i18n="ruleAll">全部满足</option>
+              <option value="ANY" data-i18n="ruleAny">任意一项</option>
+              <option value="AT_LEAST" data-i18n="ruleAtLeast">至少 N 项</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top:12px">
+          <div class="field">
+            <label for="platform" data-i18n="platformNote">平台 / 备注</label>
+            <input id="platform" placeholder="例如：Kalshi / 自定义" data-i18n-placeholder="platformPlaceholder" />
+          </div>
+          <div class="field" id="requiredCountField" style="display:none">
+            <label for="requiredCount" data-i18n="requiredCount">至少命中数量</label>
+            <input id="requiredCount" type="number" min="1" value="1" />
+          </div>
+          <div class="field">
+            <label for="refreshMinutes" data-i18n="refreshInterval">检查间隔（分钟）</label>
+            <select id="refreshMinutes">
+              <option value="1" data-i18n="minute1">1 分钟</option>
+              <option value="2" data-i18n="minute2">2 分钟</option>
+              <option value="3" selected data-i18n="minute3">3 分钟</option>
+              <option value="5" data-i18n="minute5">5 分钟</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="quick-add-panel">
+          <div class="quick-add-head">
+            <div>
+              <div class="quick-add-title" data-i18n="gameBetTitle">比赛投注</div>
+              <div class="quick-add-hint" data-i18n="gameBetHint">添加球队胜负、让分或全场总分大小。</div>
+            </div>
+          </div>
+          <div class="quick-add-grid">
+            <div class="field">
+              <label for="betGame" data-i18n="game">比赛</label>
+              <select id="betGame"><option value="" data-i18n="selectGame">选择比赛</option></select>
+            </div>
+            <div class="field">
+              <label for="betMarket" data-i18n="betType">投注类型</label>
+              <select id="betMarket">
+                <option value="MONEYLINE" data-i18n="moneyline">球队胜负 Moneyline</option>
+                <option value="SPREAD" data-i18n="spread">让分 Spread</option>
+                <option value="TOTAL" data-i18n="total">总分 Total</option>
+              </select>
+            </div>
+            <div class="field" id="betSelectionField">
+              <label for="betSelection" data-i18n="selection">选择</label>
+              <select id="betSelection" disabled><option value="" data-i18n="selectTeam">选择球队</option></select>
+            </div>
+            <div class="field" id="betLineField" style="display:none">
+              <label for="betLine" data-i18n="line">盘口</label>
+              <input id="betLine" type="number" step="0.5" placeholder="-1.5 / 8.5" />
+            </div>
+          </div>
+          <div class="quick-add-footer">
+            <div class="selected-count" data-i18n="gameBetNote">盘口支持半分与整数；整数盘可能出现 Push。</div>
+            <button class="btn primary" type="button" id="addGameBetBtn" data-i18n="addGameBet">＋ 添加比赛投注</button>
+          </div>
+        </div>
+
+
+        <div class="quick-add-panel">
+          <div class="quick-add-head">
+            <div>
+              <div class="quick-add-title" data-i18n="quickAddTitle">同队批量添加</div>
+              <div class="quick-add-hint" data-i18n="quickAddHint">选择比赛和球队，勾选多名球员，一次建立多个相同项目的 Leg。</div>
+            </div>
+          </div>
+          <div class="quick-add-grid">
+            <div class="field">
+              <label for="quickGame" data-i18n="game">比赛</label>
+              <select id="quickGame"><option value="" data-i18n="selectGame">选择比赛</option></select>
+            </div>
+            <div class="field">
+              <label for="quickTeam" data-i18n="team">球队</label>
+              <select id="quickTeam" disabled><option value="" data-i18n="selectTeam">选择球队</option></select>
+            </div>
+            <div class="field">
+              <label for="quickMarket" data-i18n="market">项目</label>
+              <select id="quickMarket"></select>
+            </div>
+            <div class="field">
+              <label for="quickTarget" data-i18n="target">目标</label>
+              <input id="quickTarget" type="number" min="1" value="1" />
+            </div>
+          </div>
+          <div class="quick-tools">
+            <div class="field">
+              <label for="quickSearch" data-i18n="searchPlayers">搜索球员</label>
+              <input id="quickSearch" autocomplete="off" data-i18n-placeholder="searchPlayersPlaceholder" placeholder="输入姓名、号码或位置" />
+            </div>
+            <button class="btn small" type="button" id="quickSelectAll" data-i18n="selectVisible">选择当前显示</button>
+            <button class="btn small" type="button" id="quickClear" data-i18n="clearSelection">清除选择</button>
+          </div>
+          <div class="quick-roster" id="quickRoster">
+            <div class="quick-empty" data-i18n="chooseGameTeamFirst">请先选择比赛和球队。</div>
+          </div>
+          <div class="quick-add-footer">
+            <div class="selected-count" id="quickSelectedCount">已选择 0 名球员</div>
+            <button class="btn primary" type="button" id="quickAddPlayersBtn" disabled data-i18n="addSelectedPlayers">＋ 添加所选球员</button>
+          </div>
+        </div>
+
+        <div class="legs-editor">
+          <div class="editor-title">
+            <strong data-i18n="legConditions">Leg 条件</strong>
+            <button class="btn small" type="button" id="addLegBtn" data-i18n="addLeg">＋ 添加 Leg</button>
+          </div>
+          <div id="legsEditor"></div>
+          <div class="loading-note" data-i18n="legHint">先选择比赛，再在球员输入框中搜索。球员列表取自两队当前 Active Roster。</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" type="button" id="cancelDialog" data-i18n="cancel">取消</button>
+        <button class="btn primary" type="submit" data-i18n="saveAndTrack">保存并开始追踪</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="game-dialog" id="gameDialog">
+    <div class="modal-head">
+      <div>
+        <div class="eyebrow">GAME DETAILS</div>
+        <div class="modal-title" id="gameDialogTitle" data-i18n="gameDetails">比赛详情</div>
+      </div>
+      <button class="btn icon" id="closeGameDialog" aria-label="关闭" data-i18n-aria="close">×</button>
+    </div>
+    <div class="modal-body" id="gameDetailBody"></div>
+  </dialog>
+
+  <dialog id="authDialog">
+    <div class="modal-head">
+      <div class="modal-title">登录并同步</div>
+      <button class="btn icon" id="closeAuthDialog" type="button">×</button>
+    </div>
+    <form id="authForm">
+      <div class="modal-body">
+        <p class="auth-copy">登录后，Combo、盘口、结算结果和设置会同步到你的账号；本机缓存仍会保留。</p>
+        <div class="field">
+          <label for="authEmail">Email</label>
+          <input id="authEmail" type="email" autocomplete="email" required />
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label for="authPassword">Password</label>
+          <input id="authPassword" type="password" autocomplete="current-password" minlength="6" required />
+        </div>
+        <div class="auth-status" id="authStatus"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="signUpBtn" type="button">创建账号</button>
+        <button class="btn primary" type="submit">登录</button>
+      </div>
+    </form>
+    <div class="modal-footer" id="signedInActions" hidden>
+      <button class="btn" id="syncNowBtn" type="button">立即同步</button>
+      <button class="btn danger" id="signOutBtn" type="button">退出登录</button>
+    </div>
+  </dialog>
+
+  <div class="toast-stack" id="toastStack"></div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const STORAGE_KEY = 'mlb_combo_tracker_v1';
+      const SETTINGS_KEY = 'mlb_combo_tracker_settings_v1';
+      const AUTH_KEY = 'mlb_combo_tracker_supabase_session_v1';
+      const SUPABASE_URL = 'https://nhcudeyaihodyavcilxg.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_FbSCE6aNYCr4mZTe6wSPBg_Xz3tlpje';
+      const API = 'https://statsapi.mlb.com/api';
+      const I18N = {
+        zh: {
+          pageTitle: 'MLB Game Center & Combo Tracker', subtitle: '比分 · 首发阵容 · 球员赛季数据 · Combo 自动追踪',
+          enableNotifications: '🔔 开启通知', loadDemo: '载入演示 Combo', export: '导出', import: '导入', addCombo: '＋ 添加 Combo',
+          previousDay: '前一天', nextDay: '后一天', today: '今天', refreshNow: '↻ 立即检查', checking: '检查中…',
+          lastUpdatedLabel: '最后更新：', neverChecked: '尚未检查', nextCheckLabel: '下次检查：',
+          statTotal: '今日 Combo', statMatched: '已命中', statLive: '进行中', statPending: '未开赛', statFailed: '未命中结束',
+          comboList: 'Combo 列表', filterAll: '全部', filterLive: '进行中', filterMatched: '已命中', filterPending: '未开赛', filterFailed: '已结束未中',
+          addComboTitle: '添加 Combo', editComboTitle: '编辑 Combo', comboName: 'Combo 名称', comboNamePlaceholder: '输入回报金额后自动命名',
+          payoutAmount: '回报金额', payoutAmountPlaceholder: '例如：172', favoriteGame: '关注这场比赛', unfavoriteGame: '取消关注',
+          date: '日期', comboRule: '组合规则', ruleAll: '全部满足', ruleAny: '任意一项', ruleAtLeast: '至少 N 项',
+          platformNote: '平台 / 备注', platformPlaceholder: '例如：Kalshi / 自定义', requiredCount: '至少命中数量', refreshInterval: '检查间隔（分钟）',
+          minute1: '1 分钟', minute2: '2 分钟', minute3: '3 分钟', minute5: '5 分钟',
+          quickAddTitle: '同队批量添加', quickAddHint: '选择比赛和球队，勾选多名球员，一次建立多个相同项目的 Leg。',
+          gameBetTitle: '比赛投注', gameBetHint: '添加球队胜负、让分或全场总分大小。', betType: '投注类型',
+          moneyline: '球队胜负 Moneyline', spread: '让分 Spread', total: '总分 Total', selection: '选择', line: '盘口',
+          over: '大分 Over', under: '小分 Under', addGameBet: '＋ 添加比赛投注', gameBetNote: '盘口支持半分与整数；整数盘可能出现 Push。',
+          gameBetAdded: '比赛投注已添加', chooseGameBet: '请选择比赛并完成投注条件。', push: '走盘 PUSH',
+          game: '比赛', selectGame: '选择比赛', team: '球队', selectTeam: '选择球队', market: '项目', target: '目标',
+          searchPlayers: '搜索球员', searchPlayersPlaceholder: '输入姓名、号码或位置', selectVisible: '选择当前显示', clearSelection: '清除选择',
+          chooseGameTeamFirst: '请先选择比赛和球队。', loadingRoster: '正在读取球队名单…', noPlayers: '没有找到符合条件的球员。',
+          selectedPlayers: '已选择 {count} 名球员', addSelectedPlayers: '＋ 添加所选球员',
+          legConditions: 'Leg 条件', addLeg: '＋ 添加 Leg', legHint: '可以批量加入同队球员，也可以逐个选择比赛和搜索球员。',
+          cancel: '取消', saveAndTrack: '保存并开始追踪', playerSearch: '球员（可搜索）', playerPlaceholder: '先选比赛，再输入姓名', condition: '条件', deleteLeg: '删除 Leg',
+          noCombosDay: '这一天还没有 Combo', noFilteredCombos: '没有符合筛选的 Combo', emptyHint: '点击右上角“添加 Combo”，或先载入演示数据查看效果。',
+          statusPending: '未开赛', custom: '自定义', gameNotSet: '比赛未设置', current: '当前', lastUpdate: '最后更新：', matchedAt: '命中', notChecked: '尚未检查',
+          demoPlus: '演示 +1', edit: '编辑', delete: '删除', anyOne: '任意一项', atLeast: '至少 {count} 项', allRequired: '全部满足',
+          savedGame: '已保存比赛 #{id}', playerNotFound: '没有找到球员；请检查比赛或姓名。', playerMetaFallback: '球员',
+          keepOneLegTitle: '至少保留一个 Leg', keepOneLegMsg: 'Combo 必须包含至少一个条件。',
+          incompleteTitle: '资料未完成', incompleteMsg: '每个 Leg 都需要选择比赛，并从下拉结果中选择球员。',
+          savedTitle: '已保存', savedMsg: '{name} 已开始追踪。',
+          batchNeedSelectionTitle: '还没有选择球员', batchNeedSelectionMsg: '请先选择比赛、球队，并勾选至少一名球员。',
+          batchAddedTitle: '批量添加完成', batchAddedMsg: '已添加 {added} 名球员{skippedText}。', batchSkipped: '，跳过 {count} 个重复条件',
+          noGamesNotice: '当天没有读取到 MLB 比赛。可能是休赛日、网络问题，或浏览器阻止了跨域请求。你仍可载入演示 Combo 查看 UI。',
+          apiError: '无法直接读取 MLB 数据：{message}。页面和本地保存仍可使用；可用“载入演示 Combo”预览。',
+          checkComplete: '检查完成', noActiveCombos: '目前没有需要检查的进行中 Combo。', gamesUpdated: '已更新 {count} 场比赛。',
+          noUpdate: '没有更新', apiRequestFailed: 'MLB API 请求失败；可以继续使用演示按钮测试状态变化。',
+          demoData: '演示数据', inningSix: '第 6 局', demoAdded: '演示 Combo 已加入', demoAddedMsg: '点击卡片里的“演示 +1”可模拟球员数据变化。',
+          deleteConfirm: '确定删除“{name}”吗？', notificationsUnsupported: '不支持通知', notificationsUnsupportedMsg: '当前浏览器不支持桌面通知。',
+          notificationsOn: '通知已开启', notificationsOff: '通知未开启', notificationsOnMsg: 'Combo 命中时会显示系统通知。', notificationsOffMsg: '请在浏览器设置中允许通知。',
+          matchedMessage: '{name} 已满足 {rule}。', matchedBody: '{name} · {matched}/{required} 命中',
+          invalidBackup: '无效的备份文件', importSuccess: '导入成功', importedCount: '已导入 {count} 个 Combo。', importFailed: '导入失败', requestTimeout: '请求超时',
+          market_H: '安打 H', market_HR: '本垒打 HR', market_TB: '总垒数 TB', market_RBI: '打点 RBI', market_R: '得分 R', market_BB: '保送 BB', market_SO: '三振 SO', market_SB: '盗垒 SB', market_H_R_RBI: 'H + R + RBI',
+          dashboardTitle: '比赛综合 Dashboard', dashboardSubtitle: '比分、比赛状态、先发投手与首发阵容公布状态集中查看',
+          gamesToday: '当天比赛', gamesLive: '正在进行', lineupsComplete: '双方首发齐全', loadingGames: '正在读取当天赛程与首发状态…',
+          noGamesDashboard: '当天没有 MLB 比赛', lineup: '首发', lineupReady: '已公布', lineupPartial: '部分公布', lineupWaiting: '待公布',
+          viewGame: '查看详情', gameDetails: '比赛详情', close: '关闭', probablePitcher: '预计先发投手', pitcherTbd: '尚未确定',
+          fullLineup: '首发打序', lineupNotAvailable: '完整首发阵容尚未公布。比赛临近时可点击“立即检查”更新。',
+          clickPlayerStats: '点击球员查看本赛季数据', seasonStats: '{season} 赛季数据', loadingPlayerStats: '正在读取球员赛季数据…',
+          noSeasonStats: '暂时没有读取到该球员的本赛季数据。', statsLoadFailed: '球员数据读取失败', record: '战绩',
+          seasonTab: '赛季数据', recent5: '最近 5 场', recent10: '最近 10 场', loadingPitchLog: '正在读取投手比赛日志…',
+          noPitchLog: '本赛季暂无投手比赛日志。', pitchLogFailed: '投手比赛日志读取失败', avgSo: '场均 SO', starts: '先发',
+          vsBatters: '对阵打者', vsStarter: '对今日先发', last5Years: '最近 5 年', careerTotal: '生涯全部',
+          loadingBvp: '正在读取历史对阵数据…', noBvp: '暂无历史交手记录。', bvpFailed: '历史对阵数据读取失败',
+          lineupRequiredBvp: '对方首发阵容尚未确认，暂时无法生成完整对阵表。', starterRequiredBvp: '对方先发投手尚未确认。',
+          sample: '样本', sampleTiny: '不足', sampleLow: '低', sampleMedium: '中', sampleHigh: '较高',
+          bvpDisclaimer: 'BvP 只作为辅助参考；小样本不应单独决定选择。',
+          bvpSeasonCompare: 'BvP 与本赛季数据并排比较', bvpValue: 'BvP', seasonValue: '本赛季',
+          thresholdHits: '{target}+ SO', dateLabel: '日期', opponent: '对手', startShort: '先发', pitches: '投球数',
+          scheduled: '未开赛', final: '已结束', delayed: '延迟', inProgress: '进行中', lineupsStatus: '首发状态',
+          scoreUnavailable: '—', venueUnknown: '球场待定',
+          lineupStatLabel: '首发名单显示指标', lineupStatHint: '默认 H；★ 标记该队当前指标前三名',
+          statHits: '安打数 H', statHomeRuns: '本垒打 HR', statTotalBases: '总垒数 TB', statRbi: '打点 RBI', statRuns: '得分 R', statAvg: '打击率 AVG', statOps: '上垒＋长打 OPS',
+          gameOverview: '比赛概况', livePlayerStats: '打者表现', pitchingPerformance: '投手表现', inningByInning: '逐局比分', currentMatchup: '当前对决',
+          atBat: '当前打者', pitchingNow: '当前投手', countLabel: '球数', outsLabel: '出局',
+          liveMatchup: '实时对决', atBatNumber: '本场打席', playStatus: '打席状态',
+          battersToday: '打者本场数据', pitchersToday: '投手本场数据', player: '球员',
+          liveStatsNotStarted: '比赛尚未开始。本场球员数据将在开赛后自动出现。', noLiveStats: '暂时没有本场球员数据。',
+          pitchersUsed: '{count} 名投手', starterRole: 'SP', relieverRole: 'RP'
+          ,comboTracked: 'Combo 追踪', comboPlayers: '{players} 名球员', comboItems: '{items} 项',
+          paProjected: '预计全场 {range} PA', paCompleted: '已完成 {count}', paRemaining: '预计剩余 {range} PA',
+          paActual: '实际 {count} PA', paChanceHigh: '机会较高', paChanceMedium: '约 1 次机会', paChanceLow: '可能无剩余'
+        },
+        en: {
+          pageTitle: 'MLB Game Center & Combo Tracker', subtitle: 'Scores · Starting lineups · Season stats · Automatic combo tracking',
+          enableNotifications: '🔔 Enable alerts', loadDemo: 'Load demo combo', export: 'Export', import: 'Import', addCombo: '＋ Add Combo',
+          previousDay: 'Previous day', nextDay: 'Next day', today: 'Today', refreshNow: '↻ Check now', checking: 'Checking…',
+          lastUpdatedLabel: 'Last update: ', neverChecked: 'Not checked yet', nextCheckLabel: 'Next check: ',
+          statTotal: 'Today’s Combos', statMatched: 'Matched', statLive: 'Live', statPending: 'Not started', statFailed: 'Finished / Missed',
+          comboList: 'Combo List', filterAll: 'All', filterLive: 'Live', filterMatched: 'Matched', filterPending: 'Not started', filterFailed: 'Finished / Missed',
+          addComboTitle: 'Add Combo', editComboTitle: 'Edit Combo', comboName: 'Combo name', comboNamePlaceholder: 'Auto-filled after entering payout',
+          payoutAmount: 'Payout amount', payoutAmountPlaceholder: 'Example: 172', favoriteGame: 'Favorite this game', unfavoriteGame: 'Remove favorite',
+          date: 'Date', comboRule: 'Combo rule', ruleAll: 'All legs', ruleAny: 'Any leg', ruleAtLeast: 'At least N legs',
+          platformNote: 'Platform / notes', platformPlaceholder: 'Example: Kalshi / Custom', requiredCount: 'Required legs', refreshInterval: 'Check interval (minutes)',
+          minute1: '1 minute', minute2: '2 minutes', minute3: '3 minutes', minute5: '5 minutes',
+          quickAddTitle: 'Quick add by team', quickAddHint: 'Pick a game and team, select multiple players, and create matching legs in one click.',
+          gameBetTitle: 'Game Bet', gameBetHint: 'Add a team moneyline, run line, or full-game total.', betType: 'Bet type',
+          moneyline: 'Team Moneyline', spread: 'Spread / Run Line', total: 'Game Total', selection: 'Selection', line: 'Line',
+          over: 'Over', under: 'Under', addGameBet: '＋ Add game bet', gameBetNote: 'Half and whole-number lines are supported; whole-number lines may push.',
+          gameBetAdded: 'Game bet added', chooseGameBet: 'Select a game and complete the betting condition.', push: 'PUSH',
+          game: 'Game', selectGame: 'Select game', team: 'Team', selectTeam: 'Select team', market: 'Market', target: 'Target',
+          searchPlayers: 'Search players', searchPlayersPlaceholder: 'Name, number, or position', selectVisible: 'Select visible', clearSelection: 'Clear selection',
+          chooseGameTeamFirst: 'Select a game and team first.', loadingRoster: 'Loading active roster…', noPlayers: 'No matching players found.',
+          selectedPlayers: '{count} players selected', addSelectedPlayers: '＋ Add selected players',
+          legConditions: 'Leg Conditions', addLeg: '＋ Add Leg', legHint: 'Quick-add multiple players from one team, or add and search each player individually.',
+          cancel: 'Cancel', saveAndTrack: 'Save and start tracking', playerSearch: 'Player (searchable)', playerPlaceholder: 'Select a game, then type a name', condition: 'Condition', deleteLeg: 'Delete leg',
+          noCombosDay: 'No combos for this date', noFilteredCombos: 'No combos match this filter', emptyHint: 'Click “Add Combo” or load the demo to preview the workflow.',
+          statusPending: 'NOT STARTED', custom: 'Custom', gameNotSet: 'Game not set', current: 'Current', lastUpdate: 'Last update: ', matchedAt: 'Matched', notChecked: 'Not checked yet',
+          demoPlus: 'Demo +1', edit: 'Edit', delete: 'Delete', anyOne: 'Any leg', atLeast: 'At least {count}', allRequired: 'All legs',
+          savedGame: 'Saved game #{id}', playerNotFound: 'No player found. Check the game or name.', playerMetaFallback: 'Player',
+          keepOneLegTitle: 'Keep at least one leg', keepOneLegMsg: 'A combo must contain at least one condition.',
+          incompleteTitle: 'Missing information', incompleteMsg: 'Every leg needs a game and a player selected from the dropdown.',
+          savedTitle: 'Saved', savedMsg: '{name} is now being tracked.',
+          batchNeedSelectionTitle: 'No players selected', batchNeedSelectionMsg: 'Select a game, team, and at least one player.',
+          batchAddedTitle: 'Players added', batchAddedMsg: 'Added {added} players{skippedText}.', batchSkipped: '; skipped {count} duplicate conditions',
+          noGamesNotice: 'No MLB games were loaded for this date. It may be an off day, a network issue, or a browser CORS restriction. The demo still works.',
+          apiError: 'Could not load MLB data: {message}. Local saving still works; use “Load demo combo” to preview the UI.',
+          checkComplete: 'Check complete', noActiveCombos: 'There are no active combos to check.', gamesUpdated: 'Updated {count} games.',
+          noUpdate: 'No update', apiRequestFailed: 'The MLB API request failed. You can still test status changes with the demo button.',
+          demoData: 'Demo data', inningSix: '6th inning', demoAdded: 'Demo combo added', demoAddedMsg: 'Use “Demo +1” on the card to simulate a player update.',
+          deleteConfirm: 'Delete “{name}”?', notificationsUnsupported: 'Alerts not supported', notificationsUnsupportedMsg: 'This browser does not support desktop notifications.',
+          notificationsOn: 'Alerts enabled', notificationsOff: 'Alerts not enabled', notificationsOnMsg: 'A desktop alert will appear when a combo matches.', notificationsOffMsg: 'Allow notifications in your browser settings.',
+          matchedMessage: '{name} satisfied {rule}.', matchedBody: '{name} · {matched}/{required} matched',
+          invalidBackup: 'Invalid backup file', importSuccess: 'Import complete', importedCount: 'Imported {count} combos.', importFailed: 'Import failed', requestTimeout: 'Request timed out',
+          market_H: 'Hits H', market_HR: 'Home Runs HR', market_TB: 'Total Bases TB', market_RBI: 'Runs Batted In RBI', market_R: 'Runs R', market_BB: 'Walks BB', market_SO: 'Strikeouts SO', market_SB: 'Stolen Bases SB', market_H_R_RBI: 'H + R + RBI',
+          dashboardTitle: 'Game Center Dashboard', dashboardSubtitle: 'Scores, game state, probable pitchers, and lineup availability in one view',
+          gamesToday: 'Games', gamesLive: 'Live now', lineupsComplete: 'Both lineups ready', loadingGames: 'Loading schedule and lineup status…',
+          noGamesDashboard: 'No MLB games on this date', lineup: 'Lineup', lineupReady: 'Announced', lineupPartial: 'Partially posted', lineupWaiting: 'Not posted',
+          viewGame: 'Game details', gameDetails: 'Game Details', close: 'Close', probablePitcher: 'Probable pitcher', pitcherTbd: 'Not announced',
+          fullLineup: 'Starting Lineup', lineupNotAvailable: 'The complete starting lineup has not been posted yet. Use “Check now” closer to game time.',
+          clickPlayerStats: 'Select a player to view season stats', seasonStats: '{season} Season Stats', loadingPlayerStats: 'Loading player season stats…',
+          noSeasonStats: 'No season stats are available for this player yet.', statsLoadFailed: 'Player stats could not be loaded', record: 'Record',
+          seasonTab: 'Season Stats', recent5: 'Last 5', recent10: 'Last 10', loadingPitchLog: 'Loading pitching game log…',
+          noPitchLog: 'No pitching game log is available for this season.', pitchLogFailed: 'Pitching game log could not be loaded', avgSo: 'AVG SO', starts: 'Starts',
+          vsBatters: 'Vs Batters', vsStarter: 'Vs Today’s Starter', last5Years: 'Last 5 Years', careerTotal: 'Career',
+          loadingBvp: 'Loading matchup history…', noBvp: 'No prior matchup data is available.', bvpFailed: 'Matchup history could not be loaded',
+          lineupRequiredBvp: 'The opposing lineup is not confirmed yet, so a complete matchup table is unavailable.', starterRequiredBvp: 'The opposing starting pitcher is not confirmed.',
+          sample: 'Sample', sampleTiny: 'Tiny', sampleLow: 'Low', sampleMedium: 'Medium', sampleHigh: 'Higher',
+          bvpDisclaimer: 'BvP is supporting context only; small samples should not determine a pick by themselves.',
+          bvpSeasonCompare: 'BvP compared with season totals', bvpValue: 'BvP', seasonValue: 'Season',
+          thresholdHits: '{target}+ SO', dateLabel: 'Date', opponent: 'Opponent', startShort: 'GS', pitches: 'Pitches',
+          scheduled: 'Scheduled', final: 'Final', delayed: 'Delayed', inProgress: 'Live', lineupsStatus: 'Lineup status',
+          scoreUnavailable: '—', venueUnknown: 'Venue TBD',
+          lineupStatLabel: 'Lineup stat', lineupStatHint: 'Defaults to H; ★ marks the team’s top three',
+          statHits: 'Hits H', statHomeRuns: 'Home Runs HR', statTotalBases: 'Total Bases TB', statRbi: 'RBI', statRuns: 'Runs R', statAvg: 'Batting AVG', statOps: 'OPS',
+          gameOverview: 'Game Overview', livePlayerStats: 'Batting', pitchingPerformance: 'Pitching', inningByInning: 'Line by Line', currentMatchup: 'Current Matchup',
+          atBat: 'At Bat', pitchingNow: 'Pitching', countLabel: 'Count', outsLabel: 'Outs',
+          liveMatchup: 'Live Matchup', atBatNumber: 'At Bat', playStatus: 'Play',
+          battersToday: 'Batting — This Game', pitchersToday: 'Pitching — This Game', player: 'Player',
+          liveStatsNotStarted: 'This game has not started. Live player stats will appear automatically after first pitch.', noLiveStats: 'No in-game player stats are available yet.',
+          pitchersUsed: '{count} pitchers used', starterRole: 'SP', relieverRole: 'RP'
+          ,comboTracked: 'Combo tracked', comboPlayers: '{players} players', comboItems: '{items} legs',
+          paProjected: 'Projected {range} PA', paCompleted: '{count} completed', paRemaining: '{range} PA left',
+          paActual: '{count} PA actual', paChanceHigh: 'Good opportunity', paChanceMedium: 'About 1 chance', paChanceLow: 'May have no PA left'
+        }
+      };
+      const MARKET_CODES = ['H', 'HR', 'TB', 'RBI', 'R', 'BB', 'SO', 'SB', 'H_R_RBI'];
+      const MARKET_FIELDS = {
+        H: 'hits', HR: 'homeRuns', TB: 'totalBases', RBI: 'rbi', R: 'runs',
+        BB: 'baseOnBalls', SO: 'strikeOuts', SB: 'stolenBases'
+      };
+
+      let combos = loadJson(STORAGE_KEY, []);
+      let settings = loadJson(SETTINGS_KEY, { refreshMinutes: 3, language: 'zh', favoriteGames: {} });
+      if (!settings.favoriteGames || typeof settings.favoriteGames !== 'object') settings.favoriteGames = {};
+      let currentLanguage = settings.language === 'en' ? 'en' : 'zh';
+      let selectedDate = todayString();
+      let currentFilter = 'ALL';
+      let secondsLeft = Number(settings.refreshMinutes || 3) * 60;
+      let scheduleCache = new Map();
+      let rosterCache = new Map();
+      let gameFeedCache = new Map();
+      let playerStatsCache = new Map();
+      let gamesForEditor = [];
+      let dashboardGames = [];
+      let dashboardLoading = false;
+      let selectedDashboardGamePk = '';
+      let lineupDisplayStat = 'hits';
+      let gameDetailTab = 'live';
+      let liveStatsTeam = 'away';
+      let checkBusy = false;
+      let editingScheduleDate = '';
+      let quickSelectedIds = new Set();
+      let lastCheckAt = null;
+      let authSession = loadJson(AUTH_KEY, null);
+      let syncTimer = null;
+      let syncBusy = false;
+      let comboNameAuto = false;
+
+      const $ = (id) => document.getElementById(id);
+      const el = {
+        datePicker: $('datePicker'), comboGrid: $('comboGrid'), lastUpdated: $('lastUpdated'),
+        countdown: $('countdown'), apiNotice: $('apiNotice'), comboDialog: $('comboDialog'),
+        comboForm: $('comboForm'), legsEditor: $('legsEditor'), comboDate: $('comboDate'),
+        comboName: $('comboName'), payoutAmount: $('payoutAmount'), comboMode: $('comboMode'), requiredCountField: $('requiredCountField'),
+        betGame: $('betGame'), betMarket: $('betMarket'), betSelection: $('betSelection'),
+        betSelectionField: $('betSelectionField'), betLineField: $('betLineField'), betLine: $('betLine'),
+        requiredCount: $('requiredCount'), platform: $('platform'), refreshMinutes: $('refreshMinutes'),
+        editingId: $('editingId'), modalTitle: $('modalTitle'), toastStack: $('toastStack'),
+        quickGame: $('quickGame'), quickTeam: $('quickTeam'), quickMarket: $('quickMarket'), quickTarget: $('quickTarget'),
+        quickSearch: $('quickSearch'), quickRoster: $('quickRoster'), quickSelectedCount: $('quickSelectedCount'), quickAddPlayersBtn: $('quickAddPlayersBtn'),
+        gameGrid: $('gameGrid'), dashboardLoadingBar: $('dashboardLoadingBar'), gameDialog: $('gameDialog'),
+        gameDialogTitle: $('gameDialogTitle'), gameDetailBody: $('gameDetailBody'),
+        authDialog: $('authDialog'), authForm: $('authForm'), authEmail: $('authEmail'),
+        authPassword: $('authPassword'), authStatus: $('authStatus'), syncStatus: $('syncStatus'),
+        accountEmail: $('accountEmail'), signedInActions: $('signedInActions')
+      };
+
+      init();
+
+      function init() {
+        el.datePicker.value = selectedDate;
+        el.comboDate.value = selectedDate;
+        el.refreshMinutes.value = String(settings.refreshMinutes || 3);
+        bindEvents();
+        applyLanguage();
+        updateAccountUi();
+        restoreCloudSession();
+        loadDashboard(selectedDate);
+        setInterval(tick, 1000);
+      }
+
+      function bindEvents() {
+        $('prevDate').addEventListener('click', () => moveDate(-1));
+        $('nextDate').addEventListener('click', () => moveDate(1));
+        $('todayBtn').addEventListener('click', () => setSelectedDate(todayString()));
+        el.datePicker.addEventListener('change', () => setSelectedDate(el.datePicker.value));
+        $('refreshBtn').addEventListener('click', () => checkAllCombos(true));
+        $('addComboBtn').addEventListener('click', () => openComboDialog());
+        $('closeDialog').addEventListener('click', closeDialog);
+        $('cancelDialog').addEventListener('click', closeDialog);
+        $('addLegBtn').addEventListener('click', () => addLegEditor());
+        el.comboMode.addEventListener('change', updateRequiredVisibility);
+        el.comboDate.addEventListener('change', async () => {
+          updateAutoComboName();
+          editingScheduleDate = el.comboDate.value;
+          await loadScheduleForEditor(editingScheduleDate, true);
+          [...el.legsEditor.querySelectorAll('.leg-editor')].forEach(row => resetLegGameOptions(row));
+          resetQuickAddOptions();
+          resetGameBetOptions();
+        });
+        el.payoutAmount.addEventListener('input', () => {
+          if (!el.editingId.value || comboNameAuto) updateAutoComboName(true);
+        });
+        el.comboName.addEventListener('input', () => {
+          comboNameAuto = el.comboName.value === buildUniqueComboName(el.comboDate.value, el.payoutAmount.value, el.editingId.value);
+        });
+        el.comboForm.addEventListener('submit', saveComboFromForm);
+        $('demoBtn').addEventListener('click', loadDemo);
+        $('exportBtn').addEventListener('click', exportData);
+        $('importFile').addEventListener('change', importData);
+        $('notifyBtn').addEventListener('click', requestNotifications);
+        $('languageBtn').addEventListener('click', toggleLanguage);
+        $('accountBtn').addEventListener('click', openAuthDialog);
+        $('closeAuthDialog').addEventListener('click', () => el.authDialog.close());
+        el.authForm.addEventListener('submit', signIn);
+        $('signUpBtn').addEventListener('click', signUp);
+        $('signOutBtn').addEventListener('click', signOut);
+        $('syncNowBtn').addEventListener('click', () => syncWithCloud(true));
+        $('closeGameDialog').addEventListener('click', () => el.gameDialog.close());
+        el.gameGrid.addEventListener('click', (event) => {
+          const favorite = event.target.closest('[data-favorite-game]');
+          if (favorite) {
+            toggleFavoriteGame(favorite.dataset.favoriteGame);
+            return;
+          }
+          const button = event.target.closest('[data-game-detail]');
+          if (button) openGameDetails(button.dataset.gameDetail);
+        });
+        el.gameDetailBody.addEventListener('click', (event) => {
+          const detailTab = event.target.closest('[data-detail-tab]');
+          if (detailTab) {
+            gameDetailTab = detailTab.dataset.detailTab;
+            const game = dashboardGames.find(row => String(row.gamePk) === String(selectedDashboardGamePk));
+            if (game) renderGameDetails(game);
+            return;
+          }
+          const teamButton = event.target.closest('[data-live-team]');
+          if (teamButton) {
+            liveStatsTeam = teamButton.dataset.liveTeam;
+            const game = dashboardGames.find(row => String(row.gamePk) === String(selectedDashboardGamePk));
+            if (game) renderGameDetails(game);
+            return;
+          }
+          const button = event.target.closest('[data-player-stats]');
+          if (button) {
+            loadPlayerStats(
+              button.dataset.playerStats,
+              button.dataset.playerName || '',
+              button.dataset.statsGroup || 'hitting'
+            );
+            return;
+          }
+          const bvpButton = event.target.closest('[data-bvp]');
+          if (bvpButton) {
+            loadBvp(
+              bvpButton.dataset.playerId,
+              bvpButton.dataset.playerName || '',
+              bvpButton.dataset.role || 'hitting',
+              bvpButton.dataset.scope || '5Y'
+            );
+            return;
+          }
+          const historyButton = event.target.closest('[data-pitch-history]');
+          if (historyButton) {
+            loadPitcherHistory(
+              historyButton.dataset.playerId,
+              historyButton.dataset.playerName || '',
+              Number(historyButton.dataset.limit) || 5
+            );
+          }
+        });
+        el.gameDetailBody.addEventListener('change', (event) => {
+          const select = event.target.closest('[data-lineup-stat]');
+          if (!select) return;
+          lineupDisplayStat = select.value || 'hits';
+          const game = dashboardGames.find(row => String(row.gamePk) === String(selectedDashboardGamePk));
+          if (game) renderGameDetails(game);
+        });
+        el.quickGame.addEventListener('change', handleQuickGameChange);
+        el.betGame.addEventListener('change', updateGameBetOptions);
+        el.betMarket.addEventListener('change', updateGameBetOptions);
+        $('addGameBetBtn').addEventListener('click', addGameBetLeg);
+        el.quickTeam.addEventListener('change', () => { quickSelectedIds.clear(); renderQuickRoster(); });
+        el.quickMarket.addEventListener('change', updateQuickSelectedCount);
+        el.quickTarget.addEventListener('input', updateQuickSelectedCount);
+        el.quickSearch.addEventListener('input', renderQuickRoster);
+        $('quickSelectAll').addEventListener('click', selectVisibleQuickPlayers);
+        $('quickClear').addEventListener('click', () => { quickSelectedIds.clear(); renderQuickRoster(); });
+        el.quickAddPlayersBtn.addEventListener('click', addQuickSelectedPlayers);
+        el.quickRoster.addEventListener('change', (event) => {
+          const checkbox = event.target.closest('[data-quick-player]');
+          if (!checkbox) return;
+          const id = String(checkbox.dataset.quickPlayer);
+          if (checkbox.checked) quickSelectedIds.add(id); else quickSelectedIds.delete(id);
+          updateQuickSelectedCount();
+          checkbox.closest('.player-check')?.classList.toggle('selected', checkbox.checked);
+        });
+
+        $('filterTabs').addEventListener('click', (event) => {
+          const button = event.target.closest('[data-filter]');
+          if (!button) return;
+          currentFilter = button.dataset.filter;
+          document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === button));
+          renderCombos();
+        });
+
+        el.comboGrid.addEventListener('click', (event) => {
+          const edit = event.target.closest('[data-edit]');
+          const remove = event.target.closest('[data-delete]');
+          const simulate = event.target.closest('[data-simulate]');
+          if (edit) openComboDialog(edit.dataset.edit);
+          if (remove) deleteCombo(remove.dataset.delete);
+          if (simulate) simulateCombo(simulate.dataset.simulate);
+        });
+      }
+
+      function tick() {
+        secondsLeft = Math.max(0, secondsLeft - 1);
+        el.countdown.textContent = formatCountdown(secondsLeft);
+        if (secondsLeft === 0) checkAllCombos(false);
+      }
+
+      function resetCountdown() {
+        settings.refreshMinutes = Number(el.refreshMinutes?.value || settings.refreshMinutes || 3);
+        saveJson(SETTINGS_KEY, settings);
+        secondsLeft = settings.refreshMinutes * 60;
+        el.countdown.textContent = formatCountdown(secondsLeft);
+      }
+
+      function moveDate(days) {
+        const d = parseLocalDate(selectedDate);
+        d.setDate(d.getDate() + days);
+        setSelectedDate(toDateString(d));
+      }
+
+      function setSelectedDate(value) {
+        selectedDate = value || todayString();
+        el.datePicker.value = selectedDate;
+        render();
+        loadDashboard(selectedDate);
+      }
+
+      function render() {
+        renderStats();
+        renderCombos();
+        renderDashboard();
+      }
+
+      async function loadDashboard(date, force = false) {
+        dashboardLoading = true;
+        renderDashboard();
+        const requestDate = date;
+        try {
+          const games = await fetchSchedule(date, force);
+          const enriched = [];
+          for (let index = 0; index < games.length; index += 5) {
+            const batch = games.slice(index, index + 5);
+            const rows = await Promise.all(batch.map(async game => {
+              try {
+                const feed = await fetchGameFeed(game.gamePk, force);
+                return enrichGameWithFeed(game, feed);
+              } catch (error) {
+                console.error(`Dashboard game ${game.gamePk}`, error);
+                return game;
+              }
+            }));
+            enriched.push(...rows);
+          }
+          if (selectedDate === requestDate) dashboardGames = enriched;
+        } finally {
+          if (selectedDate === requestDate) {
+            dashboardLoading = false;
+            renderDashboard();
+          }
+        }
+      }
+
+      async function fetchGameFeed(gamePk, force = false) {
+        const key = String(gamePk);
+        const cached = gameFeedCache.get(key);
+        if (!force && cached && Date.now() - cached.loadedAt < 45000) return cached.feed;
+        const feed = await fetchJson(`${API}/v1.1/game/${gamePk}/feed/live`);
+        gameFeedCache.set(key, { feed, loadedAt: Date.now() });
+        return feed;
+      }
+
+      function enrichGameWithFeed(game, feed) {
+        const status = feed.gameData?.status || {};
+        const linescore = feed.liveData?.linescore || {};
+        const boxscore = feed.liveData?.boxscore || {};
+        const awayBox = boxscore.teams?.away || {};
+        const homeBox = boxscore.teams?.home || {};
+        cacheSeasonStatsFromBox(awayBox, game.date);
+        cacheSeasonStatsFromBox(homeBox, game.date);
+        const awayLineup = extractLineup(awayBox);
+        const homeLineup = extractLineup(homeBox);
+        const probable = feed.gameData?.probablePitchers || {};
+        const currentPlayMatchup = feed.liveData?.plays?.currentPlay?.matchup || {};
+        return {
+          ...game,
+          feed,
+          abstractState: status.abstractGameState || game.abstractState,
+          detailedState: status.detailedState || game.detailedState,
+          detail: gameDetailFromFeed(feed, game),
+          awayScore: linescore.teams?.away?.runs ?? game.awayScore,
+          homeScore: linescore.teams?.home?.runs ?? game.homeScore,
+          awayLineup,
+          homeLineup,
+          awayLineupState: lineupState(awayLineup),
+          homeLineupState: lineupState(homeLineup),
+          awayProbable: probable.away || game.awayProbable,
+          homeProbable: probable.home || game.homeProbable,
+          liveStats: extractLiveStats(boxscore),
+          innings: linescore.innings || [],
+          currentMatchup: {
+            batter: linescore.offense?.batter?.fullName || currentPlayMatchup.batter?.fullName || '',
+            batterId: linescore.offense?.batter?.id || currentPlayMatchup.batter?.id || '',
+            pitcher: linescore.defense?.pitcher?.fullName || currentPlayMatchup.pitcher?.fullName || '',
+            pitcherId: linescore.defense?.pitcher?.id || currentPlayMatchup.pitcher?.id || '',
+            balls: linescore.balls ?? '',
+            strikes: linescore.strikes ?? '',
+            outs: linescore.outs ?? '',
+            atBatIndex: feed.liveData?.plays?.currentPlay?.atBatIndex,
+            playStatus: feed.liveData?.plays?.currentPlay?.result?.description || feed.liveData?.plays?.currentPlay?.result?.event || ''
+          },
+          pitchingDecisions: extractPitchingDecisions(feed)
+        };
+      }
+
+      function extractPitchingDecisions(feed) {
+        const decisions = feed.liveData?.decisions || {};
+        const result = {};
+        [['winner','W'], ['loser','L'], ['save','SV']].forEach(([key, label]) => {
+          const id = decisions[key]?.id;
+          if (id) result[String(id)] = [...(result[String(id)] || []), label];
+        });
+        return result;
+      }
+
+      function extractLiveStats(boxscore) {
+        const parseTeam = (teamBox = {}) => {
+          const players = teamBox.players || {};
+          const battingIds = [...new Set(teamBox.battingOrder || [])];
+          const pitcherIds = [...new Set(teamBox.pitchers || [])];
+          return {
+            batting: battingIds.map(id => {
+              const row = players[`ID${id}`] || {};
+              return {
+                id, name: row.person?.fullName || `Player ${id}`,
+                position: row.position?.abbreviation || '',
+                stats: row.stats?.batting || {}
+              };
+            }),
+            pitching: pitcherIds.map(id => {
+              const row = players[`ID${id}`] || {};
+              return {
+                id, name: row.person?.fullName || `Player ${id}`,
+                position: row.position?.abbreviation || 'P',
+                stats: row.stats?.pitching || {},
+                note: row.stats?.pitching?.note || row.gameStatus?.status || ''
+              };
+            })
+          };
+        };
+        return { away: parseTeam(boxscore.teams?.away), home: parseTeam(boxscore.teams?.home) };
+      }
+
+      function extractLineup(teamBox) {
+        const order = [...new Set(teamBox?.battingOrder || [])];
+        return order.map((id, index) => {
+          const player = teamBox?.players?.[`ID${id}`] || {};
+          return {
+            id: player.person?.id || id,
+            name: player.person?.fullName || `Player ${id}`,
+            number: player.jerseyNumber || '',
+            position: player.position?.abbreviation || player.position?.name || '',
+            order: index + 1,
+            seasonStats: player.seasonStats?.batting || null
+          };
+        }).filter(player => player.id);
+      }
+
+      function cacheSeasonStatsFromBox(teamBox, date) {
+        const season = String(date || selectedDate).slice(0, 4);
+        Object.values(teamBox?.players || {}).forEach(player => {
+          const id = player.person?.id;
+          if (!id) return;
+          const hitting = player.seasonStats?.batting;
+          const pitching = player.seasonStats?.pitching;
+          if (hitting && n(hitting.gamesPlayed) > 0) playerStatsCache.set(`${id}|hitting|${season}`, hitting);
+          if (pitching && (n(pitching.gamesPlayed) > 0 || n(pitching.gamesPitched) > 0)) playerStatsCache.set(`${id}|pitching|${season}`, pitching);
+        });
+      }
+
+      function lineupState(lineup) {
+        if ((lineup || []).length >= 9) return 'ready';
+        if ((lineup || []).length > 0) return 'partial';
+        return 'waiting';
+      }
+
+      function lineupStateText(state) {
+        if (state === 'ready') return t('lineupReady');
+        if (state === 'partial') return t('lineupPartial');
+        return t('lineupWaiting');
+      }
+
+      function renderDashboard() {
+        if (!el.gameGrid) return;
+        el.dashboardLoadingBar.hidden = !dashboardLoading;
+        const games = dashboardGames.filter(game => game.date === selectedDate)
+          .sort((a, b) => Number(isFavoriteGame(b.gamePk)) - Number(isFavoriteGame(a.gamePk)));
+        $('gameMetricTotal').textContent = games.length;
+        $('gameMetricLive').textContent = games.filter(game => effectiveGameState(game) === 'Live').length;
+        $('gameMetricLineups').textContent = games.filter(game => game.awayLineupState === 'ready' && game.homeLineupState === 'ready').length;
+        if (dashboardLoading && !games.length) {
+          el.gameGrid.innerHTML = `<div class="dashboard-loading">${escapeHtml(t('loadingGames'))}</div>`;
+          return;
+        }
+        if (!games.length) {
+          el.gameGrid.innerHTML = `<div class="dashboard-empty">${escapeHtml(t('noGamesDashboard'))}</div>`;
+          return;
+        }
+        el.gameGrid.innerHTML = games.map(gameCardHtml).join('');
+      }
+
+      function gameCardHtml(game) {
+        const state = effectiveGameState(game);
+        const statusClass = state === 'Live' ? 'live' : state === 'Final' ? 'final' : 'preview';
+        const scoreVisible = statusClass !== 'preview';
+        const tracked = trackedGameSummary(game.gamePk);
+        const favorite = isFavoriteGame(game.gamePk);
+        return `
+          <article class="game-card ${statusClass} ${favorite ? 'favorite' : ''}">
+            <div class="game-card-head">
+              <div class="game-time">${escapeHtml(game.detail || '')}</div>
+              <div class="game-card-head-actions">
+                <button class="favorite-game-btn ${favorite ? 'active' : ''}" type="button" data-favorite-game="${game.gamePk}" title="${escapeAttr(t(favorite ? 'unfavoriteGame' : 'favoriteGame'))}" aria-label="${escapeAttr(t(favorite ? 'unfavoriteGame' : 'favoriteGame'))}">${favorite ? '★' : '☆'}</button>
+                <span class="game-status ${statusClass}">${escapeHtml(gameStatusText(game))}</span>
+              </div>
+            </div>
+            ${teamScoreRowHtml(game.awayAbbr, game.awayName, game.awayRecord, game.awayScore, scoreVisible)}
+            ${teamScoreRowHtml(game.homeAbbr, game.homeName, game.homeRecord, game.homeScore, scoreVisible)}
+            <div class="lineup-row">
+              ${lineupBadgeHtml(game.awayAbbr, game.awayLineupState)}
+              ${lineupBadgeHtml(game.homeAbbr, game.homeLineupState)}
+            </div>
+            ${dashboardMatchupHtml(game)}
+            ${tracked.items ? `<div class="game-combo-summary"><span>◆</span><span><strong>${escapeHtml(t('comboTracked'))}</strong> · ${escapeHtml(t('comboPlayers', { players: tracked.players }))} · ${escapeHtml(t('comboItems', { items: tracked.items }))}</span></div>` : ''}
+            <div class="game-card-footer">
+              <div class="game-venue">${escapeHtml(game.venue || t('venueUnknown'))}</div>
+              <button class="btn small" type="button" data-game-detail="${game.gamePk}">${escapeHtml(t('viewGame'))}</button>
+            </div>
+          </article>`;
+      }
+
+      function teamScoreRowHtml(abbr, name, recordValue, score, scoreVisible) {
+        return `
+          <div class="team-score-row">
+            <div class="team-dot">${escapeHtml(abbr || 'MLB')}</div>
+            <div>
+              <div class="team-name">${escapeHtml(name || abbr)}</div>
+              <div class="team-record">${escapeHtml(recordValue || '')}</div>
+            </div>
+            <div class="team-score ${scoreVisible ? '' : 'preview'}">${scoreVisible ? n(score) : '—'}</div>
+          </div>`;
+      }
+
+      function dashboardMatchupHtml(game) {
+        if (effectiveGameState(game) !== 'Live') return '';
+        const matchup = game.currentMatchup || {};
+        if (!matchup.batter && !matchup.pitcher) return '';
+        const count = matchup.balls === '' || matchup.strikes === '' ? '—' : `${matchup.balls}-${matchup.strikes}`;
+        const outs = matchup.outs === '' ? '—' : matchup.outs;
+        return `<div class="dashboard-matchup">
+          <div class="dashboard-matchup-head">
+            <span class="dashboard-matchup-live">LIVE · ${escapeHtml(t('liveMatchup'))}</span>
+            <span class="dashboard-matchup-meta">${escapeHtml(t('countLabel'))} ${escapeHtml(count)} · ${escapeHtml(t('outsLabel'))} ${escapeHtml(outs)}</span>
+          </div>
+          <div class="dashboard-matchup-players">
+            <div class="dashboard-matchup-player">
+              <div class="dashboard-matchup-role">${escapeHtml(t('atBat'))}</div>
+              <div class="dashboard-matchup-name">${escapeHtml(matchup.batter || '—')}</div>
+            </div>
+            <div class="dashboard-matchup-vs">VS</div>
+            <div class="dashboard-matchup-player">
+              <div class="dashboard-matchup-role">${escapeHtml(t('pitchingNow'))}</div>
+              <div class="dashboard-matchup-name">${escapeHtml(matchup.pitcher || '—')}</div>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      function lineupBadgeHtml(abbr, state = 'waiting') {
+        return `<div class="lineup-badge ${state === 'ready' ? 'ready' : ''}">
+          <span>${escapeHtml(abbr || '—')} ${escapeHtml(t('lineup'))}</span>
+          <strong>${escapeHtml(lineupStateText(state))}</strong>
+        </div>`;
+      }
+
+      function gameStatusText(game) {
+        const detail = String(game.detailedState || '');
+        if (/delay|postpon/i.test(detail)) return t('delayed');
+        const state = effectiveGameState(game);
+        if (state === 'Live') return t('inProgress');
+        if (state === 'Final') return t('final');
+        return t('scheduled');
+      }
+
+      function effectiveGameState(game) {
+        const raw = game?.abstractState || 'Preview';
+        const start = Date.parse(game?.gameDate || '');
+        if (raw === 'Live' && Number.isFinite(start) && start > Date.now()) return 'Preview';
+        return raw;
+      }
+
+      function gameDetailFromFeed(feed, fallback) {
+        const state = feed.gameData?.status?.abstractGameState;
+        const start = Date.parse(feed.gameData?.datetime?.dateTime || fallback?.gameDate || '');
+        if (state === 'Live' && Number.isFinite(start) && start > Date.now()) return mountainGameTime(start);
+        if (state === 'Live') {
+          const inning = feed.liveData?.linescore?.currentInningOrdinal || '';
+          const half = feed.liveData?.linescore?.inningHalf || '';
+          return `${inning} ${half}`.trim() || feed.gameData?.status?.detailedState || t('inProgress');
+        }
+        if (state === 'Final') return feed.gameData?.status?.detailedState || t('final');
+        return fallback?.detail || '';
+      }
+
+      async function openGameDetails(gamePk) {
+        selectedDashboardGamePk = String(gamePk);
+        let game = dashboardGames.find(row => String(row.gamePk) === selectedDashboardGamePk);
+        if (!game) return;
+        const state = effectiveGameState(game);
+        gameDetailTab = state === 'Preview' ? 'lineup' : 'live';
+        liveStatsTeam = 'away';
+        el.gameDialogTitle.textContent = `${game.awayAbbr} @ ${game.homeAbbr}`;
+        renderGameDetails(game, true);
+        el.gameDialog.showModal();
+        try {
+          const feed = await fetchGameFeed(game.gamePk, true);
+          game = enrichGameWithFeed(game, feed);
+          const index = dashboardGames.findIndex(row => String(row.gamePk) === selectedDashboardGamePk);
+          if (index >= 0) dashboardGames[index] = game;
+          renderDashboard();
+          if (selectedDashboardGamePk === String(game.gamePk) && el.gameDialog.open) renderGameDetails(game);
+        } catch (error) {
+          console.error(error);
+          if (el.gameDialog.open) renderGameDetails(game);
+        }
+      }
+
+      function renderGameDetails(game, loading = false) {
+        const state = effectiveGameState(game);
+        const scoreVisible = state === 'Live' || state === 'Final';
+        const awayScore = scoreVisible ? n(game.awayScore) : '—';
+        const homeScore = scoreVisible ? n(game.homeScore) : '—';
+        el.gameDetailBody.innerHTML = `
+          <div class="detail-scoreboard">
+            ${detailTeamHtml(game.awayAbbr, game.awayName, game.awayRecord, false)}
+            <div class="detail-center">
+              <div class="detail-score"><span>${awayScore}</span><span>–</span><span>${homeScore}</span></div>
+              <div class="detail-state">${escapeHtml(game.detail || gameStatusText(game))} · ${escapeHtml(game.venue || t('venueUnknown'))}</div>
+            </div>
+            ${detailTeamHtml(game.homeAbbr, game.homeName, game.homeRecord, true)}
+          </div>
+          <div class="pitcher-strip">
+            ${pitcherCardHtml(game.awayAbbr, game.awayProbable)}
+            ${pitcherCardHtml(game.homeAbbr, game.homeProbable)}
+          </div>
+          ${loading ? `<div class="dashboard-loading" style="margin-top:13px">${escapeHtml(t('loadingGames'))}</div>` : `
+            <div class="game-detail-tabs">
+              ${detailTabButton('overview', t('gameOverview'))}
+              ${detailTabButton('live', t('livePlayerStats'))}
+              ${detailTabButton('pitching', t('pitchingPerformance'))}
+              ${detailTabButton('lineup', t('fullLineup'))}
+            </div>
+            <div class="game-detail-section">
+              ${gameDetailTab === 'overview' ? gameOverviewHtml(game) : ''}
+              ${gameDetailTab === 'live' ? livePlayerStatsHtml(game) : ''}
+              ${gameDetailTab === 'pitching' ? pitchingPerformanceHtml(game) : ''}
+              ${gameDetailTab === 'lineup' ? lineupDetailHtml(game) : ''}
+            </div>
+            ${gameDetailTab === 'lineup' ? `
+            <div class="lineup-stat-toolbar">
+              <label>${escapeHtml(t('lineupStatLabel'))}<br><span>${escapeHtml(t('lineupStatHint'))}</span></label>
+              <select class="lineup-stat-select" data-lineup-stat>
+                ${lineupStatOptionsHtml()}
+              </select>
+            </div>
+            <div class="lineup-columns">
+              ${lineupPanelHtml(game, 'away', game.awayAbbr, game.awayLineup, game.awayLineupState)}
+              ${lineupPanelHtml(game, 'home', game.homeAbbr, game.homeLineup, game.homeLineupState)}
+            </div>
+            ` : ''}
+            <div class="player-stats-panel" id="playerStatsPanel">
+              <div class="player-stats-note">${escapeHtml(t('clickPlayerStats'))}</div>
+            </div>`}
+        `;
+      }
+
+      function detailTabButton(value, label) {
+        return `<button class="game-detail-tab ${gameDetailTab === value ? 'active' : ''}" type="button" data-detail-tab="${value}">${escapeHtml(label)}</button>`;
+      }
+
+      function lineupDetailHtml() {
+        return '';
+      }
+
+      function gameOverviewHtml(game) {
+        const innings = game.innings || [];
+        const inningHeads = innings.map(row => `<th>${escapeHtml(row.num ?? '')}</th>`).join('');
+        const inningCells = side => innings.map(row => `<td>${escapeHtml(row?.[side]?.runs ?? '—')}</td>`).join('');
+        const matchup = game.currentMatchup || {};
+        const live = effectiveGameState(game) === 'Live' && (matchup.batter || matchup.pitcher);
+        const batterButton = matchup.batterId
+          ? `<button class="matchup-name" type="button" data-player-stats="${escapeAttr(matchup.batterId)}" data-player-name="${escapeAttr(matchup.batter)}" data-stats-group="hitting">${escapeHtml(matchup.batter)}</button>`
+          : `<div class="matchup-name">${escapeHtml(matchup.batter || '—')}</div>`;
+        const pitcherButton = matchup.pitcherId
+          ? `<button class="matchup-name" type="button" data-player-stats="${escapeAttr(matchup.pitcherId)}" data-player-name="${escapeAttr(matchup.pitcher)}" data-stats-group="pitching">${escapeHtml(matchup.pitcher)}</button>`
+          : `<div class="matchup-name">${escapeHtml(matchup.pitcher || '—')}</div>`;
+        return `<div class="live-summary">
+          <section class="live-card">
+            <div class="live-card-head">${escapeHtml(t('inningByInning'))}</div>
+            <div class="innings-wrap"><table class="live-table">
+              <thead><tr><th>${escapeHtml(t('team'))}</th>${inningHeads}<th>R</th><th>H</th><th>E</th></tr></thead>
+              <tbody>
+                <tr><td class="live-player-name">${escapeHtml(game.awayAbbr)}</td>${inningCells('away')}<td>${n(game.awayScore)}</td><td>${escapeHtml(game.feed?.liveData?.linescore?.teams?.away?.hits ?? '—')}</td><td>${escapeHtml(game.feed?.liveData?.linescore?.teams?.away?.errors ?? '—')}</td></tr>
+                <tr><td class="live-player-name">${escapeHtml(game.homeAbbr)}</td>${inningCells('home')}<td>${n(game.homeScore)}</td><td>${escapeHtml(game.feed?.liveData?.linescore?.teams?.home?.hits ?? '—')}</td><td>${escapeHtml(game.feed?.liveData?.linescore?.teams?.home?.errors ?? '—')}</td></tr>
+              </tbody>
+            </table></div>
+          </section>
+          <section class="live-card">
+            <div class="live-card-head">${escapeHtml(t('currentMatchup'))}</div>
+            <div class="current-matchup">
+              ${live ? `<div class="matchup-live">${escapeHtml(t('liveMatchup'))}</div>` : ''}
+              <div class="matchup-label">${escapeHtml(t('atBat'))}</div>${batterButton}
+              <div class="matchup-vs">VS</div>
+              <div class="matchup-label">${escapeHtml(t('pitchingNow'))}</div>${pitcherButton}
+              <div class="matchup-meta">
+                <span class="matchup-chip">${escapeHtml(t('countLabel'))}: ${escapeHtml(matchup.balls === '' ? '—' : `${matchup.balls}-${matchup.strikes}`)}</span>
+                <span class="matchup-chip">${escapeHtml(t('outsLabel'))}: ${escapeHtml(matchup.outs === '' ? '—' : matchup.outs)}</span>
+                ${Number.isInteger(matchup.atBatIndex) ? `<span class="matchup-chip">${escapeHtml(t('atBatNumber'))} #${matchup.atBatIndex + 1}</span>` : ''}
+              </div>
+              ${matchup.playStatus ? `<div class="matchup-note">${escapeHtml(t('playStatus'))}: ${escapeHtml(matchup.playStatus)}</div>` : ''}
+            </div>
+          </section>
+        </div>`;
+      }
+
+      function livePlayerStatsHtml(game) {
+        const state = effectiveGameState(game);
+        const team = game.liveStats?.[liveStatsTeam] || { batting: [], pitching: [] };
+        const abbr = liveStatsTeam === 'away' ? game.awayAbbr : game.homeAbbr;
+        return `<div class="team-switch">
+          <button class="btn small ${liveStatsTeam === 'away' ? 'primary' : ''}" type="button" data-live-team="away">${escapeHtml(game.awayAbbr)}</button>
+          <button class="btn small ${liveStatsTeam === 'home' ? 'primary' : ''}" type="button" data-live-team="home">${escapeHtml(game.homeAbbr)}</button>
+        </div>
+        ${state === 'Preview' ? `<div class="live-empty">${escapeHtml(t('liveStatsNotStarted'))}</div>` : `
+          <div class="live-group"><section class="live-card">
+            <div class="live-card-head">${escapeHtml(abbr)} · ${escapeHtml(t('battersToday'))}</div>
+            ${liveBattingTable(game, liveStatsTeam, team.batting)}
+          </section></div>`}`;
+      }
+
+      function pitchingPerformanceHtml(game) {
+        const state = effectiveGameState(game);
+        if (state === 'Preview') return `<div class="live-empty">${escapeHtml(t('liveStatsNotStarted'))}</div>`;
+        return `<div class="team-switch">
+          <button class="btn small ${liveStatsTeam === 'away' ? 'primary' : ''}" type="button" data-live-team="away">${escapeHtml(game.awayAbbr)} · ${escapeHtml(t('pitchersUsed', { count: game.liveStats?.away?.pitching?.length || 0 }))}</button>
+          <button class="btn small ${liveStatsTeam === 'home' ? 'primary' : ''}" type="button" data-live-team="home">${escapeHtml(game.homeAbbr)} · ${escapeHtml(t('pitchersUsed', { count: game.liveStats?.home?.pitching?.length || 0 }))}</button>
+        </div>
+        <div class="pitching-team-grid">
+          ${pitchingTeamPanel(game, 'away')}
+          ${pitchingTeamPanel(game, 'home')}
+        </div>`;
+      }
+
+      function pitchingTeamPanel(game, side) {
+        const rows = game.liveStats?.[side]?.pitching || [];
+        const abbr = side === 'away' ? game.awayAbbr : game.homeAbbr;
+        const totalPitches = rows.reduce((sum, row) => sum + n(row.stats?.numberOfPitches), 0);
+        const totalSo = rows.reduce((sum, row) => sum + n(row.stats?.strikeOuts), 0);
+        return `<section class="live-card pitching-team-panel ${liveStatsTeam === side ? 'mobile-active' : ''}">
+          <div class="live-card-head" style="display:flex;justify-content:space-between;gap:8px">
+            <span>${escapeHtml(abbr)} · ${escapeHtml(t('pitchersToday'))}</span>
+            <span class="pitching-summary">${escapeHtml(t('pitchersUsed', { count: rows.length }))} · ${totalSo} SO · ${totalPitches} P</span>
+          </div>
+          ${livePitchingTable(rows, game)}
+        </section>`;
+      }
+
+      function liveBattingTable(game, side, rows = []) {
+        if (!rows.length) return `<div class="live-empty">${escapeHtml(t('noLiveStats'))}</div>`;
+        const fields = [['atBats','AB'], ['runs','R'], ['hits','H'], ['homeRuns','HR'], ['totalBases','TB'], ['rbi','RBI'], ['baseOnBalls','BB'], ['strikeOuts','SO']];
+        return liveStatsTable(rows, fields, game, side, true, 'batting');
+      }
+
+      function livePitchingTable(rows = [], game = null) {
+        if (!rows.length) return `<div class="live-empty">${escapeHtml(t('noLiveStats'))}</div>`;
+        const fields = [['inningsPitched','IP'], ['hits','H'], ['runs','R'], ['earnedRuns','ER'], ['baseOnBalls','BB'], ['strikeOuts','SO'], ['numberOfPitches','P']];
+        const currentId = String(game?.currentMatchup?.pitcherId || '');
+        return `<div class="live-table-wrap"><table class="live-table">
+          <thead><tr><th>${escapeHtml(t('player'))}</th>${fields.map(([,label]) => `<th>${label}</th>`).join('')}</tr></thead>
+          <tbody>${rows.map((row, index) => {
+            const isCurrent = String(row.id) === currentId && effectiveGameState(game) === 'Live';
+            const decisions = [...(game?.pitchingDecisions?.[String(row.id)] || [])];
+            const noteTokens = String(row.note || '').match(/\b(?:HLD|SV|BS)\b/g) || [];
+            noteTokens.forEach(token => { if (!decisions.includes(token)) decisions.push(token); });
+            return `<tr class="pitcher-row ${isCurrent ? 'current' : ''}">
+              <td>
+                <button class="pitcher-name-button" type="button" data-player-stats="${escapeAttr(row.id)}" data-player-name="${escapeAttr(row.name)}" data-stats-group="pitching">${escapeHtml(row.name)}</button>
+                <div class="pitcher-badges">
+                  <span class="pitcher-badge">${escapeHtml(index === 0 ? t('starterRole') : t('relieverRole'))}</span>
+                  ${isCurrent ? `<span class="pitcher-badge live">LIVE</span>` : ''}
+                  ${decisions.map(label => `<span class="pitcher-badge decision">${escapeHtml(label)}</span>`).join('')}
+                </div>
+              </td>
+              ${fields.map(([field]) => `<td>${escapeHtml(row.stats?.[field] ?? 0)}</td>`).join('')}
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>`;
+      }
+
+      function liveStatsTable(rows, fields, game = null, side = '', showPa = false, statsGroup = 'batting') {
+        return `<div class="live-table-wrap"><table class="live-table">
+          <thead><tr><th>${escapeHtml(t('player'))}</th>${fields.map(([,label]) => `<th>${label}</th>`).join('')}</tr></thead>
+          <tbody>${rows.map(row => {
+            const tracked = trackedPlayerLegs(selectedDashboardGamePk, row.id);
+            return `<tr>
+            <td><div class="combo-player-cell"><div class="live-player-name">${escapeHtml(row.name)}</div>${comboBadgeHtml(tracked)}</div><div class="live-player-meta">${escapeHtml(row.position || '')}</div>${comboLegStripHtml(tracked, row.stats, statsGroup)}${showPa ? paProjectionHtml(tracked, game, side, row.id, row.stats) : ''}</td>
+            ${fields.map(([field]) => `<td>${escapeHtml(row.stats?.[field] ?? 0)}</td>`).join('')}
+          </tr>`}).join('')}</tbody>
+        </table></div>`;
+      }
+
+      function detailTeamHtml(abbr, name, recordValue, home) {
+        return `<div class="detail-team ${home ? 'home' : ''}">
+          ${home ? '' : `<div class="team-dot">${escapeHtml(abbr)}</div>`}
+          <div><div class="detail-team-name">${escapeHtml(name)}</div><div class="detail-team-meta">${escapeHtml(recordValue || '')}</div></div>
+          ${home ? `<div class="team-dot">${escapeHtml(abbr)}</div>` : ''}
+        </div>`;
+      }
+
+      function pitcherCardHtml(abbr, pitcher) {
+        const id = pitcher?.id || '';
+        const name = pitcher?.fullName || t('pitcherTbd');
+        return `<div class="pitcher-card">
+          <div>
+            <div class="pitcher-label">${escapeHtml(abbr)} · ${escapeHtml(t('probablePitcher'))}</div>
+            <div class="pitcher-name">${escapeHtml(name)}</div>
+          </div>
+          ${id ? `<button class="btn small" type="button" data-player-stats="${id}" data-player-name="${escapeAttr(name)}" data-stats-group="pitching">${escapeHtml(t('seasonStats', { season: selectedDate.slice(0,4) }))}</button>` : ''}
+        </div>`;
+      }
+
+      function lineupPanelHtml(game, side, abbr, lineup = [], state = 'waiting') {
+        const ranked = [...lineup]
+          .filter(player => lineupStatNumber(player, lineupDisplayStat) != null)
+          .sort((a, b) => lineupStatNumber(b, lineupDisplayStat) - lineupStatNumber(a, lineupDisplayStat));
+        const markedIds = new Set(ranked.slice(0, 3).map(player => String(player.id)));
+        const players = lineup.length ? lineup.map(player => {
+          const tracked = trackedPlayerLegs(selectedDashboardGamePk, player.id);
+          return `
+          <button class="lineup-player" type="button" data-player-stats="${player.id}" data-player-name="${escapeAttr(player.name)}" data-stats-group="hitting">
+            <span class="bat-order">${player.order}</span>
+            <span>
+              <span class="lineup-name-row"><span class="lineup-player-name">${escapeHtml(player.name)}</span>${comboBadgeHtml(tracked)}</span>
+              <span class="lineup-player-meta">${player.number ? `#${escapeHtml(player.number)} · ` : ''}${escapeHtml(player.position || '')}</span>
+              ${comboLegStripHtml(tracked)}
+              ${paProjectionHtml(tracked, game, side, player.id)}
+            </span>
+            <span class="lineup-stat-result">
+              <span class="lineup-stat-value ${markedIds.has(String(player.id)) ? 'marked' : ''}">${markedIds.has(String(player.id)) ? '★ ' : ''}${escapeHtml(lineupStatLabel(lineupDisplayStat))} ${escapeHtml(lineupStatValue(player, lineupDisplayStat))}</span>
+              <span class="stats-arrow">›</span>
+            </span>
+          </button>`}).join('') : `<div class="lineup-placeholder">${escapeHtml(t('lineupNotAvailable'))}</div>`;
+        return `<section class="lineup-panel">
+          <div class="lineup-panel-head">
+            <div><div class="lineup-panel-title">${escapeHtml(abbr)} · ${escapeHtml(t('fullLineup'))}</div></div>
+            <span class="lineup-badge ${state === 'ready' ? 'ready' : ''}"><strong>${escapeHtml(lineupStateText(state))}</strong></span>
+          </div>
+          <div class="lineup-list">${players}</div>
+        </section>`;
+      }
+
+      function trackedPlayerLegs(gamePk, playerId) {
+        return combos.flatMap(combo => (combo.legs || [])
+          .filter(leg => leg.legType !== 'GAME' && String(leg.gamePk) === String(gamePk) && String(leg.playerId) === String(playerId))
+          .map(leg => ({ ...leg, comboName: combo.name })));
+      }
+
+      function trackedGameSummary(gamePk) {
+        const legs = combos.flatMap(combo => (combo.legs || []).filter(leg => String(leg.gamePk) === String(gamePk)));
+        return {
+          items: legs.length,
+          players: new Set(legs.filter(leg => leg.legType !== 'GAME').map(leg => String(leg.playerId))).size
+        };
+      }
+
+      function trackedStateClass(legs) {
+        if (!legs.length) return '';
+        if (legs.every(leg => leg.status === 'MATCHED')) return 'hit';
+        if (legs.some(leg => leg.status === 'FAILED')) return 'fail';
+        return '';
+      }
+
+      function comboBadgeHtml(legs) {
+        if (!legs.length) return '';
+        const count = legs.length > 1 ? ` ${legs.length}` : '';
+        return `<span class="combo-player-badge ${trackedStateClass(legs)}">COMBO${count}</span>`;
+      }
+
+      function comboLegStripHtml(legs, liveStats = null, statsGroup = '') {
+        if (!legs.length) return '';
+        return `<span class="combo-leg-strip">${legs.map(leg => {
+          const liveValue = liveStats && (statsGroup !== 'pitching' || leg.market === 'SO')
+            ? getMarketValue(leg.market, liveStats)
+            : NaN;
+          const current = Number.isFinite(liveValue) ? liveValue : Number(leg.current || 0);
+          const liveMatched = current >= Number(leg.target || 1);
+          const stateClass = liveMatched || leg.status === 'MATCHED' ? 'hit' : leg.status === 'FAILED' ? 'fail' : '';
+          return `<span class="combo-leg-chip ${stateClass}" title="${escapeAttr(leg.comboName || '')}">${escapeHtml(leg.market)} ${current}/${Number(leg.target || 1)}</span>`;
+        }).join('')}</span>`;
+      }
+
+      function paProjectionHtml(legs, game, side, playerId, suppliedStats = null) {
+        if (!legs.length || !game) return '';
+        const p = projectPlateAppearances(game, side, playerId, suppliedStats);
+        if (!p) return '';
+        if (p.state === 'Final') return `<span class="pa-forecast low"><strong>${escapeHtml(t('paActual', { count: p.completed }))}</strong></span>`;
+        if (p.state === 'Preview') return `<span class="pa-forecast"><strong>${escapeHtml(t('paProjected', { range: p.totalRange }))}</strong></span>`;
+        const chanceKey = p.level === 'high' ? 'paChanceHigh' : p.level === 'medium' ? 'paChanceMedium' : 'paChanceLow';
+        return `<span class="pa-forecast ${p.level}"><span>${escapeHtml(t('paCompleted', { count: p.completed }))}</span><strong>${escapeHtml(t('paRemaining', { range: p.remainingRange }))}</strong><span>${escapeHtml(t(chanceKey))}</span></span>`;
+      }
+
+      function projectPlateAppearances(game, side, playerId, suppliedStats = null) {
+        const lineup = side === 'away' ? game.awayLineup : game.homeLineup;
+        const liveRows = game.liveStats?.[side]?.batting || [];
+        const playerIndex = lineup.findIndex(player => String(player.id) === String(playerId));
+        if (playerIndex < 0) return null;
+        const liveRow = liveRows.find(player => String(player.id) === String(playerId));
+        const completed = plateAppearancesFromStats(suppliedStats || liveRow?.stats || {});
+        const state = effectiveGameState(game);
+        const expectedTeamPa = expectedTeamPlateAppearances(lineup);
+        const slotShare = expectedTeamPa / 9;
+        const totalLow = Math.max(3, Math.floor(slotShare - (playerIndex >= 6 ? .25 : 0)));
+        const totalHigh = Math.max(totalLow, Math.ceil(slotShare + (playerIndex <= 3 ? .45 : .05)));
+        if (state === 'Preview') return { state, completed: 0, totalRange: `${totalLow}–${totalHigh}` };
+        if (state === 'Final') return { state, completed };
+
+        const teamCompleted = liveRows.reduce((sum, row) => sum + plateAppearancesFromStats(row.stats || {}), 0);
+        const remaining = estimateRemainingTeamPa(game, side, teamCompleted, expectedTeamPa);
+        const nextIndex = inferNextBattingIndex(game, side, lineup, liveRows);
+        const distance = (playerIndex - nextIndex + 9) % 9;
+        const low = Math.max(0, Math.floor((remaining.low + 8 - distance) / 9));
+        const high = Math.max(low, Math.floor((remaining.high + 8 - distance) / 9));
+        const level = high >= 2 ? 'high' : high >= 1 ? 'medium' : 'low';
+        return { state, completed, level, totalRange: `${completed + low}–${completed + high}`, remainingRange: low === high ? String(low) : `${low}–${high}` };
+      }
+
+      function plateAppearancesFromStats(stats = {}) {
+        const direct = Number(stats.plateAppearances);
+        if (Number.isFinite(direct)) return direct;
+        return n(stats.atBats) + n(stats.baseOnBalls) + n(stats.hitByPitch) + n(stats.sacFlies) + n(stats.sacBunts);
+      }
+
+      function expectedTeamPlateAppearances(lineup = []) {
+        const games = Math.max(...lineup.map(player => n(player.seasonStats?.gamesPlayed)), 0);
+        const seasonPa = lineup.reduce((sum, player) => sum + n(player.seasonStats?.plateAppearances), 0);
+        if (games > 0 && seasonPa > 0) return Math.max(35, Math.min(42, seasonPa / games));
+        return 38.2;
+      }
+
+      function estimateRemainingTeamPa(game, side, completed, expectedTotal) {
+        const ls = game.feed?.liveData?.linescore || {};
+        const inning = Math.max(1, n(ls.currentInning) || 1);
+        const half = String(ls.inningHalf || '').toLowerCase();
+        const battingNow = (side === 'away' && half.includes('top')) || (side === 'home' && half.includes('bottom'));
+        let futureFrames = Math.max(0, 9 - inning);
+        if (side === 'home' && n(game.homeScore) > n(game.awayScore)) futureFrames = Math.max(0, futureFrames - .55);
+        const currentFrame = battingNow ? Math.max(.35, (3 - n(ls.outs)) / 3) : 0;
+        const inningBased = (futureFrames + currentFrame) * (expectedTotal / 9);
+        const totalBased = Math.max(0, expectedTotal - completed);
+        const center = Math.max(0, Math.min(totalBased + 1.2, inningBased * .58 + totalBased * .42));
+        return { low: Math.max(0, Math.floor(center - 2)), high: Math.max(0, Math.ceil(center + 2)) };
+      }
+
+      function inferNextBattingIndex(game, side, lineup, liveRows) {
+        const ls = game.feed?.liveData?.linescore || {};
+        const half = String(ls.inningHalf || '').toLowerCase();
+        const battingNow = (side === 'away' && half.includes('top')) || (side === 'home' && half.includes('bottom'));
+        const batterId = ls.offense?.batter?.id;
+        if (battingNow && batterId) {
+          const current = lineup.findIndex(player => String(player.id) === String(batterId));
+          if (current >= 0) return current;
+        }
+        const teamPa = liveRows.reduce((sum, row) => sum + plateAppearancesFromStats(row.stats || {}), 0);
+        return teamPa % 9;
+      }
+
+      function lineupStatOptionsHtml() {
+        return [
+          ['hits', t('statHits')], ['homeRuns', t('statHomeRuns')], ['totalBases', t('statTotalBases')], ['rbi', t('statRbi')],
+          ['runs', t('statRuns')], ['avg', t('statAvg')], ['ops', t('statOps')]
+        ].map(([value, label]) => `<option value="${value}" ${lineupDisplayStat === value ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('');
+      }
+
+      function lineupStatLabel(field) {
+        return ({ hits: 'H', homeRuns: 'HR', totalBases: 'TB', rbi: 'RBI', runs: 'R', avg: 'AVG', ops: 'OPS' })[field] || 'H';
+      }
+
+      function lineupStatValue(player, field) {
+        const value = player?.seasonStats?.[field];
+        return value == null || value === '' ? '—' : value;
+      }
+
+      function lineupStatNumber(player, field) {
+        const value = player?.seasonStats?.[field];
+        if (value == null || value === '' || value === '—') return null;
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+      }
+
+      async function loadPlayerStats(playerId, playerName, group) {
+        const panel = $('playerStatsPanel');
+        if (!panel) return;
+        const season = selectedDate.slice(0, 4);
+        const key = `${playerId}|${group}|${season}`;
+        panel.innerHTML = `<div class="player-stats-name">${escapeHtml(playerName)}</div><div class="player-stats-note">${escapeHtml(t('loadingPlayerStats'))}</div>`;
+        try {
+          let result = playerStatsCache.get(key);
+          if (!result) {
+            const data = await fetchJson(`${API}/v1/people/${playerId}/stats?stats=season&group=${encodeURIComponent(group)}&season=${season}`);
+            result = data.stats?.flatMap(row => row.splits || [])[0]?.stat || null;
+            playerStatsCache.set(key, result);
+          }
+          if (!result) {
+            panel.innerHTML = `<div class="player-stats-name">${escapeHtml(playerName)}</div><div class="player-stats-note">${escapeHtml(t('noSeasonStats'))}</div>`;
+            return;
+          }
+          const fields = group === 'pitching'
+            ? [['gamesPlayed','G'], ['gamesStarted','GS'], ['inningsPitched','IP'], ['wins','W'], ['losses','L'], ['era','ERA'], ['whip','WHIP'], ['strikeOuts','SO'], ['baseOnBalls','BB'], ['hits','H'], ['homeRuns','HR']]
+            : [['gamesPlayed','G'], ['plateAppearances','PA'], ['hits','H'], ['homeRuns','HR'], ['totalBases','TB'], ['rbi','RBI'], ['runs','R'], ['baseOnBalls','BB'], ['strikeOuts','SO'], ['stolenBases','SB'], ['avg','AVG'], ['obp','OBP'], ['slg','SLG'], ['ops','OPS']];
+          panel.innerHTML = `
+            <div class="player-stats-head">
+              <div><div class="player-stats-name">${escapeHtml(playerName)}</div><div class="player-stats-note">${escapeHtml(t('seasonStats', { season }))}</div></div>
+              <span class="status-pill status-live">${group === 'pitching' ? 'PITCHING' : 'HITTING'}</span>
+            </div>
+            ${group === 'pitching' ? pitcherStatsTabs(playerId, playerName, 'season') : hitterStatsTabs(playerId, playerName, 'season')}
+            <div class="player-stat-grid">${fields.map(([field, label]) => `<div class="player-stat"><strong>${escapeHtml(result[field] ?? '—')}</strong><span>${label}</span></div>`).join('')}</div>`;
+        } catch (error) {
+          console.error(error);
+          panel.innerHTML = `<div class="player-stats-name">${escapeHtml(playerName)}</div><div class="player-stats-note">${escapeHtml(t('statsLoadFailed'))}: ${escapeHtml(error.message)}</div>`;
+        }
+      }
+
+      function pitcherStatsTabs(playerId, playerName, active, limit = 5) {
+        return `<div class="player-stats-tabs">
+          <button class="player-stats-tab ${active === 'season' ? 'active' : ''}" type="button" data-player-stats="${escapeAttr(playerId)}" data-player-name="${escapeAttr(playerName)}" data-stats-group="pitching">${escapeHtml(t('seasonTab'))}</button>
+          <button class="player-stats-tab ${active === 'history' && limit === 5 ? 'active' : ''}" type="button" data-pitch-history data-player-id="${escapeAttr(playerId)}" data-player-name="${escapeAttr(playerName)}" data-limit="5">${escapeHtml(t('recent5'))}</button>
+          <button class="player-stats-tab ${active === 'history' && limit === 10 ? 'active' : ''}" type="button" data-pitch-history data-player-id="${escapeAttr(playerId)}" data-player-name="${escapeAttr(playerName)}" data-limit="10">${escapeHtml(t('recent10'))}</button>
+          <button class="player-stats-tab ${active === 'bvp' ? 'active' : ''}" type="button" data-bvp data-player-id="${escapeAttr(playerId)}" data-player-name="${escapeAttr(playerName)}" data-role="pitching" data-scope="5Y">${escapeHtml(t('vsBatters'))}</button>
+        </div>`;
+      }
+
+      function hitterStatsTabs(playerId, playerName, active) {
+        return `<div class="player-stats-tabs">
+          <button class="player-stats-tab ${active === 'season' ? 'active' : ''}" type="button" data-player-stats="${escapeAttr(playerId)}" data-player-name="${escapeAttr(playerName)}" data-stats-group="hitting">${escapeHtml(t('seasonTab'))}</button>
+          <button class="player-stats-tab ${active === 'bvp' ? 'active' : ''}" type="button" data-bvp data-player-id="${escapeAttr(playerId)}" data-player-name="${escapeAttr(playerName)}" data-role="hitting" data-scope="5Y">${escapeHtml(t('vsStarter'))}</button>
+        </div>`;
+      }
+
+      function currentDashboardGame() {
+        return dashboardGames.find(row => String(row.gamePk) === String(selectedDashboardGamePk)) || null;
+      }
+
+      function bvpContext(playerId, role) {
+        const game = currentDashboardGame();
+        if (!game) return null;
+        const awayPitcherId = String(game.awayProbable?.id || '');
+        const homePitcherId = String(game.homeProbable?.id || '');
+        if (role === 'pitching') {
+          const pitcherSide = String(playerId) === awayPitcherId ? 'away'
+            : String(playerId) === homePitcherId ? 'home'
+            : game.liveStats?.away?.pitching?.some(row => String(row.id) === String(playerId)) ? 'away'
+            : game.liveStats?.home?.pitching?.some(row => String(row.id) === String(playerId)) ? 'home' : '';
+          const lineup = pitcherSide === 'away' ? game.homeLineup : pitcherSide === 'home' ? game.awayLineup : [];
+          return { opponents: lineup.map(row => ({ id: row.id, name: row.name, order: row.order, seasonStats: row.seasonStats || null })), opposingPitcher: null };
+        }
+        const hitterSide = game.awayLineup?.some(row => String(row.id) === String(playerId)) ? 'away'
+          : game.homeLineup?.some(row => String(row.id) === String(playerId)) ? 'home' : '';
+        const opposingPitcher = hitterSide === 'away' ? game.homeProbable : hitterSide === 'home' ? game.awayProbable : null;
+        const playerRow = [...(game.awayLineup || []), ...(game.homeLineup || [])].find(row => String(row.id) === String(playerId));
+        return { opponents: [{ id: playerId, name: '', order: '', seasonStats: playerRow?.seasonStats || null }], opposingPitcher };
+      }
+
+      function bvpSample(pa) {
+        if (pa < 5) return { key: 'sampleTiny', cls: '' };
+        if (pa < 15) return { key: 'sampleLow', cls: '' };
+        if (pa < 30) return { key: 'sampleMedium', cls: 'medium' };
+        return { key: 'sampleHigh', cls: 'high' };
+      }
+
+      async function fetchBvpRow(batterId, pitcherId, scope) {
+        const statType = scope === 'TOTAL' ? 'vsPlayerTotal' : 'vsPlayer5Y';
+        const cacheKey = `bvp|${batterId}|${pitcherId}|${statType}`;
+        if (playerStatsCache.has(cacheKey)) return playerStatsCache.get(cacheKey);
+        const data = await fetchJson(`${API}/v1/people/${batterId}/stats?stats=${statType}&group=hitting&opposingPlayerId=${pitcherId}`);
+        const result = (data.stats || []).flatMap(row => row.splits || [])[0]?.stat || null;
+        playerStatsCache.set(cacheKey, result);
+        return result;
+      }
+
+      async function loadBvp(playerId, playerName, role, scope = '5Y') {
+        const panel = $('playerStatsPanel');
+        if (!panel) return;
+        const context = bvpContext(playerId, role);
+        const tabs = role === 'pitching' ? pitcherStatsTabs(playerId, playerName, 'bvp') : hitterStatsTabs(playerId, playerName, 'bvp');
+        panel.innerHTML = `<div class="player-stats-name">${escapeHtml(playerName)}</div>${tabs}<div class="player-stats-note">${escapeHtml(t('loadingBvp'))}</div>`;
+        if (!context) return;
+        if (role === 'pitching' && !context.opponents.length) {
+          panel.innerHTML = `<div class="player-stats-name">${escapeHtml(playerName)}</div>${tabs}<div class="bvp-empty">${escapeHtml(t('lineupRequiredBvp'))}</div>`;
+          return;
+        }
+        if (role === 'hitting' && !context.opposingPitcher?.id) {
+          panel.innerHTML = `<div class="player-stats-name">${escapeHtml(playerName)}</div>${tabs}<div class="bvp-empty">${escapeHtml(t('starterRequiredBvp'))}</div>`;
+          return;
+        }
+        try {
+          const pitcherId = role === 'pitching' ? playerId : context.opposingPitcher.id;
+          const candidates = role === 'pitching' ? context.opponents : [{ id: playerId, name: playerName, order: '' }];
+          const settled = await Promise.all(candidates.map(async batter => ({
+            ...batter,
+            stat: await fetchBvpRow(batter.id, pitcherId, scope)
+          })));
+          const rows = settled.filter(row => row.stat);
+          const opponentLabel = role === 'hitting' ? ` vs ${context.opposingPitcher.fullName || ''}` : '';
+          panel.innerHTML = `
+            <div class="player-stats-head">
+              <div><div class="player-stats-name">${escapeHtml(playerName + opponentLabel)}</div><div class="player-stats-note">${escapeHtml(t(role === 'pitching' ? 'vsBatters' : 'vsStarter'))}</div></div>
+              <span class="status-pill status-live">BvP</span>
+            </div>
+            ${tabs}
+            <div class="bvp-toolbar"><div class="bvp-scope">
+              <button class="player-stats-tab ${scope === '5Y' ? 'active' : ''}" type="button" data-bvp data-player-id="${escapeAttr(playerId)}" data-player-name="${escapeAttr(playerName)}" data-role="${escapeAttr(role)}" data-scope="5Y">${escapeHtml(t('last5Years'))}</button>
+              <button class="player-stats-tab ${scope === 'TOTAL' ? 'active' : ''}" type="button" data-bvp data-player-id="${escapeAttr(playerId)}" data-player-name="${escapeAttr(playerName)}" data-role="${escapeAttr(role)}" data-scope="TOTAL">${escapeHtml(t('careerTotal'))}</button>
+            </div></div>
+            <div class="player-stats-note">${escapeHtml(t('bvpSeasonCompare'))}</div>
+            ${rows.length ? `<div class="pitch-log-wrap"><table class="pitch-log">
+              <thead><tr><th>#</th><th>${escapeHtml(t('player'))}</th><th>PA<br><small>${escapeHtml(t('bvpValue'))}</small></th><th>AB<br><small>${escapeHtml(t('bvpValue'))}</small></th><th>H<br><small>${escapeHtml(t('bvpValue'))}</small></th><th>H<br><small>${escapeHtml(t('seasonValue'))}</small></th><th>HR<br><small>${escapeHtml(t('bvpValue'))}</small></th><th>HR<br><small>${escapeHtml(t('seasonValue'))}</small></th><th>TB<br><small>${escapeHtml(t('bvpValue'))}</small></th><th>TB<br><small>${escapeHtml(t('seasonValue'))}</small></th><th>SO<br><small>${escapeHtml(t('bvpValue'))}</small></th><th>SO<br><small>${escapeHtml(t('seasonValue'))}</small></th><th>AVG<br><small>${escapeHtml(t('bvpValue'))}</small></th><th>AVG<br><small>${escapeHtml(t('seasonValue'))}</small></th><th>${escapeHtml(t('sample'))}</th></tr></thead>
+              <tbody>${rows.map(row => {
+                const stat = row.stat || {};
+                const season = row.seasonStats || {};
+                const pa = n(stat.plateAppearances);
+                const sample = bvpSample(pa);
+                return `<tr><td>${escapeHtml(row.order || '')}</td><td><strong>${escapeHtml(row.name || playerName)}</strong></td>
+                  <td>${pa}</td><td>${n(stat.atBats)}</td><td><strong>${n(stat.hits)}</strong></td><td>${season.hits == null ? '—' : n(season.hits)}</td>
+                  <td><strong>${n(stat.homeRuns)}</strong></td><td>${season.homeRuns == null ? '—' : n(season.homeRuns)}</td>
+                  <td><strong>${n(stat.totalBases)}</strong></td><td>${season.totalBases == null ? '—' : n(season.totalBases)}</td>
+                  <td><strong>${n(stat.strikeOuts)}</strong></td><td>${season.strikeOuts == null ? '—' : n(season.strikeOuts)}</td>
+                  <td>${escapeHtml(stat.avg ?? '—')}</td><td>${escapeHtml(season.avg ?? '—')}</td><td><span class="sample-pill ${sample.cls}">${escapeHtml(t(sample.key))}</span></td></tr>`;
+              }).join('')}</tbody>
+            </table></div>` : `<div class="bvp-empty">${escapeHtml(t('noBvp'))}</div>`}
+            <div class="bvp-note">${escapeHtml(t('bvpDisclaimer'))}</div>`;
+        } catch (error) {
+          console.error(error);
+          panel.innerHTML = `<div class="player-stats-name">${escapeHtml(playerName)}</div>${tabs}<div class="bvp-empty">${escapeHtml(t('bvpFailed'))}: ${escapeHtml(error.message)}</div>`;
+        }
+      }
+
+      async function loadPitcherHistory(playerId, playerName, limit = 5) {
+        const panel = $('playerStatsPanel');
+        if (!panel) return;
+        const season = selectedDate.slice(0, 4);
+        const key = `${playerId}|pitchingGameLog|${season}`;
+        panel.innerHTML = `<div class="player-stats-name">${escapeHtml(playerName)}</div>${pitcherStatsTabs(playerId, playerName, 'history', limit)}<div class="player-stats-note">${escapeHtml(t('loadingPitchLog'))}</div>`;
+        try {
+          let rows = playerStatsCache.get(key);
+          if (!rows) {
+            const data = await fetchJson(`${API}/v1/people/${playerId}/stats?stats=gameLog&group=pitching&season=${season}`);
+            rows = (data.stats || []).flatMap(row => row.splits || []).map(split => ({
+              date: split.date || '',
+              opponent: split.opponent?.name || split.team?.name || '—',
+              isStart: n(split.stat?.gamesStarted) > 0,
+              stat: split.stat || {}
+            })).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+            playerStatsCache.set(key, rows);
+          }
+          const recent = (rows || []).slice(0, limit);
+          if (!recent.length) {
+            panel.innerHTML = `<div class="player-stats-head"><div><div class="player-stats-name">${escapeHtml(playerName)}</div><div class="player-stats-note">${escapeHtml(t('seasonStats', { season }))}</div></div><span class="status-pill status-live">PITCHING</span></div>${pitcherStatsTabs(playerId, playerName, 'history', limit)}<div class="player-stats-note">${escapeHtml(t('noPitchLog'))}</div>`;
+            return;
+          }
+          const totalSo = recent.reduce((sum, row) => sum + n(row.stat.strikeOuts), 0);
+          const starts = recent.filter(row => row.isStart).length;
+          const threshold = target => recent.filter(row => n(row.stat.strikeOuts) >= target).length;
+          panel.innerHTML = `
+            <div class="player-stats-head">
+              <div><div class="player-stats-name">${escapeHtml(playerName)}</div><div class="player-stats-note">${escapeHtml(t('seasonStats', { season }))}</div></div>
+              <span class="status-pill status-live">PITCHING</span>
+            </div>
+            ${pitcherStatsTabs(playerId, playerName, 'history', limit)}
+            <div class="pitch-log-summary">
+              <div class="player-stat"><strong>${(totalSo / recent.length).toFixed(1)}</strong><span>${escapeHtml(t('avgSo'))}</span></div>
+              <div class="player-stat"><strong>${starts}/${recent.length}</strong><span>${escapeHtml(t('starts'))}</span></div>
+              ${[3,5,7].map(target => `<div class="player-stat"><strong>${threshold(target)}/${recent.length}</strong><span>${escapeHtml(t('thresholdHits', { target }))}</span></div>`).join('')}
+            </div>
+            <div class="pitch-log-wrap"><table class="pitch-log">
+              <thead><tr><th>${escapeHtml(t('dateLabel'))}</th><th>${escapeHtml(t('opponent'))}</th><th>${escapeHtml(t('startShort'))}</th><th>IP</th><th>H</th><th>ER</th><th>BB</th><th>SO</th><th>${escapeHtml(t('pitches'))}</th></tr></thead>
+              <tbody>${recent.map(row => `<tr>
+                <td>${escapeHtml(formatLogDate(row.date))}</td><td>${escapeHtml(row.opponent)}</td><td>${row.isStart ? '✓' : '—'}</td>
+                <td>${escapeHtml(row.stat.inningsPitched ?? '—')}</td><td>${escapeHtml(row.stat.hits ?? '—')}</td><td>${escapeHtml(row.stat.earnedRuns ?? '—')}</td>
+                <td>${escapeHtml(row.stat.baseOnBalls ?? '—')}</td><td><strong>${escapeHtml(row.stat.strikeOuts ?? '—')}</strong></td><td>${escapeHtml(row.stat.numberOfPitches ?? '—')}</td>
+              </tr>`).join('')}</tbody>
+            </table></div>`;
+        } catch (error) {
+          console.error(error);
+          panel.innerHTML = `<div class="player-stats-name">${escapeHtml(playerName)}</div>${pitcherStatsTabs(playerId, playerName, 'history', limit)}<div class="player-stats-note">${escapeHtml(t('pitchLogFailed'))}: ${escapeHtml(error.message)}</div>`;
+        }
+      }
+
+      function formatLogDate(value) {
+        if (!value) return '—';
+        const parts = String(value).split('-');
+        return parts.length === 3 ? `${parts[1]}/${parts[2]}` : value;
+      }
+
+      function filteredCombos() {
+        return combos
+          .filter(c => c.date === selectedDate)
+          .filter(c => currentFilter === 'ALL' || getComboStatus(c) === currentFilter)
+          .sort((a, b) => statusRank(getComboStatus(a)) - statusRank(getComboStatus(b)) || (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+      }
+
+      function renderStats() {
+        const day = combos.filter(c => c.date === selectedDate);
+        const count = (status) => day.filter(c => getComboStatus(c) === status).length;
+        $('statTotal').textContent = day.length;
+        $('statMatched').textContent = count('MATCHED');
+        $('statLive').textContent = count('LIVE');
+        $('statPending').textContent = count('PENDING');
+        $('statFailed').textContent = count('FAILED');
+      }
+
+      function renderCombos() {
+        const list = filteredCombos();
+        if (!list.length) {
+          el.comboGrid.innerHTML = `
+            <div class="empty">
+              <h3>${currentFilter === 'ALL' ? t('noCombosDay') : t('noFilteredCombos')}</h3>
+              <div>${t('emptyHint')}</div>
+            </div>`;
+          return;
+        }
+        el.comboGrid.innerHTML = list.map(comboCardHtml).join('');
+      }
+
+      function comboCardHtml(combo) {
+        const status = getComboStatus(combo);
+        const matchedCount = combo.legs.filter(l => l.status === 'MATCHED').length;
+        const required = getRequiredCount(combo);
+        const pct = Math.min(100, Math.round((matchedCount / Math.max(1, required)) * 100));
+        const statusText = { MATCHED: '✅ MATCHED', LIVE: '⏳ LIVE', FAILED: '❌ FAILED', PENDING: t('statusPending') }[status];
+        const statusClass = status.toLowerCase();
+        const legs = combo.legs.map(leg => {
+          const legState = leg.status === 'MATCHED' ? ['✓', 'MATCHED', 'hit'] : leg.status === 'FAILED' ? ['×', 'FAILED', 'fail'] : leg.status === 'PUSH' ? ['=', t('push'), 'wait'] : ['•', leg.gameState === 'Live' ? 'LIVE' : 'PENDING', 'wait'];
+          const isGameBet = leg.legType === 'GAME';
+          return `
+            <div class="leg-row">
+              <div class="leg-icon">${legState[0]}</div>
+              <div>
+                <div class="leg-player">${escapeHtml(isGameBet ? gameBetLabel(leg) : (leg.playerName || t('playerSearch')))} ${leg.teamAbbr ? `<span style="color:var(--muted);font-weight:500">· ${escapeHtml(leg.teamAbbr)}</span>` : ''}</div>
+                <div class="leg-game">${escapeHtml(leg.gameLabel || t('gameNotSet'))} ${leg.gameDetail ? `· ${escapeHtml(leg.gameDetail)}` : ''}</div>
+              </div>
+              <div class="leg-market">${escapeHtml(isGameBet ? gameBetMarketLabel(leg.market) : `${marketLabel(leg.market)} ≥ ${Number(leg.target || 1)}`)}</div>
+              <div class="leg-current">${t('current')} <strong>${escapeHtml(isGameBet ? (leg.current || '0–0') : Number(leg.current || 0))}</strong></div>
+              <div class="leg-state ${legState[2]}">${legState[1]}</div>
+            </div>`;
+        }).join('');
+
+        return `
+          <article class="combo-card ${statusClass}">
+            <div class="combo-head">
+              <div>
+                <div class="combo-name">${escapeHtml(combo.name)}</div>
+                <div class="combo-sub">${escapeHtml(combo.platform || t('custom'))} · ${comboModeLabel(combo)} · ${combo.legs.length} Legs</div>
+              </div>
+              <span class="status-pill status-${statusClass}">${statusText}</span>
+            </div>
+            <div class="progress-line">
+              <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+              <div class="progress-text">${matchedCount}/${required}</div>
+            </div>
+            <div class="legs">${legs}</div>
+            <div class="combo-footer">
+              <span>${t('lastUpdate')}${formatDateTime(combo.updatedAt) || t('notChecked')}${combo.matchedAt ? ` · ${t('matchedAt')} ${formatDateTime(combo.matchedAt)}` : ''}</span>
+              <span class="inline-actions">
+                <button class="btn small" data-simulate="${combo.id}">${t('demoPlus')}</button>
+                <button class="btn small" data-edit="${combo.id}">${t('edit')}</button>
+                <button class="btn small danger" data-delete="${combo.id}">${t('delete')}</button>
+              </span>
+            </div>
+          </article>`;
+      }
+
+      function getComboStatus(combo) {
+        const matched = combo.legs.filter(l => l.status === 'MATCHED').length;
+        const required = getRequiredCount(combo);
+        if (matched >= required) return 'MATCHED';
+        const allFinal = combo.legs.length > 0 && combo.legs.every(l => l.gameState === 'Final');
+        if (allFinal) return 'FAILED';
+        if (combo.legs.some(l => l.gameState === 'Live') || matched > 0) return 'LIVE';
+        return 'PENDING';
+      }
+
+      function getRequiredCount(combo) {
+        if (combo.mode === 'ANY') return 1;
+        if (combo.mode === 'AT_LEAST') return Math.min(combo.legs.length, Math.max(1, Number(combo.requiredCount || 1)));
+        return combo.legs.length;
+      }
+
+      function comboModeLabel(combo) {
+        if (combo.mode === 'ANY') return t('anyOne');
+        if (combo.mode === 'AT_LEAST') return t('atLeast', { count: getRequiredCount(combo) });
+        return t('allRequired');
+      }
+
+      async function openComboDialog(id = '') {
+        el.comboForm.reset();
+        el.legsEditor.innerHTML = '';
+        el.editingId.value = id;
+        el.modalTitle.textContent = id ? t('editComboTitle') : t('addComboTitle');
+        const combo = combos.find(c => c.id === id);
+        const date = combo?.date || selectedDate;
+        el.comboDate.value = date;
+        el.comboName.value = combo?.name || '';
+        el.payoutAmount.value = combo?.payoutAmount ?? inferPayoutAmount(combo?.name || '');
+        comboNameAuto = !combo || combo.name === buildUniqueComboName(date, el.payoutAmount.value, id);
+        el.platform.value = combo?.platform || '';
+        el.comboMode.value = combo?.mode || 'ALL';
+        el.requiredCount.value = combo?.requiredCount || 1;
+        el.refreshMinutes.value = String(settings.refreshMinutes || 3);
+        updateRequiredVisibility();
+        editingScheduleDate = date;
+        el.comboDialog.showModal();
+        await loadScheduleForEditor(date, false);
+        resetQuickAddOptions();
+        resetGameBetOptions();
+        if (combo?.legs?.length) {
+          combo.legs.forEach(leg => leg.legType === 'GAME' ? addGameBetEditor(leg) : addLegEditor(leg));
+        } else {
+          addLegEditor();
+        }
+        if (!combo) updateAutoComboName(true);
+      }
+
+      function closeDialog() { el.comboDialog.close(); }
+
+      function updateRequiredVisibility() {
+        el.requiredCountField.style.display = el.comboMode.value === 'AT_LEAST' ? 'block' : 'none';
+      }
+
+      async function loadScheduleForEditor(date, force = false) {
+        gamesForEditor = await fetchSchedule(date, force);
+        if (!gamesForEditor.length) {
+          showApiNotice(t('noGamesNotice'));
+        } else {
+          hideApiNotice();
+        }
+      }
+
+      function resetLegGameOptions(row) {
+        const gameSelect = row.querySelector('.game-select');
+        const current = gameSelect.value;
+        gameSelect.innerHTML = gameOptionsHtml(current);
+        row.dataset.gamePk = '';
+        row.dataset.playerId = '';
+        row.querySelector('.player-input').value = '';
+      }
+
+      function addLegEditor(data = {}) {
+        const row = document.createElement('div');
+        row.className = 'leg-editor';
+        row.dataset.playerId = data.playerId || '';
+        row.dataset.teamAbbr = data.teamAbbr || '';
+        row.dataset.gamePk = data.gamePk || '';
+        row.innerHTML = `
+          <div class="field">
+            <label data-i18n="game">${t('game')}</label>
+            <select class="game-select" required>${gameOptionsHtml(data.gamePk)}</select>
+          </div>
+          <div class="field player-picker">
+            <label data-i18n="playerSearch">${t('playerSearch')}</label>
+            <input class="player-input" autocomplete="off" data-i18n-placeholder="playerPlaceholder" placeholder="${escapeAttr(t('playerPlaceholder'))}" value="${escapeAttr(data.playerName || '')}" required />
+            <div class="suggestions"></div>
+          </div>
+          <div class="field">
+            <label data-i18n="market">${t('market')}</label>
+            <select class="market-select">${marketOptionsHtml(data.market)}</select>
+          </div>
+          <div class="field">
+            <label data-i18n="condition">${t('condition')}</label>
+            <select disabled><option>≥</option></select>
+          </div>
+          <div class="field">
+            <label data-i18n="target">${t('target')}</label>
+            <input class="target-input" type="number" min="1" value="${Number(data.target || 1)}" required />
+          </div>
+          <div class="remove-wrap"><button class="btn icon danger remove-leg" type="button" data-i18n-title="deleteLeg" title="${escapeAttr(t('deleteLeg'))}">×</button></div>`;
+        el.legsEditor.appendChild(row);
+        bindLegEditor(row);
+      }
+
+      function gameOptionsHtml(selected = '') {
+        const options = [`<option value="">${escapeHtml(t('selectGame'))}</option>`];
+        gamesForEditor.forEach(game => {
+          options.push(`<option value="${game.gamePk}" ${String(selected) === String(game.gamePk) ? 'selected' : ''}>${escapeHtml(game.label)}</option>`);
+        });
+        if (selected && !gamesForEditor.some(g => String(g.gamePk) === String(selected))) {
+          options.push(`<option value="${escapeAttr(selected)}" selected>${escapeHtml(t('savedGame', { id: selected }))}</option>`);
+        }
+        return options.join('');
+      }
+
+      function bindLegEditor(row) {
+        const gameSelect = row.querySelector('.game-select');
+        const playerInput = row.querySelector('.player-input');
+        const suggestions = row.querySelector('.suggestions');
+
+        gameSelect.addEventListener('change', async () => {
+          row.dataset.gamePk = gameSelect.value;
+          row.dataset.playerId = '';
+          row.dataset.teamAbbr = '';
+          playerInput.value = '';
+          suggestions.style.display = 'none';
+          if (gameSelect.value) await ensureRosterForGame(gameSelect.value);
+        });
+
+        playerInput.addEventListener('focus', async () => {
+          if (!gameSelect.value) return;
+          await ensureRosterForGame(gameSelect.value);
+          renderPlayerSuggestions(row, playerInput.value);
+        });
+        playerInput.addEventListener('input', () => {
+          row.dataset.playerId = '';
+          renderPlayerSuggestions(row, playerInput.value);
+        });
+        playerInput.addEventListener('blur', () => setTimeout(() => suggestions.style.display = 'none', 160));
+        suggestions.addEventListener('mousedown', (event) => {
+          const item = event.target.closest('[data-player-id]');
+          if (!item) return;
+          row.dataset.playerId = item.dataset.playerId;
+          row.dataset.teamAbbr = item.dataset.teamAbbr || '';
+          playerInput.value = item.dataset.playerName;
+          suggestions.style.display = 'none';
+        });
+        row.querySelector('.remove-leg').addEventListener('click', () => {
+          if (el.legsEditor.children.length <= 1) return toast(t('keepOneLegTitle'), t('keepOneLegMsg'), 'bad');
+          row.remove();
+        });
+
+        if (gameSelect.value) ensureRosterForGame(gameSelect.value).catch(() => {});
+      }
+
+      function renderPlayerSuggestions(row, query) {
+        const box = row.querySelector('.suggestions');
+        const gamePk = row.querySelector('.game-select').value;
+        const players = rosterCache.get(String(gamePk)) || [];
+        const q = String(query || '').trim().toLowerCase();
+        const result = players
+          .filter(p => !q || p.name.toLowerCase().includes(q) || p.teamAbbr.toLowerCase().includes(q))
+          .slice(0, 25);
+        if (!result.length) {
+          box.innerHTML = `<div class="suggestion"><div class="suggestion-meta">${t('playerNotFound')}</div></div>`;
+        } else {
+          box.innerHTML = result.map(p => `
+            <div class="suggestion" data-player-id="${p.id}" data-player-name="${escapeAttr(p.name)}" data-team-abbr="${escapeAttr(p.teamAbbr)}">
+              <div class="suggestion-name">${escapeHtml(p.name)}</div>
+              <div class="suggestion-meta">${escapeHtml(p.teamAbbr)} · ${escapeHtml(p.position || t('playerMetaFallback'))} · #${escapeHtml(p.number || '—')}</div>
+            </div>`).join('');
+        }
+        box.style.display = 'block';
+      }
+
+      async function saveComboFromForm(event) {
+        event.preventDefault();
+        const rows = [...el.legsEditor.querySelectorAll('.leg-editor')];
+        const legs = [];
+        for (const row of rows) {
+          if (row.dataset.legType === 'GAME') {
+            const gamePk = row.dataset.gamePk;
+            const game = gamesForEditor.find(g => String(g.gamePk) === String(gamePk));
+            legs.push({
+              id: uid(), legType: 'GAME', gamePk: Number(gamePk), gameLabel: game?.label || row.querySelector('input')?.value || `Game ${gamePk}`,
+              market: row.dataset.market, selection: row.dataset.selection, line: row.dataset.line === '' ? null : Number(row.dataset.line),
+              teamName: row.dataset.teamName || '', teamAbbr: row.dataset.teamAbbr || '',
+              current: null, status: 'PENDING', gameState: game?.abstractState || 'Preview', gameDetail: game?.detail || '', matchedAt: null
+            });
+            continue;
+          }
+          const gamePk = row.querySelector('.game-select').value;
+          const game = gamesForEditor.find(g => String(g.gamePk) === String(gamePk));
+          const playerId = row.dataset.playerId;
+          const playerName = row.querySelector('.player-input').value.trim();
+          if (!gamePk || !playerId || !playerName) {
+            toast(t('incompleteTitle'), t('incompleteMsg'), 'bad');
+            return;
+          }
+          legs.push({
+            id: uid(), gamePk: Number(gamePk), gameLabel: game?.label || `Game ${gamePk}`,
+            playerId: Number(playerId), playerName, teamAbbr: row.dataset.teamAbbr || '',
+            market: row.querySelector('.market-select').value,
+            target: Number(row.querySelector('.target-input').value || 1),
+            current: 0, status: 'PENDING', gameState: game?.abstractState || 'Preview', gameDetail: game?.detail || '', matchedAt: null
+          });
+        }
+
+        const id = el.editingId.value || uid();
+        const previous = combos.find(c => c.id === id);
+        if (previous) {
+          legs.forEach(leg => {
+            const old = previous.legs.find(x => String(x.gamePk) === String(leg.gamePk) && x.legType === leg.legType &&
+              (leg.legType === 'GAME'
+                ? x.market === leg.market && x.selection === leg.selection && Number(x.line ?? 0) === Number(leg.line ?? 0)
+                : String(x.playerId) === String(leg.playerId) && x.market === leg.market));
+            if (old) Object.assign(leg, { current: old.current, status: old.status, matchedAt: old.matchedAt, gameState: old.gameState, gameDetail: old.gameDetail });
+          });
+        }
+        const combo = {
+          id, name: el.comboName.value.trim() || buildUniqueComboName(el.comboDate.value, el.payoutAmount.value, id), date: el.comboDate.value,
+          payoutAmount: normalizePayoutAmount(el.payoutAmount.value),
+          platform: el.platform.value.trim(), mode: el.comboMode.value,
+          requiredCount: Number(el.requiredCount.value || 1), legs,
+          createdAt: previous?.createdAt || new Date().toISOString(), updatedAt: previous?.updatedAt || null,
+          matchedAt: previous?.matchedAt || null
+        };
+        const index = combos.findIndex(c => c.id === id);
+        if (index >= 0) combos[index] = combo; else combos.push(combo);
+        settings.refreshMinutes = Number(el.refreshMinutes.value || 3);
+        saveAll();
+        selectedDate = combo.date;
+        el.datePicker.value = selectedDate;
+        closeDialog();
+        resetCountdown();
+        render();
+        toast(t('savedTitle'), t('savedMsg', { name: combo.name }), 'good');
+      }
+
+      async function fetchSchedule(date, force = false) {
+        if (!force && scheduleCache.has(date)) return scheduleCache.get(date);
+        try {
+          const url = `${API}/v1/schedule?sportId=1&date=${encodeURIComponent(date)}&hydrate=linescore,team,probablePitcher`;
+          const data = await fetchJson(url);
+          const games = (data.dates?.[0]?.games || []).map(g => ({
+            gamePk: g.gamePk,
+            date,
+            label: `${g.teams.away.team.name} @ ${g.teams.home.team.name}`,
+            awayId: g.teams.away.team.id,
+            homeId: g.teams.home.team.id,
+            awayName: g.teams.away.team.name,
+            homeName: g.teams.home.team.name,
+            awayAbbr: g.teams.away.team.abbreviation || abbreviation(g.teams.away.team.name),
+            homeAbbr: g.teams.home.team.abbreviation || abbreviation(g.teams.home.team.name),
+            awayRecord: formatTeamRecord(g.teams.away.leagueRecord),
+            homeRecord: formatTeamRecord(g.teams.home.leagueRecord),
+            awayScore: g.teams.away.score ?? 0,
+            homeScore: g.teams.home.score ?? 0,
+            awayProbable: g.teams.away.probablePitcher || null,
+            homeProbable: g.teams.home.probablePitcher || null,
+            awayLineup: [],
+            homeLineup: [],
+            awayLineupState: 'waiting',
+            homeLineupState: 'waiting',
+            abstractState: g.status?.abstractGameState || 'Preview',
+            detailedState: g.status?.detailedState || '',
+            detail: gameDetailFromSchedule(g),
+            gameDate: g.gameDate,
+            venue: g.venue?.name || ''
+          }));
+          scheduleCache.set(date, games);
+          return games;
+        } catch (error) {
+          console.error(error);
+          showApiNotice(t('apiError', { message: error.message }));
+          return [];
+        }
+      }
+
+      async function ensureRosterForGame(gamePk) {
+        const key = String(gamePk);
+        if (rosterCache.has(key)) return rosterCache.get(key);
+        const game = gamesForEditor.find(g => String(g.gamePk) === key);
+        if (!game) return [];
+        const [away, home] = await Promise.all([
+          fetchRoster(game.awayId, game.awayAbbr), fetchRoster(game.homeId, game.homeAbbr)
+        ]);
+        const players = [...away, ...home].sort((a, b) => a.name.localeCompare(b.name));
+        rosterCache.set(key, players);
+        return players;
+      }
+
+      async function fetchRoster(teamId, teamAbbr) {
+        try {
+          const data = await fetchJson(`${API}/v1/teams/${teamId}/roster?rosterType=active`);
+          return (data.roster || []).map(r => ({
+            id: r.person.id, name: r.person.fullName, number: r.jerseyNumber || '',
+            position: r.position?.abbreviation || r.position?.name || '', teamAbbr, teamId
+          }));
+        } catch (error) {
+          console.error(error);
+          return [];
+        }
+      }
+
+      async function checkAllCombos(manual) {
+        if (checkBusy) return;
+        checkBusy = true;
+        $('refreshBtn').disabled = true;
+        $('refreshBtn').textContent = t('checking');
+        const active = combos.filter(c => getComboStatus(c) !== 'MATCHED' && getComboStatus(c) !== 'FAILED');
+        // A manual refresh must also re-check completed combos for the selected
+        // date. Older versions may have persisted an incorrect terminal result
+        // (for example pitcher SO was previously read from batting stats).
+        const checkedCombos = manual
+          ? combos.filter(c => c.date === selectedDate)
+          : active;
+        const gamePks = [...new Set(checkedCombos.flatMap(c => c.legs.map(l => l.gamePk)).filter(Boolean))];
+        let successCount = 0;
+        try {
+          for (const gamePk of gamePks) {
+            try {
+              const feed = await fetchJson(`${API}/v1.1/game/${gamePk}/feed/live`);
+              applyGameFeed(gamePk, feed);
+              successCount++;
+            } catch (error) {
+              console.error(`Game ${gamePk}`, error);
+            }
+          }
+          await loadDashboard(selectedDate, true);
+          const now = new Date().toISOString();
+          checkedCombos.forEach(combo => {
+            combo.updatedAt = now;
+            const beforeMatched = Boolean(combo.matchedAt);
+            const status = getComboStatus(combo);
+            if (status === 'MATCHED' && !beforeMatched) {
+              combo.matchedAt = now;
+              notifyMatch(combo);
+            } else if (status !== 'MATCHED') {
+              combo.matchedAt = null;
+            }
+          });
+          saveAll();
+          lastCheckAt = new Date();
+          el.lastUpdated.textContent = lastCheckAt.toLocaleTimeString(currentLanguage === 'zh' ? 'zh-CN' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          if (manual) {
+            if (gamePks.length === 0) toast(t('checkComplete'), t('noActiveCombos'), 'good');
+            else if (successCount > 0) toast(t('checkComplete'), t('gamesUpdated', { count: successCount }), 'good');
+            else toast(t('noUpdate'), t('apiRequestFailed'), 'bad');
+          }
+        } finally {
+          checkBusy = false;
+          $('refreshBtn').disabled = false;
+          $('refreshBtn').textContent = t('refreshNow');
+          resetCountdown();
+          render();
+        }
+      }
+
+      function applyGameFeed(gamePk, feed) {
+        const state = feed.gameData?.status?.abstractGameState || 'Preview';
+        const detailed = feed.gameData?.status?.detailedState || '';
+        const boxscore = feed.liveData?.boxscore;
+        const allPlayers = {
+          ...(boxscore?.teams?.away?.players || {}),
+          ...(boxscore?.teams?.home?.players || {})
+        };
+        combos.forEach(combo => combo.legs.forEach(leg => {
+          if (String(leg.gamePk) !== String(gamePk)) return;
+          leg.gameState = normalizeGameState(state);
+          leg.gameDetail = detailed;
+          if (leg.legType === 'GAME') {
+            const away = n(feed.liveData?.linescore?.teams?.away?.runs);
+            const home = n(feed.liveData?.linescore?.teams?.home?.runs);
+            leg.current = `${away}–${home}`;
+            if (leg.gameState !== 'Final') {
+              leg.status = 'PENDING';
+              return;
+            }
+            const selected = leg.selection === 'away' ? away : home;
+            const opponent = leg.selection === 'away' ? home : away;
+            let result = selected - opponent;
+            if (leg.market === 'SPREAD') result += Number(leg.line || 0);
+            if (leg.market === 'TOTAL') {
+              const delta = away + home - Number(leg.line || 0);
+              result = leg.selection === 'OVER' ? delta : -delta;
+            }
+            leg.status = result > 0 ? 'MATCHED' : result === 0 ? 'PUSH' : 'FAILED';
+            if (leg.status === 'MATCHED' && !leg.matchedAt) leg.matchedAt = new Date().toISOString();
+            return;
+          }
+          const player = allPlayers[`ID${leg.playerId}`];
+          const batting = player?.stats?.batting || {};
+          const pitching = player?.stats?.pitching || {};
+          const value = isPitchingStrikeoutLeg(leg, player, boxscore)
+            ? n(pitching.strikeOuts)
+            : getMarketValue(leg.market, batting);
+          if (Number.isFinite(value)) leg.current = value;
+          const wasMatched = leg.status === 'MATCHED';
+          if (Number(leg.current || 0) >= Number(leg.target || 1)) {
+            leg.status = 'MATCHED';
+            if (!wasMatched) leg.matchedAt = new Date().toISOString();
+          } else if (leg.gameState === 'Final') {
+            leg.status = 'FAILED';
+            leg.matchedAt = null;
+          } else {
+            leg.status = 'PENDING';
+            leg.matchedAt = null;
+          }
+        }));
+      }
+
+      function isPitchingStrikeoutLeg(leg, player, boxscore) {
+        if (leg.market !== 'SO') return false;
+        if (leg.statsGroup === 'pitching' || leg.playerRole === 'pitching') return true;
+        if (String(leg.position || '').toUpperCase() === 'P') return true;
+        const playerId = String(leg.playerId);
+        const listedPitchers = [
+          ...(boxscore?.teams?.away?.pitchers || []),
+          ...(boxscore?.teams?.home?.pitchers || [])
+        ].map(String);
+        if (listedPitchers.includes(playerId)) return true;
+        const pitching = player?.stats?.pitching || {};
+        return pitching.inningsPitched != null || pitching.numberOfPitches != null;
+      }
+
+      function getMarketValue(market, batting) {
+        if (market === 'H_R_RBI') return n(batting.hits) + n(batting.runs) + n(batting.rbi);
+        return n(batting[MARKET_FIELDS[market]]);
+      }
+
+      function gameBetMarketLabel(market) {
+        return market === 'MONEYLINE' ? t('moneyline') : market === 'SPREAD' ? t('spread') : t('total');
+      }
+
+      function gameBetLabel(leg) {
+        if (leg.market === 'TOTAL') return `${leg.selection === 'OVER' ? t('over') : t('under')} ${Number(leg.line)}`;
+        const team = leg.teamName || leg.teamAbbr || t('team');
+        if (leg.market === 'SPREAD') {
+          const line = Number(leg.line || 0);
+          return `${team} ${line > 0 ? '+' : ''}${line}`;
+        }
+        return `${team} ML`;
+      }
+
+      function normalizeGameState(state) {
+        if (state === 'Final') return 'Final';
+        if (state === 'Live') return 'Live';
+        return 'Preview';
+      }
+
+      function simulateCombo(id) {
+        const combo = combos.find(c => c.id === id);
+        if (!combo) return;
+        const leg = combo.legs.find(l => l.legType !== 'GAME' && l.status !== 'MATCHED') || combo.legs.find(l => l.legType !== 'GAME');
+        if (!leg) return;
+        leg.gameState = 'Live';
+        leg.gameDetail = t('demoData');
+        leg.current = Number(leg.current || 0) + 1;
+        if (leg.current >= leg.target) {
+          leg.status = 'MATCHED';
+          leg.matchedAt ||= new Date().toISOString();
+        }
+        combo.updatedAt = new Date().toISOString();
+        if (getComboStatus(combo) === 'MATCHED' && !combo.matchedAt) {
+          combo.matchedAt = new Date().toISOString();
+          notifyMatch(combo);
+        }
+        saveAll();
+        render();
+      }
+
+      function loadDemo() {
+        const date = selectedDate;
+        const demo = {
+          id: uid(), date, name: 'Tonight MLB Combo', platform: 'Demo · Event Contract', mode: 'ALL', requiredCount: 3,
+          createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), matchedAt: null,
+          legs: [
+            demoLeg('Shohei Ohtani', 'LAD', 'H', 1, 1, 'MATCHED', 'Dodgers @ Giants'),
+            demoLeg('Aaron Judge', 'NYY', 'HR', 1, 0, 'PENDING', 'Yankees @ Red Sox'),
+            demoLeg('Juan Soto', 'NYM', 'H', 2, 1, 'PENDING', 'Mets @ Phillies')
+          ]
+        };
+        combos.push(demo);
+        saveAll();
+        render();
+        toast(t('demoAdded'), t('demoAddedMsg'), 'good');
+      }
+
+      function demoLeg(name, team, market, target, current, status, gameLabel) {
+        return { id: uid(), gamePk: Math.floor(Math.random() * 900000), gameLabel, playerId: Math.floor(Math.random() * 800000), playerName: name, teamAbbr: team, market, target, current, status, gameState: 'Live', gameDetail: t('inningSix'), matchedAt: status === 'MATCHED' ? new Date().toISOString() : null };
+      }
+
+      function deleteCombo(id) {
+        const combo = combos.find(c => c.id === id);
+        if (!combo || !confirm(t('deleteConfirm', { name: combo.name }))) return;
+        combos = combos.filter(c => c.id !== id);
+        saveAll();
+        render();
+      }
+
+      async function requestNotifications() {
+        if (!('Notification' in window)) return toast(t('notificationsUnsupported'), t('notificationsUnsupportedMsg'), 'bad');
+        const permission = await Notification.requestPermission();
+        toast(permission === 'granted' ? t('notificationsOn') : t('notificationsOff'), permission === 'granted' ? t('notificationsOnMsg') : t('notificationsOffMsg'), permission === 'granted' ? 'good' : 'bad');
+      }
+
+      function notifyMatch(combo) {
+        beep();
+        toast('✅ COMBO MATCHED', t('matchedMessage', { name: combo.name, rule: comboModeLabel(combo) }), 'good');
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('✅ MLB Combo Matched', { body: t('matchedBody', { name: combo.name, matched: combo.legs.filter(l => l.status === 'MATCHED').length, required: getRequiredCount(combo) }) });
+        }
+      }
+
+      function beep() {
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          const ctx = new AudioContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.frequency.value = 880;
+          gain.gain.setValueAtTime(.12, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + .35);
+          osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + .35);
+        } catch (_) {}
+      }
+
+      function exportData() {
+        const payload = { version: 1, exportedAt: new Date().toISOString(), combos, settings };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `mlb-combo-backup-${todayString()}.json`; a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      async function importData(event) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        try {
+          const data = JSON.parse(await file.text());
+          if (!Array.isArray(data.combos)) throw new Error(t('invalidBackup'));
+          combos = data.combos;
+          settings = data.settings || settings;
+          currentLanguage = settings.language === 'en' ? 'en' : 'zh';
+          saveAll(); applyLanguage(); resetCountdown();
+          toast(t('importSuccess'), t('importedCount', { count: combos.length }), 'good');
+        } catch (error) {
+          toast(t('importFailed'), error.message, 'bad');
+        } finally { event.target.value = ''; }
+      }
+
+      function openAuthDialog() {
+        el.authStatus.textContent = '';
+        el.authStatus.className = 'auth-status';
+        el.authForm.hidden = Boolean(authSession?.access_token);
+        el.signedInActions.hidden = !authSession?.access_token;
+        el.authDialog.showModal();
+      }
+
+      async function signIn(event) {
+        event.preventDefault();
+        setAuthStatus('正在登录…');
+        try {
+          const data = await supabaseRequest('/auth/v1/token?grant_type=password', {
+            method: 'POST',
+            body: { email: el.authEmail.value.trim(), password: el.authPassword.value }
+          }, false);
+          acceptSession(data);
+          el.authForm.hidden = true;
+          el.signedInActions.hidden = false;
+          setAuthStatus('登录成功，正在同步…', 'good');
+          await syncWithCloud(true, true);
+        } catch (error) {
+          setAuthStatus(friendlyAuthError(error), 'bad');
+        }
+      }
+
+      async function signUp() {
+        if (!el.authEmail.reportValidity() || !el.authPassword.reportValidity()) return;
+        setAuthStatus('正在创建账号…');
+        try {
+          const data = await supabaseRequest('/auth/v1/signup', {
+            method: 'POST',
+            body: { email: el.authEmail.value.trim(), password: el.authPassword.value }
+          }, false);
+          if (data.access_token) {
+            acceptSession(data);
+            el.authForm.hidden = true;
+            el.signedInActions.hidden = false;
+            setAuthStatus('账号已创建，正在同步…', 'good');
+            await syncWithCloud(true, true);
+          } else {
+            setAuthStatus('账号已创建。请先到 Email 点击确认链接，然后返回登录。', 'good');
+          }
+        } catch (error) {
+          setAuthStatus(friendlyAuthError(error), 'bad');
+        }
+      }
+
+      function signOut() {
+        authSession = null;
+        localStorage.removeItem(AUTH_KEY);
+        updateAccountUi();
+        el.authDialog.close();
+        toast('已退出登录', '资料仍保存在本机；再次登录即可继续同步。', 'good');
+      }
+
+      function acceptSession(data) {
+        authSession = {
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
+          expires_at: data.expires_at || Math.floor(Date.now() / 1000) + Number(data.expires_in || 3600),
+          user: data.user
+        };
+        saveJson(AUTH_KEY, authSession);
+        updateAccountUi();
+      }
+
+      async function restoreCloudSession() {
+        if (!authSession?.refresh_token) return;
+        try {
+          if (!authSession.access_token || Number(authSession.expires_at || 0) < Math.floor(Date.now() / 1000) + 60) {
+            const data = await supabaseRequest('/auth/v1/token?grant_type=refresh_token', {
+              method: 'POST', body: { refresh_token: authSession.refresh_token }
+            }, false);
+            acceptSession(data);
+          }
+          await syncWithCloud(false, true);
+        } catch (_) {
+          authSession = null;
+          localStorage.removeItem(AUTH_KEY);
+          updateAccountUi('登录已过期', 'bad');
+        }
+      }
+
+      async function syncWithCloud(showToast = false, initial = false) {
+        if (!authSession?.access_token || syncBusy) return;
+        syncBusy = true;
+        updateAccountUi('正在同步…');
+        try {
+          const rows = await supabaseRequest(`/rest/v1/tracker_data?user_id=eq.${encodeURIComponent(authSession.user.id)}&select=combos,settings,updated_at`, {
+            method: 'GET'
+          });
+          if (initial && rows?.length) {
+            combos = Array.isArray(rows[0].combos) ? rows[0].combos : combos;
+            settings = rows[0].settings && typeof rows[0].settings === 'object' ? rows[0].settings : settings;
+            currentLanguage = settings.language === 'en' ? 'en' : 'zh';
+            saveJson(STORAGE_KEY, combos);
+            saveJson(SETTINGS_KEY, settings);
+            applyLanguage();
+            render();
+          } else {
+            await uploadCloudData();
+          }
+          updateAccountUi('已同步', 'good');
+          if (showToast) toast('同步完成', `已同步 ${combos.length} 个 Combo。`, 'good');
+        } catch (error) {
+          if (error.status === 401) {
+            try {
+              const data = await supabaseRequest('/auth/v1/token?grant_type=refresh_token', {
+                method: 'POST', body: { refresh_token: authSession.refresh_token }
+              }, false);
+              acceptSession(data);
+            } catch (_) {}
+          }
+          updateAccountUi('同步失败', 'bad');
+          if (showToast) toast('同步失败', error.message, 'bad');
+        } finally {
+          syncBusy = false;
+        }
+      }
+
+      async function uploadCloudData() {
+        await supabaseRequest('/rest/v1/tracker_data?on_conflict=user_id', {
+          method: 'POST',
+          headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+          body: { user_id: authSession.user.id, combos, settings, updated_at: new Date().toISOString() }
+        });
+      }
+
+      function scheduleCloudSync() {
+        if (!authSession?.access_token) return;
+        clearTimeout(syncTimer);
+        updateAccountUi('等待同步…');
+        syncTimer = setTimeout(async () => {
+          if (syncBusy) return scheduleCloudSync();
+          syncBusy = true;
+          updateAccountUi('正在同步…');
+          try {
+            await uploadCloudData();
+            updateAccountUi('已同步', 'good');
+          } catch (error) {
+            updateAccountUi('同步失败', 'bad');
+          } finally {
+            syncBusy = false;
+          }
+        }, 700);
+      }
+
+      async function supabaseRequest(path, options = {}, authenticated = true) {
+        const headers = {
+          apikey: SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          ...(options.headers || {})
+        };
+        if (authenticated && authSession?.access_token) headers.Authorization = `Bearer ${authSession.access_token}`;
+        const response = await fetch(`${SUPABASE_URL}${path}`, {
+          method: options.method || 'GET',
+          headers,
+          body: options.body === undefined ? undefined : JSON.stringify(options.body)
+        });
+        const text = await response.text();
+        let data = null;
+        try { data = text ? JSON.parse(text) : null; } catch (_) { data = text; }
+        if (!response.ok) {
+          const error = new Error(data?.msg || data?.message || data?.error_description || `HTTP ${response.status}`);
+          error.status = response.status;
+          throw error;
+        }
+        return data;
+      }
+
+      function setAuthStatus(message, type = '') {
+        el.authStatus.textContent = message;
+        el.authStatus.className = `auth-status ${type}`.trim();
+      }
+
+      function friendlyAuthError(error) {
+        if (/invalid login credentials/i.test(error.message)) return 'Email 或密码不正确。';
+        if (/already registered/i.test(error.message)) return '这个 Email 已经注册，请直接登录。';
+        return error.message;
+      }
+
+      function updateAccountUi(message, type = '') {
+        const signedIn = Boolean(authSession?.access_token);
+        $('accountBtn').textContent = signedIn ? '账号 / 同步' : '登录 / 同步';
+        el.accountEmail.textContent = signedIn ? (authSession.user?.email || '') : '';
+        el.syncStatus.textContent = message || (signedIn ? '已连接云端' : '仅保存在本机');
+        el.syncStatus.className = `sync-pill ${type}`.trim();
+      }
+
+      function saveAll() {
+        saveJson(STORAGE_KEY, combos);
+        saveJson(SETTINGS_KEY, settings);
+        scheduleCloudSync();
+      }
+      function favoriteGameKey(gamePk, date = selectedDate) { return `${date}:${gamePk}`; }
+      function isFavoriteGame(gamePk, date = selectedDate) { return Boolean(settings.favoriteGames?.[favoriteGameKey(gamePk, date)]); }
+      function toggleFavoriteGame(gamePk) {
+        settings.favoriteGames = settings.favoriteGames || {};
+        const key = favoriteGameKey(gamePk);
+        if (settings.favoriteGames[key]) delete settings.favoriteGames[key];
+        else settings.favoriteGames[key] = true;
+        saveAll();
+        renderDashboard();
+      }
+      function normalizePayoutAmount(value) {
+        const raw = String(value ?? '').trim().replace(/[$,\s]/g, '');
+        if (!raw) return '';
+        const number = Number(raw);
+        return Number.isFinite(number) ? String(number) : raw.replace(/[^\w.-]/g, '');
+      }
+      function compactDate(value) {
+        const parts = String(value || '').split('-');
+        return parts.length === 3 ? `${parts[1]}${parts[2]}${parts[0]}` : String(value || '').replace(/\D/g, '');
+      }
+      function comboNameBase(date, payout) {
+        const amount = normalizePayoutAmount(payout);
+        return `${compactDate(date)}_combo${amount ? `_${amount}` : ''}`;
+      }
+      function buildUniqueComboName(date, payout, editingId = '') {
+        const base = comboNameBase(date, payout);
+        const used = new Set(combos.filter(c => c.id !== editingId).map(c => String(c.name || '').toLowerCase()));
+        if (!used.has(base.toLowerCase())) return base;
+        let suffix = 1;
+        while (used.has(`${base}_${String(suffix).padStart(2, '0')}`.toLowerCase())) suffix++;
+        return `${base}_${String(suffix).padStart(2, '0')}`;
+      }
+      function updateAutoComboName(force = false) {
+        if (!force && !comboNameAuto && el.comboName.value.trim()) return;
+        el.comboName.value = buildUniqueComboName(el.comboDate.value, el.payoutAmount.value, el.editingId.value);
+        comboNameAuto = true;
+      }
+      function inferPayoutAmount(name) {
+        const match = String(name).match(/^\d{8}_combo_([^_]+)(?:_\d{2})?$/i);
+        return match ? match[1] : '';
+      }
+      function saveJson(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+      function loadJson(key, fallback) {
+        try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch (_) { return fallback; }
+      }
+
+      async function fetchJson(url) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 14000);
+        try {
+          const response = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return await response.json();
+        } catch (error) {
+          if (error.name === 'AbortError') throw new Error(t('requestTimeout'));
+          throw error;
+        } finally { clearTimeout(timer); }
+      }
+
+      function gameDetailFromSchedule(game) {
+        const state = game.status?.abstractGameState;
+        const start = Date.parse(game.gameDate || '');
+        if (state === 'Live' && Number.isFinite(start) && start > Date.now()) return mountainGameTime(start);
+        if (state === 'Live') {
+          const inning = game.linescore?.currentInningOrdinal || '';
+          const half = game.linescore?.inningHalf || '';
+          return `${inning} ${half}`.trim();
+        }
+        if (state === 'Final') return game.status?.detailedState || 'Final';
+        return mountainGameTime(game.gameDate);
+      }
+
+      function mountainGameTime(value) {
+        const date = value instanceof Date ? value : new Date(value);
+        if (Number.isNaN(date.getTime())) return '';
+        return `${date.toLocaleTimeString(currentLanguage === 'zh' ? 'zh-CN' : 'en-US', {
+          timeZone: 'America/Denver', hour: '2-digit', minute: '2-digit'
+        })} MT`;
+      }
+
+
+      function t(key, vars = {}) {
+        const dict = I18N[currentLanguage] || I18N.zh;
+        let text = dict[key] ?? I18N.zh[key] ?? key;
+        return String(text).replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? `{${name}}`);
+      }
+
+      function marketLabel(code) { return t(`market_${code}`); }
+
+      function marketOptionsHtml(selected = 'H') {
+        return MARKET_CODES.map(code => `<option value="${code}" ${code === selected ? 'selected' : ''}>${escapeHtml(marketLabel(code))}</option>`).join('');
+      }
+
+      function toggleLanguage() {
+        currentLanguage = currentLanguage === 'zh' ? 'en' : 'zh';
+        settings.language = currentLanguage;
+        saveJson(SETTINGS_KEY, settings);
+        applyLanguage();
+      }
+
+      function applyLanguage() {
+        document.documentElement.lang = currentLanguage === 'zh' ? 'zh-CN' : 'en';
+        document.title = t('pageTitle');
+        document.querySelectorAll('[data-i18n]').forEach(node => { node.textContent = t(node.dataset.i18n); });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(node => { node.placeholder = t(node.dataset.i18nPlaceholder); });
+        document.querySelectorAll('[data-i18n-title]').forEach(node => { node.title = t(node.dataset.i18nTitle); });
+        document.querySelectorAll('[data-i18n-aria]').forEach(node => { node.setAttribute('aria-label', t(node.dataset.i18nAria)); });
+        $('languageBtn').textContent = currentLanguage === 'zh' ? 'EN' : '中文';
+        el.lastUpdated.textContent = lastCheckAt
+          ? lastCheckAt.toLocaleTimeString(currentLanguage === 'zh' ? 'zh-CN' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+          : t('neverChecked');
+        el.modalTitle.textContent = el.editingId.value ? t('editComboTitle') : t('addComboTitle');
+        document.querySelectorAll('.market-select').forEach(select => {
+          const value = select.value || 'H';
+          select.innerHTML = marketOptionsHtml(value);
+        });
+        if (el.quickMarket) {
+          const value = el.quickMarket.value || 'H';
+          el.quickMarket.innerHTML = marketOptionsHtml(value);
+        }
+        document.querySelectorAll('.game-select').forEach(select => {
+          const value = select.value;
+          select.innerHTML = gameOptionsHtml(value);
+        });
+        if (el.quickGame) {
+          const value = el.quickGame.value;
+          el.quickGame.innerHTML = gameOptionsHtml(value);
+        }
+        updateQuickTeamOptions(el.quickTeam?.value || '');
+        updateQuickSelectedCount();
+        renderQuickRoster();
+        render();
+        if (el.gameDialog?.open && selectedDashboardGamePk) {
+          const game = dashboardGames.find(row => String(row.gamePk) === String(selectedDashboardGamePk));
+          if (game) {
+            el.gameDialogTitle.textContent = `${game.awayAbbr} @ ${game.homeAbbr}`;
+            renderGameDetails(game);
+          }
+        }
+      }
+
+      function resetGameBetOptions() {
+        el.betGame.innerHTML = gameOptionsHtml('');
+        el.betGame.value = '';
+        el.betMarket.value = 'MONEYLINE';
+        el.betLine.value = '';
+        updateGameBetOptions();
+      }
+
+      function updateGameBetOptions() {
+        const game = gamesForEditor.find(g => String(g.gamePk) === String(el.betGame.value));
+        const isTotal = el.betMarket.value === 'TOTAL';
+        el.betLineField.style.display = el.betMarket.value === 'MONEYLINE' ? 'none' : 'block';
+        el.betSelection.disabled = !game;
+        if (isTotal) {
+          el.betSelection.innerHTML = `<option value="OVER">${t('over')}</option><option value="UNDER">${t('under')}</option>`;
+        } else if (game) {
+          el.betSelection.innerHTML = `<option value="away">${escapeHtml(game.awayName)}</option><option value="home">${escapeHtml(game.homeName)}</option>`;
+        } else {
+          el.betSelection.innerHTML = `<option value="">${t('selectTeam')}</option>`;
+        }
+      }
+
+      function addGameBetLeg() {
+        const game = gamesForEditor.find(g => String(g.gamePk) === String(el.betGame.value));
+        const market = el.betMarket.value;
+        const selection = el.betSelection.value;
+        const line = Number(el.betLine.value);
+        if (!game || !selection || (market !== 'MONEYLINE' && !Number.isFinite(line))) {
+          toast(t('incompleteTitle'), t('chooseGameBet'), 'bad');
+          return;
+        }
+        addGameBetEditor({
+          legType: 'GAME', gamePk: game.gamePk, gameLabel: game.label, market, selection,
+          line: market === 'MONEYLINE' ? null : line,
+          teamName: selection === 'away' ? game.awayName : selection === 'home' ? game.homeName : '',
+          teamAbbr: selection === 'away' ? game.awayAbbr : selection === 'home' ? game.homeAbbr : ''
+        });
+        toast(t('gameBetAdded'), gameBetLabel({ market, selection, line, teamName: selection === 'away' ? game.awayName : game.homeName }), 'good');
+      }
+
+      function addGameBetEditor(data) {
+        const row = document.createElement('div');
+        row.className = 'leg-editor game-bet-editor';
+        Object.assign(row.dataset, {
+          legType: 'GAME', gamePk: data.gamePk || '', market: data.market || 'MONEYLINE',
+          selection: data.selection || '', line: data.line ?? '', teamName: data.teamName || '', teamAbbr: data.teamAbbr || ''
+        });
+        row.innerHTML = `
+          <div class="field" style="grid-column:span 2"><label>${t('game')}</label><input value="${escapeAttr(data.gameLabel || '')}" disabled /></div>
+          <div class="field" style="grid-column:span 2"><label>${t('selection')}</label><input value="${escapeAttr(gameBetLabel(data))}" disabled /></div>
+          <div class="remove-wrap"><button class="btn icon danger remove-leg" type="button" title="${escapeAttr(t('deleteLeg'))}">×</button></div>`;
+        row.querySelector('.remove-leg').addEventListener('click', () => {
+          if (el.legsEditor.children.length <= 1) return toast(t('keepOneLegTitle'), t('keepOneLegMsg'), 'bad');
+          row.remove();
+        });
+        el.legsEditor.appendChild(row);
+      }
+
+      function resetQuickAddOptions() {
+        quickSelectedIds.clear();
+        el.quickSearch.value = '';
+        el.quickTarget.value = 1;
+        el.quickGame.innerHTML = gameOptionsHtml('');
+        el.quickGame.value = '';
+        updateQuickTeamOptions('');
+        el.quickMarket.innerHTML = marketOptionsHtml('H');
+        renderQuickRoster();
+      }
+
+      function updateQuickTeamOptions(selected = '') {
+        if (!el.quickTeam) return;
+        const game = gamesForEditor.find(g => String(g.gamePk) === String(el.quickGame?.value || ''));
+        const options = [`<option value="">${escapeHtml(t('selectTeam'))}</option>`];
+        if (game) {
+          options.push(`<option value="${escapeAttr(game.awayAbbr)}" ${selected === game.awayAbbr ? 'selected' : ''}>${escapeHtml(game.awayName || game.awayAbbr)} (${escapeHtml(game.awayAbbr)})</option>`);
+          options.push(`<option value="${escapeAttr(game.homeAbbr)}" ${selected === game.homeAbbr ? 'selected' : ''}>${escapeHtml(game.homeName || game.homeAbbr)} (${escapeHtml(game.homeAbbr)})</option>`);
+        }
+        el.quickTeam.innerHTML = options.join('');
+        el.quickTeam.disabled = !game;
+      }
+
+      async function handleQuickGameChange() {
+        quickSelectedIds.clear();
+        el.quickSearch.value = '';
+        updateQuickTeamOptions('');
+        if (el.quickGame.value) {
+          el.quickRoster.innerHTML = `<div class="quick-empty">${escapeHtml(t('loadingRoster'))}</div>`;
+          await ensureRosterForGame(el.quickGame.value);
+        }
+        renderQuickRoster();
+      }
+
+      function getFilteredQuickPlayers() {
+        const gamePk = String(el.quickGame?.value || '');
+        const team = String(el.quickTeam?.value || '');
+        if (!gamePk || !team) return [];
+        const q = String(el.quickSearch?.value || '').trim().toLowerCase();
+        return (rosterCache.get(gamePk) || [])
+          .filter(player => player.teamAbbr === team)
+          .filter(player => !q || player.name.toLowerCase().includes(q) || String(player.number || '').includes(q) || String(player.position || '').toLowerCase().includes(q))
+          .sort((a, b) => a.name.localeCompare(b.name));
+      }
+
+      function renderQuickRoster() {
+        if (!el.quickRoster) return;
+        if (!el.quickGame.value || !el.quickTeam.value) {
+          el.quickRoster.innerHTML = `<div class="quick-empty">${escapeHtml(t('chooseGameTeamFirst'))}</div>`;
+          updateQuickSelectedCount();
+          return;
+        }
+        const players = getFilteredQuickPlayers();
+        if (!players.length) {
+          el.quickRoster.innerHTML = `<div class="quick-empty">${escapeHtml(t('noPlayers'))}</div>`;
+        } else {
+          el.quickRoster.innerHTML = players.map(player => {
+            const selected = quickSelectedIds.has(String(player.id));
+            return `<label class="player-check ${selected ? 'selected' : ''}">
+              <input type="checkbox" data-quick-player="${player.id}" ${selected ? 'checked' : ''} />
+              <span class="player-check-main">
+                <span class="player-check-name">${escapeHtml(player.name)}</span>
+                <span class="player-check-meta">${escapeHtml(player.position || t('playerMetaFallback'))} · #${escapeHtml(player.number || '—')}</span>
+              </span>
+            </label>`;
+          }).join('');
+        }
+        updateQuickSelectedCount();
+      }
+
+      function selectVisibleQuickPlayers() {
+        getFilteredQuickPlayers().forEach(player => quickSelectedIds.add(String(player.id)));
+        renderQuickRoster();
+      }
+
+      function updateQuickSelectedCount() {
+        if (!el.quickSelectedCount) return;
+        el.quickSelectedCount.textContent = t('selectedPlayers', { count: quickSelectedIds.size });
+        el.quickAddPlayersBtn.disabled = quickSelectedIds.size === 0 || !el.quickGame.value || !el.quickTeam.value;
+      }
+
+      function addQuickSelectedPlayers() {
+        const gamePk = String(el.quickGame.value || '');
+        const teamAbbr = String(el.quickTeam.value || '');
+        if (!gamePk || !teamAbbr || quickSelectedIds.size === 0) {
+          toast(t('batchNeedSelectionTitle'), t('batchNeedSelectionMsg'), 'bad');
+          return;
+        }
+        const players = (rosterCache.get(gamePk) || []).filter(player => quickSelectedIds.has(String(player.id)));
+        const market = el.quickMarket.value || 'H';
+        const target = Math.max(1, Number(el.quickTarget.value || 1));
+        const existing = new Set([...el.legsEditor.querySelectorAll('.leg-editor')]
+          .map(row => `${row.querySelector('.game-select')?.value}|${row.dataset.playerId}|${row.querySelector('.market-select')?.value}`));
+        let added = 0;
+        let skipped = 0;
+        const emptyRows = [...el.legsEditor.querySelectorAll('.leg-editor')].filter(row => !row.dataset.playerId && !row.querySelector('.game-select')?.value);
+        players.forEach(player => {
+          const key = `${gamePk}|${player.id}|${market}`;
+          if (existing.has(key)) { skipped++; return; }
+          addLegEditor({ gamePk: Number(gamePk), playerId: player.id, playerName: player.name, teamAbbr: player.teamAbbr, market, target });
+          existing.add(key);
+          added++;
+        });
+        emptyRows.forEach(row => { if (el.legsEditor.children.length > 1) row.remove(); });
+        quickSelectedIds.clear();
+        renderQuickRoster();
+        const skippedText = skipped ? t('batchSkipped', { count: skipped }) : '';
+        toast(t('batchAddedTitle'), t('batchAddedMsg', { added, skippedText }), 'good');
+      }
+
+      function showApiNotice(message) { el.apiNotice.textContent = message; el.apiNotice.style.display = 'block'; }
+      function hideApiNotice() { el.apiNotice.style.display = 'none'; }
+      function toast(title, message, type = '') {
+        const item = document.createElement('div');
+        item.className = `toast ${type}`;
+        item.innerHTML = `<div class="toast-title">${escapeHtml(title)}</div><div class="toast-msg">${escapeHtml(message)}</div>`;
+        el.toastStack.appendChild(item);
+        setTimeout(() => item.remove(), 4200);
+      }
+
+      function todayString() { return toDateString(new Date()); }
+      function toDateString(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+      function parseLocalDate(s) { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+      function formatCountdown(s) { return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
+      function formatDateTime(v) { if (!v) return ''; return new Date(v).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+      function formatTeamRecord(recordValue) {
+        if (!recordValue || recordValue.wins == null || recordValue.losses == null) return '';
+        return `${t('record')} ${recordValue.wins}-${recordValue.losses}`;
+      }
+      function uid() { return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`; }
+      function n(v) { const x = Number(v); return Number.isFinite(x) ? x : 0; }
+      function abbreviation(name) { return String(name).split(' ').map(x => x[0]).join('').slice(0,3).toUpperCase(); }
+      function statusRank(status) { return ({ LIVE: 0, PENDING: 1, MATCHED: 2, FAILED: 3 })[status] ?? 9; }
+      function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' })[ch]); }
+      function escapeAttr(value) { return escapeHtml(value); }
+    })();
+  </script>
+</body>
+</html>
