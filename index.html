@@ -345,6 +345,22 @@
       border-radius: 11px;
       font-size: 12px;
     }
+    .mobile-player-tools { position: sticky; top: 0; z-index: 3; padding-bottom: 12px; background: #0d1829; }
+    .mobile-player-teams { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-top: 10px; }
+    .mobile-team-filter { min-height: 42px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mobile-player-list { display: grid; gap: 8px; padding-bottom: 20px; }
+    .mobile-player-option {
+      width: 100%; min-height: 64px; display: flex; align-items: center; gap: 12px;
+      padding: 11px 12px; color: var(--text); text-align: left; border: 1px solid var(--border);
+      border-radius: 13px; background: #101d31; cursor: pointer;
+    }
+    .mobile-player-option:active { transform: scale(.99); background: #172b49; }
+    .mobile-player-option.selected { border-color: var(--accent); background: rgba(98,165,255,.16); }
+    .mobile-player-team { flex: 0 0 auto; min-width: 44px; padding: 7px 6px; border-radius: 9px; color: #fff; background: #213b61; font-size: 11px; font-weight: 850; text-align: center; }
+    .mobile-player-copy { min-width: 0; flex: 1; }
+    .mobile-player-name { display: block; font-size: 15px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mobile-player-meta { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .mobile-player-checkmark { flex: 0 0 auto; color: var(--green); font-size: 20px; font-weight: 900; }
 
     .notice {
       margin: 13px 0 0;
@@ -813,6 +829,9 @@
       dialog .modal-body { padding:12px; }
       dialog .modal-footer { position:sticky; bottom:0; z-index:5; padding:10px 12px calc(10px + env(safe-area-inset-bottom)); background:#0a1423; }
       .quick-add-panel, .legs-editor { border-radius:14px; padding:12px; }
+      .player-input[readonly] { cursor:pointer; background-image:linear-gradient(90deg, transparent, rgba(98,165,255,.08)); }
+      #mobilePlayerDialog .modal-body { padding-top: 10px; }
+      #mobilePlayerSearch { min-height: 48px; font-size: 16px; }
       .player-stats-tabs, .game-detail-tabs, .tabs { overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px; }
       .player-stats-tab, .game-detail-tab, .tab { flex:0 0 auto; min-height:40px; }
       .combo-card { border-radius:16px; padding:13px; }
@@ -1049,6 +1068,26 @@
     </form>
   </dialog>
 
+  <dialog id="mobilePlayerDialog">
+    <div class="modal-head">
+      <div>
+        <div class="eyebrow" data-i18n="mobilePlayerStep">PLAYER PICKER</div>
+        <div class="modal-title" id="mobilePlayerTitle" data-i18n="choosePlayer">选择球员</div>
+      </div>
+      <button class="btn icon" id="closeMobilePlayerDialog" type="button" aria-label="关闭" data-i18n-aria="close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="mobile-player-tools">
+        <div class="field">
+          <label for="mobilePlayerSearch" data-i18n="searchPlayers">搜索球员</label>
+          <input id="mobilePlayerSearch" autocomplete="off" data-i18n-placeholder="searchPlayersPlaceholder" placeholder="输入姓名、号码或位置" />
+        </div>
+        <div class="mobile-player-teams" id="mobilePlayerTeams"></div>
+      </div>
+      <div class="mobile-player-list" id="mobilePlayerList"></div>
+    </div>
+  </dialog>
+
   <dialog id="ocrDialog">
     <div class="modal-head"><div><div class="eyebrow">ROBINHOOD OCR</div><div class="modal-title" data-i18n="ocrTitle">从截图创建 Combo</div></div><button class="btn icon" id="closeOcrDialog" type="button">×</button></div>
     <div class="modal-body">
@@ -1134,6 +1173,7 @@
           gameBetAdded: '比赛投注已添加', chooseGameBet: '请选择比赛并完成投注条件。', push: '走盘 PUSH',
           game: '比赛', selectGame: '选择比赛', team: '球队', selectTeam: '选择球队', market: '项目', target: '目标',
           searchPlayers: '搜索球员', searchPlayersPlaceholder: '输入姓名、号码或位置', selectVisible: '选择当前显示', clearSelection: '清除选择',
+          choosePlayer: '选择球员', mobilePlayerStep: '手机球员选择', allTeams: '全部', tapPlayerHint: '点击球员即可完成选择。',
           chooseGameTeamFirst: '请先选择比赛和球队。', loadingRoster: '正在读取球队名单…', noPlayers: '没有找到符合条件的球员。',
           selectedPlayers: '已选择 {count} 名球员', addSelectedPlayers: '＋ 添加所选球员',
           legConditions: 'Leg 条件', addLeg: '＋ 添加 Leg', legHint: '可以批量加入同队球员，也可以逐个选择比赛和搜索球员。',
@@ -1209,6 +1249,7 @@
           gameBetAdded: 'Game bet added', chooseGameBet: 'Select a game and complete the betting condition.', push: 'PUSH',
           game: 'Game', selectGame: 'Select game', team: 'Team', selectTeam: 'Select team', market: 'Market', target: 'Target',
           searchPlayers: 'Search players', searchPlayersPlaceholder: 'Name, number, or position', selectVisible: 'Select visible', clearSelection: 'Clear selection',
+          choosePlayer: 'Choose player', mobilePlayerStep: 'MOBILE PLAYER PICKER', allTeams: 'All', tapPlayerHint: 'Tap a player to select.',
           chooseGameTeamFirst: 'Select a game and team first.', loadingRoster: 'Loading active roster…', noPlayers: 'No matching players found.',
           selectedPlayers: '{count} players selected', addSelectedPlayers: '＋ Add selected players',
           legConditions: 'Leg Conditions', addLeg: '＋ Add Leg', legHint: 'Quick-add multiple players from one team, or add and search each player individually.',
@@ -1297,6 +1338,8 @@
       let syncTimer = null;
       let syncBusy = false;
       let comboNameAuto = false;
+      let mobilePlayerRow = null;
+      let mobilePlayerTeam = 'ALL';
 
       const $ = (id) => document.getElementById(id);
       const el = {
@@ -1310,6 +1353,7 @@
         editingId: $('editingId'), modalTitle: $('modalTitle'), toastStack: $('toastStack'),
         quickGame: $('quickGame'), quickTeam: $('quickTeam'), quickMarket: $('quickMarket'), quickTarget: $('quickTarget'),
         quickSearch: $('quickSearch'), quickRoster: $('quickRoster'), quickSelectedCount: $('quickSelectedCount'), quickAddPlayersBtn: $('quickAddPlayersBtn'),
+        mobilePlayerDialog: $('mobilePlayerDialog'), mobilePlayerSearch: $('mobilePlayerSearch'), mobilePlayerTeams: $('mobilePlayerTeams'), mobilePlayerList: $('mobilePlayerList'),
         gameGrid: $('gameGrid'), dashboardLoadingBar: $('dashboardLoadingBar'), gameDialog: $('gameDialog'),
         gameDialogTitle: $('gameDialogTitle'), gameDetailBody: $('gameDetailBody'),
         authDialog: $('authDialog'), authForm: $('authForm'), authEmail: $('authEmail'),
@@ -1340,6 +1384,16 @@
         $('addComboBtn').addEventListener('click', () => openComboDialog());
         $('closeDialog').addEventListener('click', closeDialog);
         $('cancelDialog').addEventListener('click', closeDialog);
+        $('closeMobilePlayerDialog').addEventListener('click', closeMobilePlayerPicker);
+        el.mobilePlayerSearch.addEventListener('input', renderMobilePlayerPicker);
+        el.mobilePlayerTeams.addEventListener('click', (event) => {
+          const button = event.target.closest('[data-mobile-team]');
+          if (!button) return;
+          mobilePlayerTeam = button.dataset.mobileTeam || 'ALL';
+          renderMobilePlayerPicker();
+        });
+        el.mobilePlayerList.addEventListener('click', selectMobilePlayer);
+        window.addEventListener('resize', syncMobilePlayerInputs);
         $('addLegBtn').addEventListener('click', () => addLegEditor());
         el.comboMode.addEventListener('change', updateRequiredVisibility);
         el.comboDate.addEventListener('change', async () => {
@@ -2786,6 +2840,7 @@
         const gameSelect = row.querySelector('.game-select');
         const playerInput = row.querySelector('.player-input');
         const suggestions = row.querySelector('.suggestions');
+        syncMobilePlayerInput(playerInput);
 
         gameSelect.addEventListener('change', async () => {
           row.dataset.gamePk = gameSelect.value;
@@ -2796,7 +2851,18 @@
           if (gameSelect.value) await ensureRosterForGame(gameSelect.value);
         });
 
+        playerInput.addEventListener('pointerdown', (event) => {
+          if (!mobilePlayerPickerEnabled()) return;
+          event.preventDefault();
+          openMobilePlayerPicker(row);
+        });
+        playerInput.addEventListener('keydown', (event) => {
+          if (!mobilePlayerPickerEnabled() || !['Enter', ' '].includes(event.key)) return;
+          event.preventDefault();
+          openMobilePlayerPicker(row);
+        });
         playerInput.addEventListener('focus', async () => {
+          if (mobilePlayerPickerEnabled()) return;
           if (!gameSelect.value) return;
           await ensureRosterForGame(gameSelect.value);
           renderPlayerSuggestions(row, playerInput.value);
@@ -2820,6 +2886,85 @@
         });
 
         if (gameSelect.value) ensureRosterForGame(gameSelect.value).catch(() => {});
+      }
+
+      function mobilePlayerPickerEnabled() {
+        return window.matchMedia('(max-width: 680px)').matches;
+      }
+
+      function syncMobilePlayerInput(input) {
+        if (!input) return;
+        input.readOnly = mobilePlayerPickerEnabled();
+        input.setAttribute('aria-haspopup', mobilePlayerPickerEnabled() ? 'dialog' : 'listbox');
+      }
+
+      function syncMobilePlayerInputs() {
+        document.querySelectorAll('.player-input').forEach(syncMobilePlayerInput);
+      }
+
+      async function openMobilePlayerPicker(row) {
+        const gamePk = String(row.querySelector('.game-select')?.value || '');
+        if (!gamePk) {
+          toast(t('incompleteTitle'), t('chooseGameTeamFirst'), 'bad');
+          return;
+        }
+        mobilePlayerRow = row;
+        mobilePlayerTeam = row.dataset.teamAbbr || 'ALL';
+        el.mobilePlayerSearch.value = '';
+        el.mobilePlayerList.innerHTML = `<div class="quick-empty">${escapeHtml(t('loadingRoster'))}</div>`;
+        if (!el.mobilePlayerDialog.open) el.mobilePlayerDialog.showModal();
+        await ensureRosterForGame(gamePk);
+        if (!mobilePlayerRow || !el.mobilePlayerDialog.open) return;
+        renderMobilePlayerPicker();
+        setTimeout(() => el.mobilePlayerSearch.focus(), 40);
+      }
+
+      function closeMobilePlayerPicker() {
+        mobilePlayerRow = null;
+        if (el.mobilePlayerDialog.open) el.mobilePlayerDialog.close();
+      }
+
+      function renderMobilePlayerPicker() {
+        if (!mobilePlayerRow) return;
+        const gamePk = String(mobilePlayerRow.querySelector('.game-select')?.value || '');
+        const game = gamesForEditor.find(g => String(g.gamePk) === gamePk);
+        const players = rosterCache.get(gamePk) || [];
+        const teams = [
+          { value: 'ALL', label: t('allTeams') },
+          ...(game ? [
+            { value: game.awayAbbr, label: game.awayAbbr },
+            { value: game.homeAbbr, label: game.homeAbbr }
+          ] : [])
+        ];
+        if (!teams.some(team => team.value === mobilePlayerTeam)) mobilePlayerTeam = 'ALL';
+        el.mobilePlayerTeams.innerHTML = teams.map(team => `<button type="button" class="btn mobile-team-filter ${mobilePlayerTeam === team.value ? 'primary' : ''}" data-mobile-team="${escapeAttr(team.value)}">${escapeHtml(team.label)}</button>`).join('');
+        const q = el.mobilePlayerSearch.value.trim().toLowerCase();
+        const filtered = players.filter(player =>
+          (mobilePlayerTeam === 'ALL' || player.teamAbbr === mobilePlayerTeam) &&
+          (!q || player.name.toLowerCase().includes(q) || String(player.number || '').includes(q) || String(player.position || '').toLowerCase().includes(q))
+        );
+        if (!filtered.length) {
+          el.mobilePlayerList.innerHTML = `<div class="quick-empty">${escapeHtml(t('noPlayers'))}</div>`;
+          return;
+        }
+        const selectedId = String(mobilePlayerRow.dataset.playerId || '');
+        el.mobilePlayerList.innerHTML = filtered.map(player => {
+          const selected = String(player.id) === selectedId;
+          return `<button type="button" class="mobile-player-option ${selected ? 'selected' : ''}" data-mobile-player="${player.id}" data-player-name="${escapeAttr(player.name)}" data-team-abbr="${escapeAttr(player.teamAbbr)}">
+            <span class="mobile-player-team">${escapeHtml(player.teamAbbr)}</span>
+            <span class="mobile-player-copy"><span class="mobile-player-name">${escapeHtml(player.name)}</span><span class="mobile-player-meta">${escapeHtml(player.position || t('playerMetaFallback'))} · #${escapeHtml(player.number || '—')}</span></span>
+            ${selected ? '<span class="mobile-player-checkmark">✓</span>' : ''}
+          </button>`;
+        }).join('');
+      }
+
+      function selectMobilePlayer(event) {
+        const button = event.target.closest('[data-mobile-player]');
+        if (!button || !mobilePlayerRow) return;
+        mobilePlayerRow.dataset.playerId = button.dataset.mobilePlayer;
+        mobilePlayerRow.dataset.teamAbbr = button.dataset.teamAbbr || '';
+        mobilePlayerRow.querySelector('.player-input').value = button.dataset.playerName || '';
+        closeMobilePlayerPicker();
       }
 
       function renderPlayerSuggestions(row, query) {
@@ -2977,11 +3122,11 @@
         checkBusy = true;
         $('refreshBtn').disabled = true;
         $('refreshBtn').textContent = t('checking');
-        const checkDate = todayString();
-        // Both manual and automatic checks are intentionally restricted to
-        // today's records. Historical pending rows must never create repeated
-        // MLB feed requests.
-        const checkedCombos = combos.filter(c => c.date === checkDate);
+        // A manual check follows the date currently shown on screen. The
+        // timer remains limited to today and skips already-settled combos, so
+        // it never scans the user's historical records in the background.
+        const checkDate = manual ? selectedDate : todayString();
+        const checkedCombos = combos.filter(c => c.date === checkDate && (manual || !['MATCHED', 'FAILED'].includes(getComboStatus(c))));
         const gamePks = [...new Set(checkedCombos.flatMap(c => c.legs.map(l => l.gamePk)).filter(Boolean))];
         let successCount = 0;
         try {
@@ -2994,7 +3139,7 @@
               console.error(`Game ${gamePk}`, error);
             }
           }
-          await loadDashboard(selectedDate, true);
+          if (manual || selectedDate === checkDate) await loadDashboard(checkDate, true);
           const now = new Date().toISOString();
           checkedCombos.forEach(combo => {
             combo.updatedAt = now;
@@ -3034,7 +3179,7 @@
         };
         combos.forEach(combo => combo.legs.forEach(leg => {
           if (String(leg.gamePk) !== String(gamePk)) return;
-          leg.gameState = normalizeGameState(state);
+          leg.gameState = normalizeGameState(state, detailed);
           leg.gameDetail = detailed;
           if (leg.legType === 'GAME') {
             const away = n(feed.liveData?.linescore?.teams?.away?.runs);
@@ -3110,8 +3255,9 @@
         return `${team} ML`;
       }
 
-      function normalizeGameState(state) {
-        if (state === 'Final') return 'Final';
+      function normalizeGameState(state, detailed = '') {
+        const detail = String(detailed || '').toLowerCase();
+        if (state === 'Final' || ['final', 'game over', 'completed early', 'forfeit'].some(label => detail.includes(label))) return 'Final';
         if (state === 'Live') return 'Live';
         return 'Preview';
       }
