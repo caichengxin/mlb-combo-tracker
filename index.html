@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="dark" />
-  <title>MLB Game Center & Combo Tracker v7</title>
+  <title>MLB Game Center & Combo Tracker v20</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     :root {
       --bg: #08101f;
@@ -746,6 +747,10 @@
     .sample-pill.medium { color: var(--yellow); border-color: rgba(255,204,102,.35); background: rgba(255,204,102,.08); }
     .sample-pill.high { color: var(--green); border-color: rgba(66,211,146,.34); background: rgba(66,211,146,.08); }
     .bvp-empty { margin-top: 11px; padding: 18px; border: 1px dashed #365070; border-radius: 11px; color: var(--muted); text-align: center; font-size: 11px; }
+    .ocr-preview { display:none; width:100%; max-height:260px; object-fit:contain; margin-top:12px; border:1px solid var(--border); border-radius:12px; background:#07101c; }
+    .ocr-progress { height:8px; overflow:hidden; border-radius:99px; background:#101d31; margin-top:12px; }
+    .ocr-progress > span { display:block; width:0; height:100%; background:linear-gradient(90deg,var(--accent),var(--green)); transition:width .2s; }
+    .ocr-text { min-height:150px; resize:vertical; font-family:inherit; line-height:1.55; }
 
     @media (max-width: 900px) {
       .stats-grid { grid-template-columns: repeat(3, 1fr); }
@@ -758,10 +763,20 @@
       .live-summary { grid-template-columns: 1fr; }
     }
     @media (max-width: 680px) {
-      .app-shell { padding: 15px 12px 70px; }
+      body { background:#07101c; }
+      .app-shell { padding: 10px 10px 92px; }
       .topbar { flex-direction: column; }
-      .top-actions { justify-content: flex-start; }
+      .brand h1 { font-size:17px; }
+      .brand .subtitle { display:none; }
+      .top-actions { width:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+      .top-actions .account-box { grid-column:1 / -1; }
+      .top-actions .btn { min-height:42px; padding:8px 6px; font-size:10px; }
+      #addComboBtn { position:fixed; z-index:45; right:16px; bottom:18px; width:58px; height:58px; border-radius:50%; font-size:0; box-shadow:0 10px 30px rgba(40,120,255,.42); }
+      #addComboBtn::after { content:'＋'; font-size:28px; }
       .toolbar { grid-template-columns: 1fr; }
+      .toolbar { position:sticky; top:0; z-index:30; padding:10px; border-radius:14px; background:rgba(9,18,31,.96); backdrop-filter:blur(12px); }
+      .date-nav { display:grid; grid-template-columns:42px 1fr 42px 54px; }
+      #refreshBtn { min-height:46px; font-size:13px; }
       .refresh-meta { text-align: left; }
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
       .form-grid { grid-template-columns: 1fr; }
@@ -793,6 +808,15 @@
       .pitching-team-grid { grid-template-columns:1fr; }
       .pitching-team-panel { display:none; }
       .pitching-team-panel.mobile-active { display:block; }
+      dialog { width:100vw; max-width:none; height:100dvh; max-height:none; margin:0; border:0; border-radius:0; }
+      dialog .modal-head { position:sticky; top:0; z-index:5; background:#0a1423; }
+      dialog .modal-body { padding:12px; }
+      dialog .modal-footer { position:sticky; bottom:0; z-index:5; padding:10px 12px calc(10px + env(safe-area-inset-bottom)); background:#0a1423; }
+      .quick-add-panel, .legs-editor { border-radius:14px; padding:12px; }
+      .player-stats-tabs, .game-detail-tabs, .tabs { overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px; }
+      .player-stats-tab, .game-detail-tab, .tab { flex:0 0 auto; min-height:40px; }
+      .combo-card { border-radius:16px; padding:13px; }
+      .combo-head { gap:8px; }
     }
   </style>
 </head>
@@ -813,6 +837,7 @@
           <button class="btn" id="accountBtn" type="button">登录 / 同步</button>
         </div>
         <button class="btn" id="notifyBtn"><span data-i18n="enableNotifications">🔔 开启通知</span></button>
+        <button class="btn" id="ocrComboBtn" data-i18n="ocrCombo">📷 截图建 Combo</button>
         <button class="btn" id="demoBtn" data-i18n="loadDemo">载入演示 Combo</button>
         <button class="btn" id="exportBtn" data-i18n="export">导出</button>
         <label class="btn" for="importFile" data-i18n="import">导入</label>
@@ -1024,6 +1049,18 @@
     </form>
   </dialog>
 
+  <dialog id="ocrDialog">
+    <div class="modal-head"><div><div class="eyebrow">ROBINHOOD OCR</div><div class="modal-title" data-i18n="ocrTitle">从截图创建 Combo</div></div><button class="btn icon" id="closeOcrDialog" type="button">×</button></div>
+    <div class="modal-body">
+      <div class="field"><label for="ocrImage" data-i18n="ocrChoose">选择 Robinhood 合约事件截图</label><input id="ocrImage" type="file" accept="image/*" /></div>
+      <img class="ocr-preview" id="ocrPreview" alt="Screenshot preview" />
+      <div class="ocr-progress"><span id="ocrProgressBar"></span></div>
+      <div class="loading-note" id="ocrStatus" data-i18n="ocrPrivacy">图片只在当前浏览器中识别，不会上传到服务器。</div>
+      <div class="field" style="margin-top:12px"><label for="ocrText" data-i18n="ocrRecognized">识别文字（可先修改）</label><textarea class="ocr-text" id="ocrText" placeholder="OCR text"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn" id="cancelOcr" type="button" data-i18n="cancel">取消</button><button class="btn primary" id="ocrCreateDraft" type="button" data-i18n="ocrDraft">识别并创建待确认 Combo</button></div>
+  </dialog>
+
   <dialog class="game-dialog" id="gameDialog">
     <div class="modal-head">
       <div>
@@ -1080,6 +1117,7 @@
         zh: {
           pageTitle: 'MLB Game Center & Combo Tracker', subtitle: '比分 · 首发阵容 · 球员赛季数据 · Combo 自动追踪',
           enableNotifications: '🔔 开启通知', loadDemo: '载入演示 Combo', export: '导出', import: '导入', addCombo: '＋ 添加 Combo',
+          ocrCombo: '📷 截图建 Combo', ocrTitle: '从截图创建 Combo', ocrChoose: '选择 Robinhood 合约事件截图', ocrPrivacy: '图片只在当前浏览器中识别，不会上传到服务器。', ocrRecognized: '识别文字（可先修改）', ocrDraft: '识别并创建待确认 Combo',
           previousDay: '前一天', nextDay: '后一天', today: '今天', refreshNow: '↻ 立即检查', checking: '检查中…',
           lastUpdatedLabel: '最后更新：', neverChecked: '尚未检查', nextCheckLabel: '下次检查：',
           statTotal: '今日 Combo', statMatched: '已命中', statLive: '进行中', statPending: '未开赛', statFailed: '未命中结束',
@@ -1127,6 +1165,8 @@
           clickPlayerStats: '点击球员查看本赛季数据', seasonStats: '{season} 赛季数据', loadingPlayerStats: '正在读取球员赛季数据…',
           noSeasonStats: '暂时没有读取到该球员的本赛季数据。', statsLoadFailed: '球员数据读取失败', record: '战绩',
           seasonTab: '赛季数据', recent5: '最近 5 场', recent10: '最近 10 场', loadingPitchLog: '正在读取投手比赛日志…',
+          previousGame: '上一场', recent3: '最近 3 场', loadingHitLog: '正在读取打者比赛日志…', noHitLog: '本赛季暂无打者比赛日志。',
+          hitLogFailed: '打者比赛日志读取失败', recentGamesSummary: '最近 {count} 场逐场表现', avgHits: '场均 H', gamesWithHit: '有安打场次',
           noPitchLog: '本赛季暂无投手比赛日志。', pitchLogFailed: '投手比赛日志读取失败', avgSo: '场均 SO', starts: '先发',
           vsBatters: '对阵打者', vsStarter: '对今日先发', last5Years: '最近 5 年', careerTotal: '生涯全部',
           loadingBvp: '正在读取历史对阵数据…', noBvp: '暂无历史交手记录。', bvpFailed: '历史对阵数据读取失败',
@@ -1152,6 +1192,7 @@
         en: {
           pageTitle: 'MLB Game Center & Combo Tracker', subtitle: 'Scores · Starting lineups · Season stats · Automatic combo tracking',
           enableNotifications: '🔔 Enable alerts', loadDemo: 'Load demo combo', export: 'Export', import: 'Import', addCombo: '＋ Add Combo',
+          ocrCombo: '📷 Combo from image', ocrTitle: 'Create Combo from screenshot', ocrChoose: 'Choose a Robinhood event-contract screenshot', ocrPrivacy: 'The image is recognized locally in this browser and is not uploaded.', ocrRecognized: 'Recognized text (editable)', ocrDraft: 'Recognize and create review draft',
           previousDay: 'Previous day', nextDay: 'Next day', today: 'Today', refreshNow: '↻ Check now', checking: 'Checking…',
           lastUpdatedLabel: 'Last update: ', neverChecked: 'Not checked yet', nextCheckLabel: 'Next check: ',
           statTotal: 'Today’s Combos', statMatched: 'Matched', statLive: 'Live', statPending: 'Not started', statFailed: 'Finished / Missed',
@@ -1199,6 +1240,8 @@
           clickPlayerStats: 'Select a player to view season stats', seasonStats: '{season} Season Stats', loadingPlayerStats: 'Loading player season stats…',
           noSeasonStats: 'No season stats are available for this player yet.', statsLoadFailed: 'Player stats could not be loaded', record: 'Record',
           seasonTab: 'Season Stats', recent5: 'Last 5', recent10: 'Last 10', loadingPitchLog: 'Loading pitching game log…',
+          previousGame: 'Previous', recent3: 'Last 3', loadingHitLog: 'Loading hitting game log…', noHitLog: 'No hitting game log is available for this season.',
+          hitLogFailed: 'Hitting game log could not be loaded', recentGamesSummary: 'Game-by-game · Last {count}', avgHits: 'AVG H', gamesWithHit: 'Games with H',
           noPitchLog: 'No pitching game log is available for this season.', pitchLogFailed: 'Pitching game log could not be loaded', avgSo: 'AVG SO', starts: 'Starts',
           vsBatters: 'Vs Batters', vsStarter: 'Vs Today’s Starter', last5Years: 'Last 5 Years', careerTotal: 'Career',
           loadingBvp: 'Loading matchup history…', noBvp: 'No prior matchup data is available.', bvpFailed: 'Matchup history could not be loaded',
@@ -1318,6 +1361,11 @@
         $('exportBtn').addEventListener('click', exportData);
         $('importFile').addEventListener('change', importData);
         $('notifyBtn').addEventListener('click', requestNotifications);
+        $('ocrComboBtn').addEventListener('click', openOcrDialog);
+        $('closeOcrDialog').addEventListener('click', closeOcrDialog);
+        $('cancelOcr').addEventListener('click', closeOcrDialog);
+        $('ocrImage').addEventListener('change', previewOcrImage);
+        $('ocrCreateDraft').addEventListener('click', recognizeAndCreateDraft);
         $('languageBtn').addEventListener('click', toggleLanguage);
         $('accountBtn').addEventListener('click', openAuthDialog);
         $('closeAuthDialog').addEventListener('click', () => el.authDialog.close());
@@ -1375,6 +1423,15 @@
               historyButton.dataset.playerId,
               historyButton.dataset.playerName || '',
               Number(historyButton.dataset.limit) || 5
+            );
+            return;
+          }
+          const hitHistoryButton = event.target.closest('[data-hit-history]');
+          if (hitHistoryButton) {
+            loadHitterHistory(
+              hitHistoryButton.dataset.playerId,
+              hitHistoryButton.dataset.playerName || '',
+              Number(hitHistoryButton.dataset.limit) || 3
             );
           }
         });
@@ -2175,8 +2232,52 @@
       function hitterStatsTabs(playerId, playerName, active) {
         return `<div class="player-stats-tabs">
           <button class="player-stats-tab ${active === 'season' ? 'active' : ''}" type="button" data-player-stats="${escapeAttr(playerId)}" data-player-name="${escapeAttr(playerName)}" data-stats-group="hitting">${escapeHtml(t('seasonTab'))}</button>
+          <button class="player-stats-tab ${active === 'history' ? 'active' : ''}" type="button" data-hit-history data-player-id="${escapeAttr(playerId)}" data-player-name="${escapeAttr(playerName)}" data-limit="1">${escapeHtml(t('previousGame'))}</button>
+          <button class="player-stats-tab ${active === 'history' ? 'active' : ''}" type="button" data-hit-history data-player-id="${escapeAttr(playerId)}" data-player-name="${escapeAttr(playerName)}" data-limit="3">${escapeHtml(t('recent3'))}</button>
+          <button class="player-stats-tab ${active === 'history' ? 'active' : ''}" type="button" data-hit-history data-player-id="${escapeAttr(playerId)}" data-player-name="${escapeAttr(playerName)}" data-limit="5">${escapeHtml(t('recent5'))}</button>
           <button class="player-stats-tab ${active === 'bvp' ? 'active' : ''}" type="button" data-bvp data-player-id="${escapeAttr(playerId)}" data-player-name="${escapeAttr(playerName)}" data-role="hitting" data-scope="5Y">${escapeHtml(t('vsStarter'))}</button>
         </div>`;
+      }
+
+      async function loadHitterHistory(playerId, playerName, limit = 3) {
+        const panel = $('playerStatsPanel');
+        if (!panel) return;
+        const season = selectedDate.slice(0, 4);
+        const key = `${playerId}|hittingGameLog|${season}`;
+        panel.innerHTML = `<div class="player-stats-name">${escapeHtml(playerName)}</div>${hitterStatsTabs(playerId, playerName, 'history')}<div class="player-stats-note">${escapeHtml(t('loadingHitLog'))}</div>`;
+        try {
+          let rows = playerStatsCache.get(key);
+          if (!rows) {
+            const data = await fetchJson(`${API}/v1/people/${playerId}/stats?stats=gameLog&group=hitting&season=${season}`);
+            rows = (data.stats || []).flatMap(row => row.splits || []).map(split => ({
+              date: split.date || '', opponent: split.opponent?.name || split.team?.name || '—', stat: split.stat || {}
+            })).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+            playerStatsCache.set(key, rows);
+          }
+          const recent = (rows || []).slice(0, limit);
+          if (!recent.length) {
+            panel.innerHTML = `<div class="player-stats-name">${escapeHtml(playerName)}</div>${hitterStatsTabs(playerId, playerName, 'history')}<div class="player-stats-note">${escapeHtml(t('noHitLog'))}</div>`;
+            return;
+          }
+          const totalH = recent.reduce((sum, row) => sum + n(row.stat.hits), 0);
+          const hitGames = recent.filter(row => n(row.stat.hits) > 0).length;
+          const totalTb = recent.reduce((sum, row) => sum + n(row.stat.totalBases), 0);
+          panel.innerHTML = `
+            <div class="player-stats-head"><div><div class="player-stats-name">${escapeHtml(playerName)}</div><div class="player-stats-note">${escapeHtml(t('recentGamesSummary', { count: recent.length }))}</div></div><span class="status-pill status-live">HITTING</span></div>
+            ${hitterStatsTabs(playerId, playerName, 'history')}
+            <div class="pitch-log-summary">
+              <div class="player-stat"><strong>${totalH}</strong><span>H</span></div>
+              <div class="player-stat"><strong>${(totalH / recent.length).toFixed(1)}</strong><span>${escapeHtml(t('avgHits'))}</span></div>
+              <div class="player-stat"><strong>${hitGames}/${recent.length}</strong><span>${escapeHtml(t('gamesWithHit'))}</span></div>
+              <div class="player-stat"><strong>${totalTb}</strong><span>TB</span></div>
+            </div>
+            <div class="pitch-log-wrap"><table class="pitch-log">
+              <thead><tr><th>${escapeHtml(t('dateLabel'))}</th><th>${escapeHtml(t('opponent'))}</th><th>AB</th><th>H</th><th>HR</th><th>TB</th><th>RBI</th><th>BB</th><th>SO</th></tr></thead>
+              <tbody>${recent.map(row => `<tr><td>${escapeHtml(formatLogDate(row.date))}</td><td>${escapeHtml(row.opponent)}</td><td>${n(row.stat.atBats)}</td><td><strong>${n(row.stat.hits)}</strong></td><td>${n(row.stat.homeRuns)}</td><td><strong>${n(row.stat.totalBases)}</strong></td><td>${n(row.stat.rbi)}</td><td>${n(row.stat.baseOnBalls)}</td><td>${n(row.stat.strikeOuts)}</td></tr>`).join('')}</tbody>
+            </table></div>`;
+        } catch (error) {
+          panel.innerHTML = `<div class="player-stats-name">${escapeHtml(playerName)}</div>${hitterStatsTabs(playerId, playerName, 'history')}<div class="player-stats-note">${escapeHtml(t('hitLogFailed'))}: ${escapeHtml(error.message)}</div>`;
+        }
       }
 
       function currentDashboardGame() {
@@ -2432,6 +2533,156 @@
         if (combo.mode === 'ANY') return t('anyOne');
         if (combo.mode === 'AT_LEAST') return t('atLeast', { count: getRequiredCount(combo) });
         return t('allRequired');
+      }
+
+      function openOcrDialog() {
+        $('ocrImage').value = '';
+        $('ocrText').value = '';
+        $('ocrPreview').removeAttribute('src');
+        $('ocrPreview').style.display = 'none';
+        $('ocrProgressBar').style.width = '0%';
+        $('ocrStatus').textContent = t('ocrPrivacy');
+        $('ocrDialog').showModal();
+      }
+
+      function closeOcrDialog() { $('ocrDialog').close(); }
+
+      function previewOcrImage(event) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        const preview = $('ocrPreview');
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+      }
+
+      function parseOcrLegs(text) {
+        const marketMap = [
+          [/\b(hrr|hits?\s*\+\s*runs?\s*\+\s*rbis?)\b/i, 'H_R_RBI'],
+          [/\b(total bases?|tb)\b/i, 'TB'], [/\b(home runs?|homers?|hr)\b/i, 'HR'], [/\b(rbis?)\b/i, 'RBI'],
+          [/\b(strikeouts?|strike outs?|ks|so)\b/i, 'SO'], [/\b(stolen bases?|sb)\b/i, 'SB'],
+          [/\b(hits?)\b/i, 'H'], [/\b(runs?)\b/i, 'R'], [/\b(walks?|bb)\b/i, 'BB']
+        ];
+        const lines = String(text || '').split(/\r?\n/).map(line => line.replace(/[|•·]/g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean);
+        const results = [];
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const byTeam = line.match(/\b([A-Z]{2,3})\s+by\s+(\d+(?:\.5)?)/i);
+          if (byTeam) {
+            results.push({ type: 'GAME', teamAbbr: byTeam[1].toUpperCase(), market: 'SPREAD', line: -Number(byTeam[2]), source: line });
+            continue;
+          }
+          const yesTeam = line.match(/^\s*([A-Z]{2,3})\s+(?:moneyline\s+|ml\s+)?yes\b/i);
+          if (yesTeam) {
+            results.push({ type: 'GAME', teamAbbr: yesTeam[1].toUpperCase(), market: 'MONEYLINE', line: null, source: line });
+            continue;
+          }
+          const found = marketMap.find(([rx]) => rx.test(line));
+          if (!found) continue;
+          const targetMatch = line.match(/(?:over\s*)?(\d+(?:\.5)?)\s*\+?/i) || line.match(/\b(\d+(?:\.5)?)\b/);
+          const target = Math.max(1, Math.ceil(Number(targetMatch?.[1] || 1)));
+          const abbreviated = line.match(/\b([A-Z])\s*\.\s*([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'\-]+)\b/i);
+          let name = abbreviated ? `${abbreviated[1].toUpperCase()}. ${abbreviated[2]}` : line
+            .replace(found[0], ' ').replace(/\b(over|under|more|less|yes|no|or more|at least)\b/ig, ' ')
+            .replace(/\$?\d+(?:\.\d+)?\+?|[()]/g, ' ').replace(/\s+/g, ' ').trim();
+          if (name.split(' ').length < 2 && i > 0) name = lines[i - 1].replace(/[^A-Za-zÀ-ÿ' .-]/g, ' ').replace(/\s+/g, ' ').trim();
+          const previousShort = name.match(/^\s*([A-Za-z])\s*\.\s*([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'\-]+)\s*$/);
+          if (previousShort) name = `${previousShort[1].toUpperCase()}. ${previousShort[2]}`;
+          name = name.replace(/^(mlb|baseball)\s+/i, '').trim();
+          if (name.split(' ').length >= 2) results.push({ type: 'PLAYER', name, market: found[1], target, source: line });
+        }
+        return results.filter((row, index, all) => all.findIndex(x =>
+          x.type === row.type && x.market === row.market &&
+          (row.type === 'GAME' ? x.teamAbbr === row.teamAbbr && x.line === row.line : x.name.toLowerCase() === row.name.toLowerCase())
+        ) === index);
+      }
+
+      function normalizedPersonName(value) {
+        return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z' -]/g, ' ').replace(/\s+/g, ' ').trim();
+      }
+
+      function findOcrPlayer(candidate, rosters) {
+        const raw = String(candidate.name || '').trim();
+        const short = raw.match(/^\s*([A-Za-z])\s*\.\s*([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'\-]+)\s*$/);
+        const needle = normalizedPersonName(raw);
+        const allPlayers = rosters.flat();
+        let matches = allPlayers.filter(player => normalizedPersonName(player.name) === needle);
+        if (!matches.length && short) {
+          const initial = short[1].toLowerCase();
+          const surname = normalizedPersonName(short[2]);
+          matches = allPlayers.filter(player => {
+            const parts = normalizedPersonName(player.name).split(' ');
+            return parts.length > 1 && parts[0][0] === initial && parts[parts.length - 1] === surname;
+          });
+        }
+        if (!matches.length && !short) matches = allPlayers.filter(player => normalizedPersonName(player.name).includes(needle));
+        const unique = matches.filter((player, index, all) => all.findIndex(x => String(x.id) === String(player.id)) === index);
+        return unique.length === 1 ? unique[0] : null;
+      }
+
+      function normalizedTeamAbbr(value) {
+        const abbr = String(value || '').toUpperCase().replace(/[^A-Z]/g, '');
+        return ({ SF: 'SFG', SD: 'SDP', KC: 'KCR', TB: 'TBR', AZ: 'ARI', CWS: 'CHW', WSH: 'WSN' })[abbr] || abbr;
+      }
+
+      function findOcrGame(teamAbbr) {
+        const wanted = normalizedTeamAbbr(teamAbbr);
+        for (const game of gamesForEditor) {
+          if (normalizedTeamAbbr(game.awayAbbr) === wanted) return { game, selection: 'away', teamName: game.awayName, teamAbbr: game.awayAbbr };
+          if (normalizedTeamAbbr(game.homeAbbr) === wanted) return { game, selection: 'home', teamName: game.homeName, teamAbbr: game.homeAbbr };
+        }
+        return null;
+      }
+
+      async function recognizeAndCreateDraft() {
+        const file = $('ocrImage').files?.[0];
+        let textValue = $('ocrText').value.trim();
+        if (!textValue && !file) return toast('OCR', currentLanguage === 'zh' ? '请先选择截图。' : 'Choose a screenshot first.', 'bad');
+        try {
+          if (!textValue) {
+            if (!window.Tesseract) throw new Error(currentLanguage === 'zh' ? 'OCR 组件尚未载入，请检查网络后重试。' : 'OCR component is not loaded. Check the connection and retry.');
+            $('ocrCreateDraft').disabled = true;
+            const result = await Tesseract.recognize(file, 'eng', { logger: message => {
+              if (message.progress != null) $('ocrProgressBar').style.width = `${Math.round(message.progress * 100)}%`;
+              if (message.status) $('ocrStatus').textContent = `${message.status} ${message.progress == null ? '' : Math.round(message.progress * 100) + '%'}`;
+            }});
+            textValue = result.data?.text || '';
+            $('ocrText').value = textValue;
+          }
+          const parsed = parseOcrLegs(textValue);
+          if (!parsed.length) throw new Error(currentLanguage === 'zh' ? '没有识别到“球员 + 项目 + 数值”。你可以修改识别文字后再试。' : 'No player + market + value rows were recognized. Edit the text and retry.');
+          closeOcrDialog();
+          await openComboDialog();
+          el.platform.value = 'Robinhood · OCR';
+          el.legsEditor.innerHTML = '';
+          const rosters = await Promise.all(gamesForEditor.map(game => ensureRosterForGame(game.gamePk)));
+          let added = 0;
+          const unresolved = [];
+          parsed.forEach(candidate => {
+            if (candidate.type === 'GAME') {
+              const resolved = findOcrGame(candidate.teamAbbr);
+              if (resolved) {
+                addGameBetEditor({ legType: 'GAME', gamePk: resolved.game.gamePk, gameLabel: resolved.game.label, market: candidate.market,
+                  selection: resolved.selection, line: candidate.line, teamName: resolved.teamName, teamAbbr: resolved.teamAbbr });
+                added++;
+              } else unresolved.push(candidate.source || candidate.teamAbbr);
+              return;
+            }
+            const match = findOcrPlayer(candidate, rosters);
+            const game = match ? gamesForEditor.find((item, index) => rosters[index].some(player => String(player.id) === String(match.id))) : null;
+            if (match && game) {
+              addLegEditor({ gamePk: game.gamePk, playerId: match.id, playerName: match.name, teamAbbr: match.teamAbbr, market: candidate.market, target: candidate.target });
+              added++;
+            } else unresolved.push(candidate.name);
+          });
+          if (!added) addLegEditor();
+          toast(currentLanguage === 'zh' ? 'OCR 待确认 Combo' : 'OCR review draft', currentLanguage === 'zh'
+            ? `已匹配 ${added} 项${unresolved.length ? `；未匹配：${unresolved.join('、')}` : ''}。保存前请逐项核对。`
+            : `${added} legs matched${unresolved.length ? `; unmatched: ${unresolved.join(', ')}` : ''}. Review every leg before saving.`, unresolved.length ? 'bad' : 'good');
+        } catch (error) {
+          toast('OCR', error.message, 'bad');
+        } finally {
+          $('ocrCreateDraft').disabled = false;
+        }
       }
 
       async function openComboDialog(id = '') {
@@ -2726,13 +2977,11 @@
         checkBusy = true;
         $('refreshBtn').disabled = true;
         $('refreshBtn').textContent = t('checking');
-        const active = combos.filter(c => getComboStatus(c) !== 'MATCHED' && getComboStatus(c) !== 'FAILED');
-        // A manual refresh must also re-check completed combos for the selected
-        // date. Older versions may have persisted an incorrect terminal result
-        // (for example pitcher SO was previously read from batting stats).
-        const checkedCombos = manual
-          ? combos.filter(c => c.date === selectedDate)
-          : active;
+        const checkDate = todayString();
+        // Both manual and automatic checks are intentionally restricted to
+        // today's records. Historical pending rows must never create repeated
+        // MLB feed requests.
+        const checkedCombos = combos.filter(c => c.date === checkDate);
         const gamePks = [...new Set(checkedCombos.flatMap(c => c.legs.map(l => l.gamePk)).filter(Boolean))];
         let successCount = 0;
         try {
