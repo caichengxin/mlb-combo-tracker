@@ -658,25 +658,53 @@
     .lineup-panel { border: 1px solid var(--border); border-radius: 15px; background: rgba(13,24,42,.64); overflow: hidden; }
     .lineup-panel-head { display: flex; justify-content: space-between; gap: 9px; align-items: center; padding: 11px 12px; border-bottom: 1px solid var(--border); }
     .lineup-panel-title { font-weight: 800; font-size: 13px; }
+    .lineup-panel-subtitle { color: var(--muted); font-size: 8px; margin-top: 3px; }
     .lineup-stat-toolbar {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
+      display: grid;
+      grid-template-columns: minmax(235px, 1.3fr) minmax(145px, .7fr) minmax(145px, .7fr) minmax(185px, .9fr);
+      gap: 10px;
+      align-items: end;
       margin-top: 13px;
       padding: 10px 12px;
       border: 1px solid rgba(98,165,255,.38);
       border-radius: 13px;
       background: rgba(24,45,75,.32);
     }
-    .lineup-stat-toolbar label { color: var(--muted); font-size: 10px; }
+    .lineup-control { display: grid; gap: 5px; min-width: 0; }
+    .lineup-control-label { color: var(--muted); font-size: 9px; font-weight: 750; letter-spacing: .02em; }
+    .lineup-segmented {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 1fr;
+      gap: 4px;
+      padding: 3px;
+      border: 1px solid rgba(98,165,255,.22);
+      border-radius: 10px;
+      background: rgba(7,15,27,.5);
+    }
+    .lineup-segmented button {
+      min-height: 32px;
+      padding: 5px 8px;
+      border: 0;
+      border-radius: 7px;
+      color: var(--muted);
+      background: transparent;
+      font-size: 9px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .lineup-segmented button.active { color: #fff; background: #254876; box-shadow: 0 1px 5px rgba(0,0,0,.22); }
     .lineup-stat-select {
-      width: auto;
-      min-width: 150px;
+      width: 100%;
+      min-width: 0;
       padding: 7px 31px 7px 10px;
       border-radius: 9px;
       font-size: 11px;
     }
+    .lineup-toolbar-note { grid-column: 1 / -1; color: var(--muted); font-size: 9px; line-height: 1.45; }
+    .lineup-toolbar-note.loading { color: var(--accent); }
+    .lineup-toolbar-note.error { color: var(--red); }
     .lineup-list { display: grid; }
     .lineup-player {
       width: 100%;
@@ -694,12 +722,15 @@
     .lineup-player:last-child { border-bottom: 0; }
     .lineup-player:hover { background: rgba(98,165,255,.08); }
     .bat-order { color: var(--accent); font-size: 11px; font-weight: 850; text-align: center; }
+    .bat-order.rank-1 { color: #ffd86b; }
+    .bat-order.rank-2 { color: #d9e5f4; }
+    .bat-order.rank-3 { color: #d9a56c; }
     .lineup-player-name { min-width: 0; font-size: 12px; font-weight: 720; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .lineup-name-row { display: flex; gap: 6px; align-items: center; min-width: 0; }
     .lineup-player-meta { color: var(--muted); font-size: 9px; margin-top: 2px; }
-    .lineup-stat-result { display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
+    .lineup-stat-result { display: flex; gap: 5px; align-items: center; justify-content: flex-end; }
     .lineup-stat-value {
-      min-width: 54px;
+      min-width: 68px;
       padding: 5px 7px;
       border: 1px solid rgba(98,165,255,.22);
       border-radius: 8px;
@@ -708,12 +739,13 @@
       font-size: 10px;
       font-weight: 850;
       text-align: center;
+      white-space: nowrap;
     }
-    .lineup-stat-value.marked {
-      color: var(--yellow);
-      border-color: rgba(244,201,93,.48);
-      background: rgba(244,201,93,.09);
-    }
+    .lineup-stat-value small { margin-right: 3px; color: var(--muted); font-size: 8px; }
+    .lineup-stat-value.secondary { color: #9fb6d3; background: rgba(7,15,27,.3); }
+    .lineup-stat-value.rank-1 { color: #ffe083; border-color: rgba(244,201,93,.62); background: rgba(244,201,93,.12); }
+    .lineup-stat-value.rank-2 { color: #e5edf8; border-color: rgba(190,207,229,.46); background: rgba(190,207,229,.09); }
+    .lineup-stat-value.rank-3 { color: #e4b17a; border-color: rgba(201,139,80,.48); background: rgba(201,139,80,.09); }
     .stats-arrow { color: var(--muted); }
     .lineup-placeholder { padding: 26px 14px; color: var(--muted); font-size: 11px; text-align: center; }
     .player-stats-panel {
@@ -777,6 +809,8 @@
       .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .player-stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
       .live-summary { grid-template-columns: 1fr; }
+      .lineup-stat-toolbar { grid-template-columns: 1fr 1fr; }
+      .lineup-period-control, .lineup-sort-control, .lineup-toolbar-note { grid-column: 1 / -1; }
     }
     @media (max-width: 680px) {
       body { background:#07101c; }
@@ -819,6 +853,12 @@
       .detail-team.home { flex-direction: row-reverse; justify-content: flex-end; }
       .detail-center { order: -1; }
       .pitcher-strip, .lineup-columns { grid-template-columns: 1fr; }
+      .lineup-stat-toolbar { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); padding: 10px; gap: 9px; }
+      .lineup-segmented button { min-height: 38px; font-size: 10px; }
+      .lineup-stat-select { min-height: 40px; font-size: 12px; }
+      .lineup-player { grid-template-columns: 24px minmax(0, 1fr) auto; gap: 7px; padding: 10px 9px; }
+      .lineup-stat-result { flex-direction: column; gap: 3px; }
+      .lineup-stat-value { min-width: 72px; padding: 4px 6px; font-size: 9px; }
       .player-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .game-detail-tab { min-width: 105px; }
       .pitching-team-grid { grid-template-columns:1fr; }
@@ -1217,7 +1257,11 @@
           thresholdHits: '{target}+ SO', dateLabel: '日期', opponent: '对手', startShort: '先发', pitches: '投球数',
           scheduled: '未开赛', final: '已结束', delayed: '延迟', inProgress: '进行中', lineupsStatus: '首发状态',
           scoreUnavailable: '—', venueUnknown: '球场待定',
-          lineupStatLabel: '首发名单显示指标', lineupStatHint: '默认 H；★ 标记该队当前指标前三名',
+          lineupStatLabel: '首发数据比较', lineupStatHint: '主指标负责排名；每项数据同时显示队内名次',
+          lineupPeriod: '时间范围', lineupLast3: '最近 3 场', lineupLast5: '最近 5 场', lineupSeason: '本赛季',
+          lineupPrimary: '主排序指标', lineupCompare: '对比指标', lineupView: '显示方式', lineupRankView: '指标排名', lineupOrderView: '保持打序',
+          lineupRecentNote: '最近场次按所选比赛之前的真实比赛日志统计；本赛季显示累计数据。', lineupRecentLoading: '正在读取两队首发球员的近期比赛日志…', lineupRecentFailed: '部分近期数据读取失败；未取得的数据以 — 显示。',
+          lineupBattingOrder: '打序 {order}', lineupRankLabel: '{metric} 排名',
           statHits: '安打数 H', statHomeRuns: '本垒打 HR', statTotalBases: '总垒数 TB', statRbi: '打点 RBI', statRuns: '得分 R', statAvg: '打击率 AVG', statOps: '上垒＋长打 OPS',
           gameOverview: '比赛概况', livePlayerStats: '打者表现', pitchingPerformance: '投手表现', inningByInning: '逐局比分', currentMatchup: '当前对决',
           atBat: '当前打者', pitchingNow: '当前投手', countLabel: '球数', outsLabel: '出局',
@@ -1293,7 +1337,11 @@
           thresholdHits: '{target}+ SO', dateLabel: 'Date', opponent: 'Opponent', startShort: 'GS', pitches: 'Pitches',
           scheduled: 'Scheduled', final: 'Final', delayed: 'Delayed', inProgress: 'Live', lineupsStatus: 'Lineup status',
           scoreUnavailable: '—', venueUnknown: 'Venue TBD',
-          lineupStatLabel: 'Lineup stat', lineupStatHint: 'Defaults to H; ★ marks the team’s top three',
+          lineupStatLabel: 'Lineup comparison', lineupStatHint: 'The primary metric controls ranking; both metrics show team rank',
+          lineupPeriod: 'Time range', lineupLast3: 'Last 3', lineupLast5: 'Last 5', lineupSeason: 'Season',
+          lineupPrimary: 'Primary ranking', lineupCompare: 'Compare with', lineupView: 'Display', lineupRankView: 'Stat ranking', lineupOrderView: 'Batting order',
+          lineupRecentNote: 'Recent ranges use actual game logs before the selected game; Season shows cumulative totals.', lineupRecentLoading: 'Loading recent game logs for both starting lineups…', lineupRecentFailed: 'Some recent stats could not be loaded; unavailable values show —.',
+          lineupBattingOrder: 'Batting order {order}', lineupRankLabel: '{metric} ranking',
           statHits: 'Hits H', statHomeRuns: 'Home Runs HR', statTotalBases: 'Total Bases TB', statRbi: 'RBI', statRuns: 'Runs R', statAvg: 'Batting AVG', statOps: 'OPS',
           gameOverview: 'Game Overview', livePlayerStats: 'Batting', pitchingPerformance: 'Pitching', inningByInning: 'Line by Line', currentMatchup: 'Current Matchup',
           atBat: 'At Bat', pitchingNow: 'Pitching', countLabel: 'Count', outsLabel: 'Outs',
@@ -1327,7 +1375,13 @@
       let dashboardGames = [];
       let dashboardLoading = false;
       let selectedDashboardGamePk = '';
-      let lineupDisplayStat = 'hits';
+      let lineupStatPeriod = 'season';
+      let lineupPrimaryStat = 'hits';
+      let lineupSecondaryStat = 'totalBases';
+      let lineupSortMode = 'rank';
+      let lineupRecentLoading = new Set();
+      let lineupRecentErrors = new Set();
+      let lineupGameLogPromises = new Map();
       let gameDetailTab = 'live';
       let liveStatsTeam = 'away';
       let checkBusy = false;
@@ -1442,6 +1496,26 @@
           if (detailTab) {
             gameDetailTab = detailTab.dataset.detailTab;
             const game = dashboardGames.find(row => String(row.gamePk) === String(selectedDashboardGamePk));
+            if (game) {
+              renderGameDetails(game);
+              if (gameDetailTab === 'lineup') ensureLineupRecentStats(game, lineupStatPeriod);
+            }
+            return;
+          }
+          const periodButton = event.target.closest('[data-lineup-period]');
+          if (periodButton) {
+            lineupStatPeriod = periodButton.dataset.lineupPeriod || 'season';
+            const game = currentDashboardGame();
+            if (game) {
+              renderGameDetails(game);
+              ensureLineupRecentStats(game, lineupStatPeriod);
+            }
+            return;
+          }
+          const sortButton = event.target.closest('[data-lineup-sort]');
+          if (sortButton) {
+            lineupSortMode = sortButton.dataset.lineupSort || 'rank';
+            const game = currentDashboardGame();
             if (game) renderGameDetails(game);
             return;
           }
@@ -1490,9 +1564,14 @@
           }
         });
         el.gameDetailBody.addEventListener('change', (event) => {
-          const select = event.target.closest('[data-lineup-stat]');
-          if (!select) return;
-          lineupDisplayStat = select.value || 'hits';
+          const primary = event.target.closest('[data-lineup-primary]');
+          const secondary = event.target.closest('[data-lineup-secondary]');
+          if (!primary && !secondary) return;
+          if (primary) lineupPrimaryStat = primary.value || 'hits';
+          if (secondary) lineupSecondaryStat = secondary.value || 'totalBases';
+          if (lineupPrimaryStat === lineupSecondaryStat) {
+            lineupSecondaryStat = lineupPrimaryStat === 'totalBases' ? 'hits' : 'totalBases';
+          }
           const game = dashboardGames.find(row => String(row.gamePk) === String(selectedDashboardGamePk));
           if (game) renderGameDetails(game);
         });
@@ -1862,7 +1941,10 @@
           const index = dashboardGames.findIndex(row => String(row.gamePk) === selectedDashboardGamePk);
           if (index >= 0) dashboardGames[index] = game;
           renderDashboard();
-          if (selectedDashboardGamePk === String(game.gamePk) && el.gameDialog.open) renderGameDetails(game);
+          if (selectedDashboardGamePk === String(game.gamePk) && el.gameDialog.open) {
+            renderGameDetails(game);
+            if (gameDetailTab === 'lineup') ensureLineupRecentStats(game, lineupStatPeriod);
+          }
         } catch (error) {
           console.error(error);
           if (el.gameDialog.open) renderGameDetails(game);
@@ -1902,10 +1984,23 @@
             </div>
             ${gameDetailTab === 'lineup' ? `
             <div class="lineup-stat-toolbar">
-              <label>${escapeHtml(t('lineupStatLabel'))}<br><span>${escapeHtml(t('lineupStatHint'))}</span></label>
-              <select class="lineup-stat-select" data-lineup-stat>
-                ${lineupStatOptionsHtml()}
-              </select>
+              <div class="lineup-control lineup-period-control">
+                <span class="lineup-control-label">${escapeHtml(t('lineupPeriod'))}</span>
+                <div class="lineup-segmented">${lineupPeriodButtonsHtml()}</div>
+              </div>
+              <label class="lineup-control">
+                <span class="lineup-control-label">${escapeHtml(t('lineupPrimary'))}</span>
+                <select class="lineup-stat-select" data-lineup-primary>${lineupStatOptionsHtml(lineupPrimaryStat)}</select>
+              </label>
+              <label class="lineup-control">
+                <span class="lineup-control-label">${escapeHtml(t('lineupCompare'))}</span>
+                <select class="lineup-stat-select" data-lineup-secondary>${lineupStatOptionsHtml(lineupSecondaryStat)}</select>
+              </label>
+              <div class="lineup-control lineup-sort-control">
+                <span class="lineup-control-label">${escapeHtml(t('lineupView'))}</span>
+                <div class="lineup-segmented">${lineupSortButtonsHtml()}</div>
+              </div>
+              ${lineupToolbarNoteHtml(game)}
             </div>
             <div class="lineup-columns">
               ${lineupPanelHtml(game, 'away', game.awayAbbr, game.awayLineup, game.awayLineupState)}
@@ -2074,33 +2169,69 @@
       }
 
       function lineupPanelHtml(game, side, abbr, lineup = [], state = 'waiting') {
-        const ranked = [...lineup]
-          .filter(player => lineupStatNumber(player, lineupDisplayStat) != null)
-          .sort((a, b) => lineupStatNumber(b, lineupDisplayStat) - lineupStatNumber(a, lineupDisplayStat));
-        const markedIds = new Set(ranked.slice(0, 3).map(player => String(player.id)));
-        const players = lineup.length ? lineup.map(player => {
+        const primaryRanks = lineupRankMap(lineup, lineupPrimaryStat, game);
+        const secondaryRanks = lineupRankMap(lineup, lineupSecondaryStat, game);
+        const visibleLineup = lineupSortMode === 'rank'
+          ? [...lineup].sort((a, b) => compareLineupPlayers(a, b, game))
+          : [...lineup].sort((a, b) => n(a.order) - n(b.order));
+        const players = visibleLineup.length ? visibleLineup.map(player => {
           const tracked = trackedPlayerLegs(selectedDashboardGamePk, player.id);
+          const primaryRank = primaryRanks.get(String(player.id));
+          const secondaryRank = secondaryRanks.get(String(player.id));
+          const orderOrRank = lineupSortMode === 'rank' ? (primaryRank || '—') : player.order;
+          const rankClass = lineupSortMode === 'rank' && primaryRank <= 3 ? `rank-${primaryRank}` : '';
+          const metaParts = [player.number ? `#${player.number}` : '', player.position || '', t('lineupBattingOrder', { order: player.order })].filter(Boolean);
           return `
           <button class="lineup-player" type="button" data-player-stats="${player.id}" data-player-name="${escapeAttr(player.name)}" data-stats-group="hitting">
-            <span class="bat-order">${player.order}</span>
+            <span class="bat-order ${rankClass}">${escapeHtml(orderOrRank)}</span>
             <span>
               <span class="lineup-name-row"><span class="lineup-player-name">${escapeHtml(player.name)}</span>${comboBadgeHtml(tracked)}</span>
-              <span class="lineup-player-meta">${player.number ? `#${escapeHtml(player.number)} · ` : ''}${escapeHtml(player.position || '')}</span>
+              <span class="lineup-player-meta">${escapeHtml(metaParts.join(' · '))}</span>
               ${comboLegStripHtml(tracked)}
               ${paProjectionHtml(tracked, game, side, player.id)}
             </span>
             <span class="lineup-stat-result">
-              <span class="lineup-stat-value ${markedIds.has(String(player.id)) ? 'marked' : ''}">${markedIds.has(String(player.id)) ? '★ ' : ''}${escapeHtml(lineupStatLabel(lineupDisplayStat))} ${escapeHtml(lineupStatValue(player, lineupDisplayStat))}</span>
-              <span class="stats-arrow">›</span>
+              ${lineupStatBadgeHtml(player, lineupPrimaryStat, primaryRank, game, false)}
+              ${lineupStatBadgeHtml(player, lineupSecondaryStat, secondaryRank, game, true)}
             </span>
           </button>`}).join('') : `<div class="lineup-placeholder">${escapeHtml(t('lineupNotAvailable'))}</div>`;
         return `<section class="lineup-panel">
           <div class="lineup-panel-head">
-            <div><div class="lineup-panel-title">${escapeHtml(abbr)} · ${escapeHtml(t('fullLineup'))}</div></div>
+            <div><div class="lineup-panel-title">${escapeHtml(abbr)} · ${escapeHtml(t('fullLineup'))}</div><div class="lineup-panel-subtitle">${escapeHtml(lineupPeriodLabel())} · ${escapeHtml(t('lineupRankLabel', { metric: lineupStatLabel(lineupPrimaryStat) }))}</div></div>
             <span class="lineup-badge ${state === 'ready' ? 'ready' : ''}"><strong>${escapeHtml(lineupStateText(state))}</strong></span>
           </div>
           <div class="lineup-list">${players}</div>
         </section>`;
+      }
+
+      function compareLineupPlayers(a, b, game) {
+        const av = lineupStatNumber(a, lineupPrimaryStat, game);
+        const bv = lineupStatNumber(b, lineupPrimaryStat, game);
+        if (av == null && bv == null) return n(a.order) - n(b.order);
+        if (av == null) return 1;
+        if (bv == null) return -1;
+        return bv - av || n(a.order) - n(b.order);
+      }
+
+      function lineupRankMap(lineup, field, game) {
+        const rows = lineup.map(player => ({ player, value: lineupStatNumber(player, field, game) }))
+          .filter(row => row.value != null)
+          .sort((a, b) => b.value - a.value || n(a.player.order) - n(b.player.order));
+        const ranks = new Map();
+        let lastValue = null;
+        let rank = 0;
+        rows.forEach((row, index) => {
+          if (lastValue == null || row.value !== lastValue) rank = index + 1;
+          ranks.set(String(row.player.id), rank);
+          lastValue = row.value;
+        });
+        return ranks;
+      }
+
+      function lineupStatBadgeHtml(player, field, rank, game, secondary) {
+        const rankClass = rank && rank <= 3 ? `rank-${rank}` : '';
+        const rankText = rank ? `#${rank}` : '—';
+        return `<span class="lineup-stat-value ${secondary ? 'secondary' : ''} ${rankClass}"><small>${escapeHtml(rankText)}</small>${escapeHtml(lineupStatLabel(field))} ${escapeHtml(lineupStatValue(player, field, game))}</span>`;
       }
 
       function trackedPlayerLegs(gamePk, playerId) {
@@ -2218,27 +2349,153 @@
         return teamPa % 9;
       }
 
-      function lineupStatOptionsHtml() {
+      function lineupPeriodButtonsHtml() {
+        return [
+          ['last3', t('lineupLast3')], ['last5', t('lineupLast5')], ['season', t('lineupSeason')]
+        ].map(([value, label]) => `<button class="${lineupStatPeriod === value ? 'active' : ''}" type="button" data-lineup-period="${value}">${escapeHtml(label)}</button>`).join('');
+      }
+
+      function lineupSortButtonsHtml() {
+        return [
+          ['rank', t('lineupRankView')], ['batting', t('lineupOrderView')]
+        ].map(([value, label]) => `<button class="${lineupSortMode === value ? 'active' : ''}" type="button" data-lineup-sort="${value}">${escapeHtml(label)}</button>`).join('');
+      }
+
+      function lineupStatOptionsHtml(selectedValue) {
         return [
           ['hits', t('statHits')], ['homeRuns', t('statHomeRuns')], ['totalBases', t('statTotalBases')], ['rbi', t('statRbi')],
           ['runs', t('statRuns')], ['avg', t('statAvg')], ['ops', t('statOps')]
-        ].map(([value, label]) => `<option value="${value}" ${lineupDisplayStat === value ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('');
+        ].map(([value, label]) => `<option value="${value}" ${selectedValue === value ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('');
+      }
+
+      function lineupPeriodLabel() {
+        return t(lineupStatPeriod === 'last3' ? 'lineupLast3' : lineupStatPeriod === 'last5' ? 'lineupLast5' : 'lineupSeason');
+      }
+
+      function lineupRequestKey(game, period = lineupStatPeriod) {
+        return `${game.gamePk}|${game.date || selectedDate}|${period}`;
+      }
+
+      function lineupToolbarNoteHtml(game) {
+        const key = lineupRequestKey(game);
+        const loading = lineupRecentLoading.has(key);
+        const failed = lineupRecentErrors.has(key);
+        const text = loading ? t('lineupRecentLoading') : failed ? t('lineupRecentFailed') : t('lineupRecentNote');
+        const cls = loading ? ' loading' : failed ? ' error' : '';
+        return `<div class="lineup-toolbar-note${cls}"><strong>${escapeHtml(t('lineupStatLabel'))}:</strong> ${escapeHtml(t('lineupStatHint'))}<br>${escapeHtml(text)}</div>`;
       }
 
       function lineupStatLabel(field) {
         return ({ hits: 'H', homeRuns: 'HR', totalBases: 'TB', rbi: 'RBI', runs: 'R', avg: 'AVG', ops: 'OPS' })[field] || 'H';
       }
 
-      function lineupStatValue(player, field) {
-        const value = player?.seasonStats?.[field];
+      function lineupPeriodStatsKey(playerId, game, period = lineupStatPeriod) {
+        const date = game.date || selectedDate;
+        return `${playerId}|lineupRecent|${String(date).slice(0, 4)}|${date}|${period}`;
+      }
+
+      function lineupStatsForPlayer(player, game) {
+        if (lineupStatPeriod === 'season') return player?.seasonStats || null;
+        return playerStatsCache.get(lineupPeriodStatsKey(player.id, game));
+      }
+
+      function lineupStatValue(player, field, game) {
+        const stats = lineupStatsForPlayer(player, game);
+        if (stats === undefined && lineupRecentLoading.has(lineupRequestKey(game))) return '…';
+        const value = stats?.[field];
         return value == null || value === '' ? '—' : value;
       }
 
-      function lineupStatNumber(player, field) {
-        const value = player?.seasonStats?.[field];
+      function lineupStatNumber(player, field, game) {
+        const value = lineupStatsForPlayer(player, game)?.[field];
         if (value == null || value === '' || value === '—') return null;
         const parsed = Number(value);
         return Number.isFinite(parsed) ? parsed : null;
+      }
+
+      async function ensureLineupRecentStats(game, period = lineupStatPeriod) {
+        if (!game || period === 'season') return;
+        const players = [...(game.awayLineup || []), ...(game.homeLineup || [])]
+          .filter((player, index, all) => player.id && all.findIndex(row => String(row.id) === String(player.id)) === index);
+        const missing = players.filter(player => !playerStatsCache.has(lineupPeriodStatsKey(player.id, game, period)));
+        const requestKey = lineupRequestKey(game, period);
+        if (!missing.length || lineupRecentLoading.has(requestKey)) return;
+        lineupRecentLoading.add(requestKey);
+        lineupRecentErrors.delete(requestKey);
+        refreshCurrentLineup(game, period);
+        const season = String(game.date || selectedDate).slice(0, 4);
+        const cutoff = game.date || selectedDate;
+        const limit = period === 'last3' ? 3 : 5;
+        let failed = false;
+        try {
+          for (let index = 0; index < missing.length; index += 4) {
+            const batch = missing.slice(index, index + 4);
+            const results = await Promise.allSettled(batch.map(player => getHittingGameLog(player.id, season)));
+            results.forEach((result, resultIndex) => {
+              const player = batch[resultIndex];
+              const cacheKey = lineupPeriodStatsKey(player.id, game, period);
+              if (result.status === 'fulfilled') {
+                const recentRows = (result.value || []).filter(row => row.date && row.date <= cutoff && String(row.gamePk || '') !== String(game.gamePk)).slice(0, limit);
+                playerStatsCache.set(cacheKey, recentRows.length ? aggregateHittingRows(recentRows) : null);
+              } else {
+                console.error(`Lineup recent stats ${player.id}`, result.reason);
+                playerStatsCache.delete(cacheKey);
+                failed = true;
+              }
+            });
+            refreshCurrentLineup(game, period);
+          }
+        } finally {
+          lineupRecentLoading.delete(requestKey);
+          if (failed) lineupRecentErrors.add(requestKey);
+          refreshCurrentLineup(game, period);
+        }
+      }
+
+      function refreshCurrentLineup(game, period) {
+        if (gameDetailTab === 'lineup' && lineupStatPeriod === period && String(selectedDashboardGamePk) === String(game.gamePk) && el.gameDialog.open) {
+          renderGameDetails(game);
+        }
+      }
+
+      async function getHittingGameLog(playerId, season) {
+        const key = `${playerId}|hittingGameLog|${season}`;
+        if (playerStatsCache.has(key)) return playerStatsCache.get(key) || [];
+        if (lineupGameLogPromises.has(key)) return lineupGameLogPromises.get(key);
+        const request = (async () => {
+          const data = await fetchJson(`${API}/v1/people/${playerId}/stats?stats=gameLog&group=hitting&season=${season}`);
+          const rows = (data.stats || []).flatMap(row => row.splits || []).map(split => ({
+            date: split.date || '', gamePk: split.game?.gamePk || '', opponent: split.opponent?.name || split.team?.name || '—', stat: split.stat || {}
+          })).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+          playerStatsCache.set(key, rows);
+          return rows;
+        })();
+        lineupGameLogPromises.set(key, request);
+        try {
+          return await request;
+        } finally {
+          lineupGameLogPromises.delete(key);
+        }
+      }
+
+      function aggregateHittingRows(rows) {
+        const fields = ['plateAppearances', 'atBats', 'hits', 'homeRuns', 'totalBases', 'rbi', 'runs', 'baseOnBalls', 'strikeOuts', 'hitByPitch', 'sacFlies'];
+        const result = { gamesPlayed: rows.length };
+        fields.forEach(field => { result[field] = rows.reduce((sum, row) => sum + n(row.stat?.[field]), 0); });
+        const ab = result.atBats;
+        const obpDenominator = ab + result.baseOnBalls + result.hitByPitch + result.sacFlies;
+        const avg = ab ? result.hits / ab : 0;
+        const obp = obpDenominator ? (result.hits + result.baseOnBalls + result.hitByPitch) / obpDenominator : 0;
+        const slg = ab ? result.totalBases / ab : 0;
+        result.avg = formatBattingRate(avg);
+        result.obp = formatBattingRate(obp);
+        result.slg = formatBattingRate(slg);
+        result.ops = formatBattingRate(obp + slg);
+        return result;
+      }
+
+      function formatBattingRate(value) {
+        return Number.isFinite(value) ? value.toFixed(3).replace(/^0/, '') : '—';
       }
 
       async function loadPlayerStats(playerId, playerName, group) {
@@ -2297,17 +2554,9 @@
         const panel = $('playerStatsPanel');
         if (!panel) return;
         const season = selectedDate.slice(0, 4);
-        const key = `${playerId}|hittingGameLog|${season}`;
         panel.innerHTML = `<div class="player-stats-name">${escapeHtml(playerName)}</div>${hitterStatsTabs(playerId, playerName, 'history')}<div class="player-stats-note">${escapeHtml(t('loadingHitLog'))}</div>`;
         try {
-          let rows = playerStatsCache.get(key);
-          if (!rows) {
-            const data = await fetchJson(`${API}/v1/people/${playerId}/stats?stats=gameLog&group=hitting&season=${season}`);
-            rows = (data.stats || []).flatMap(row => row.splits || []).map(split => ({
-              date: split.date || '', opponent: split.opponent?.name || split.team?.name || '—', stat: split.stat || {}
-            })).sort((a, b) => String(b.date).localeCompare(String(a.date)));
-            playerStatsCache.set(key, rows);
-          }
+          const rows = await getHittingGameLog(playerId, season);
           const recent = (rows || []).slice(0, limit);
           if (!recent.length) {
             panel.innerHTML = `<div class="player-stats-name">${escapeHtml(playerName)}</div>${hitterStatsTabs(playerId, playerName, 'history')}<div class="player-stats-note">${escapeHtml(t('noHitLog'))}</div>`;
