@@ -1369,6 +1369,7 @@
       let secondsLeft = Number(settings.refreshMinutes || 3) * 60;
       let scheduleCache = new Map();
       let rosterCache = new Map();
+      let leaguePlayerCache = new Map();
       let gameFeedCache = new Map();
       let playerStatsCache = new Map();
       let gamesForEditor = [];
@@ -2858,6 +2859,22 @@
         preview.style.display = 'block';
       }
 
+      function normalizeOcrLine(value) {
+        const normalized = String(value || '')
+          .replace(/[|•·]/g, ' ')
+          .replace(/[–—]/g, ' - ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        // Robinhood result screenshots commonly prefix every leg with
+        // "Yes ·" or "No ·". Remove that result marker before looking for a
+        // player name, while preserving team rows such as "SF Yes".
+        return normalized
+          .replace(/^(?:yes|no)\b(?:\s*[-:]\s*|\s+)/i, '')
+          .replace(/^[-:]\s*/, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
       function parseOcrLegs(text) {
         const marketMap = [
           [/\b(hrr|hits?\s*\+\s*runs?\s*\+\s*rbis?)\b/i, 'H_R_RBI'],
@@ -2865,7 +2882,8 @@
           [/\b(strikeouts?|strike outs?|ks|so)\b/i, 'SO'], [/\b(stolen bases?|sb)\b/i, 'SB'],
           [/\b(hits?)\b/i, 'H'], [/\b(runs?)\b/i, 'R'], [/\b(walks?|bb)\b/i, 'BB']
         ];
-        const lines = String(text || '').split(/\r?\n/).map(line => line.replace(/[|•·]/g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean);
+        const lines = String(text || '').split(/\r?\n/).map(normalizeOcrLine)
+          .filter(line => line && !/^(?:yes|no)$/i.test(line));
         const results = [];
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
@@ -2929,6 +2947,49 @@
         return unique.length === 1 ? unique[0] : null;
       }
 
+      async function ensureLeaguePlayerPool(season) {
+        const key = String(season || selectedDate || todayString()).slice(0, 4);
+        if (leaguePlayerCache.has(key)) return leaguePlayerCache.get(key);
+        try {
+          const data = await fetchJson(`${API}/v1/sports/1/players?season=${encodeURIComponent(key)}`);
+          const players = (data.people || []).filter(person => person?.id && person?.fullName).map(person => ({
+            id: person.id,
+            name: person.fullName,
+            number: person.primaryNumber || '',
+            position: person.primaryPosition?.abbreviation || person.primaryPosition?.name || '',
+            teamId: person.currentTeam?.id || '',
+            teamAbbr: ''
+          }));
+          leaguePlayerCache.set(key, players);
+          return players;
+        } catch (error) {
+          console.error(error);
+          return [];
+        }
+      }
+
+      function leaguePlayersForEditorGames(players) {
+        const teamMap = new Map();
+        gamesForEditor.forEach(game => {
+          teamMap.set(String(game.awayId), game.awayAbbr);
+          teamMap.set(String(game.homeId), game.homeAbbr);
+        });
+        return (players || []).filter(player => teamMap.has(String(player.teamId))).map(player => ({
+          ...player,
+          teamAbbr: teamMap.get(String(player.teamId)) || player.teamAbbr || ''
+        }));
+      }
+
+      function findOcrGameForPlayer(player, activeRosters) {
+        const rosterIndex = (activeRosters || []).findIndex(roster =>
+          roster.some(item => String(item.id) === String(player?.id))
+        );
+        if (rosterIndex >= 0) return gamesForEditor[rosterIndex] || null;
+        const teamId = String(player?.teamId || '');
+        if (!teamId) return null;
+        return gamesForEditor.find(game => String(game.awayId) === teamId || String(game.homeId) === teamId) || null;
+      }
+
       function normalizedTeamAbbr(value) {
         const abbr = String(value || '').toUpperCase().replace(/[^A-Z]/g, '');
         return ({ SF: 'SFG', SD: 'SDP', KC: 'KCR', TB: 'TBR', AZ: 'ARI', CWS: 'CHW', WSH: 'WSN' })[abbr] || abbr;
@@ -2965,6 +3026,12 @@
           el.platform.value = 'Robinhood · OCR';
           el.legsEditor.innerHTML = '';
           const rosters = await Promise.all(gamesForEditor.map(game => ensureRosterForGame(game.gamePk)));
+          let playerSources = rosters;
+          const needsLeagueFallback = parsed.some(candidate => candidate.type === 'PLAYER' && !findOcrPlayer(candidate, rosters));
+          if (needsLeagueFallback) {
+            const leaguePlayers = leaguePlayersForEditorGames(await ensureLeaguePlayerPool(selectedDate));
+            if (leaguePlayers.length) playerSources = [...rosters, leaguePlayers];
+          }
           let added = 0;
           const unresolved = [];
           parsed.forEach(candidate => {
@@ -2977,8 +3044,8 @@
               } else unresolved.push(candidate.source || candidate.teamAbbr);
               return;
             }
-            const match = findOcrPlayer(candidate, rosters);
-            const game = match ? gamesForEditor.find((item, index) => rosters[index].some(player => String(player.id) === String(match.id))) : null;
+            const match = findOcrPlayer(candidate, playerSources);
+            const game = match ? findOcrGameForPlayer(match, rosters) : null;
             if (match && game) {
               addLegEditor({ gamePk: game.gamePk, playerId: match.id, playerName: match.name, teamAbbr: match.teamAbbr, market: candidate.market, target: candidate.target });
               added++;
