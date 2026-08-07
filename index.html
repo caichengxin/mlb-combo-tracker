@@ -1370,6 +1370,7 @@
       let scheduleCache = new Map();
       let rosterCache = new Map();
       let leaguePlayerCache = new Map();
+      let ocrGamePlayerCache = new Map();
       let gameFeedCache = new Map();
       let playerStatsCache = new Map();
       let gamesForEditor = [];
@@ -2877,18 +2878,24 @@
 
       function normalizeOcrPlayerName(value) {
         const cleaned = String(value || '')
+          .replace(/[’‘`´]/g, "'")
+          .replace(/[‐‑‒–—―]/g, '-')
           .replace(/\b(over|under|more|less|yes|no|or more|at least)\b/ig, ' ')
           .replace(/\$?\d+(?:\.\d+)?\+?|[()]/g, ' ')
           .replace(/^[\s:;,_-]+|[\s:;,_-]+$/g, '')
+          .replace(/\s*([.'-])\s*/g, '$1')
           .replace(/\s+/g, ' ')
           .trim();
-        // Only use the abbreviated-name path when the initial has a real
-        // separator: "C. DeLauter", "C.DeLauter", or "C DeLauter". The
-        // old optional-separator rule split complete names such as "Chase
-        // DeLauter" into "C. hase" and "Yandy Diaz" into "Y. andy".
-        const short = cleaned.match(/^([A-Za-z])(?:\s*\.\s*|\s+)([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'\-]+)(?:\s+(Jr\.?|Sr\.?|II|III|IV))?$/i);
-        if (short) return `${short[1].toUpperCase()}. ${short[2]}${short[3] ? ` ${short[3]}` : ''}`;
-        return cleaned;
+        // Reinsert the separator that OCR often drops in CDeLauter/AJudge,
+        // but only at an upper-case boundary so complete names such as Chase
+        // and Yandy can never be split into C+hase or Y+andy.
+        const compactShort = cleaned.match(/^([A-Z])([A-Z][A-Za-zÀ-ÿ'\-]+)(\s+(?:Jr\.?|Sr\.?|II|III|IV|V))?$/);
+        if (compactShort) return `${compactShort[1]}. ${compactShort[2]}${compactShort[3] || ''}`;
+        // JP Crawford / TJ Friedl are common renderings when OCR loses both
+        // periods. Expand only an all-capital 2-3 letter leading token.
+        const compactInitials = cleaned.match(/^([A-Z]{2,3})\s+(.+)$/);
+        if (compactInitials) return `${compactInitials[1].split('').map(letter => `${letter}.`).join(' ')} ${compactInitials[2]}`;
+        return cleaned.replace(/^([A-Za-z])\.(?=\S)/, '$1. ');
       }
 
       function parseOcrLegs(text) {
@@ -2931,40 +2938,128 @@
       }
 
       function normalizedPersonName(value) {
-        return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z' -]/g, ' ').replace(/\s+/g, ' ').trim();
+        return String(value || '')
+          .replace(/[’‘`´]/g, "'")
+          .replace(/[‐‑‒–—―]/g, '-')
+          .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/\./g, ' ')
+          .replace(/[^a-z' -]/g, ' ')
+          .replace(/\s*(['-])\s*/g, '$1')
+          .replace(/\s+/g, ' ').trim();
       }
 
-      function personNameParts(value) {
-        const parts = normalizedPersonName(value).split(' ').filter(Boolean);
-        const suffixes = new Set(['jr', 'sr', 'ii', 'iii', 'iv']);
-        while (parts.length > 1 && suffixes.has(parts[parts.length - 1])) parts.pop();
-        return { parts, first: parts[0] || '', surname: parts[parts.length - 1] || '' };
+      function compactPersonTokens(parts) {
+        return (parts || []).join('').replace(/['-]/g, '');
+      }
+
+      function personNameProfile(value) {
+        const normalized = normalizedPersonName(value);
+        const allParts = normalized.split(' ').filter(Boolean);
+        const suffixes = new Set(['jr', 'sr', 'ii', 'iii', 'iv', 'v']);
+        const parts = [...allParts];
+        const suffix = parts.length > 1 && suffixes.has(parts[parts.length - 1]) ? parts.pop() : '';
+        return {
+          normalized,
+          allParts,
+          parts,
+          suffix,
+          first: parts[0] || '',
+          compact: compactPersonTokens(parts)
+        };
+      }
+
+      function nameEditDistance(left, right, limit = 2) {
+        const a = String(left || '');
+        const b = String(right || '');
+        if (Math.abs(a.length - b.length) > limit) return limit + 1;
+        let previous = Array.from({ length: b.length + 1 }, (_, index) => index);
+        for (let i = 1; i <= a.length; i++) {
+          const current = [i];
+          let rowMin = current[0];
+          for (let j = 1; j <= b.length; j++) {
+            current[j] = Math.min(
+              current[j - 1] + 1,
+              previous[j] + 1,
+              previous[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+            );
+            rowMin = Math.min(rowMin, current[j]);
+          }
+          if (rowMin > limit) return limit + 1;
+          previous = current;
+        }
+        return previous[b.length];
+      }
+
+      function surnameKeys(profile) {
+        const keys = [];
+        for (let index = 1; index < profile.parts.length; index++) {
+          const key = compactPersonTokens(profile.parts.slice(index));
+          if (key) keys.push(key);
+        }
+        return keys;
+      }
+
+      function scoreOcrPlayerName(candidateName, officialName) {
+        const candidate = personNameProfile(candidateName);
+        const official = personNameProfile(officialName);
+        if (candidate.parts.length < 2 || official.parts.length < 2) return 0;
+        if (candidate.normalized === official.normalized) return 120;
+        if (candidate.parts.join(' ') === official.parts.join(' ')) return 118;
+        // Hyphens, apostrophes, and spaces are frequently lost by OCR. A
+        // compact full-name equality remains safe because ambiguity is checked
+        // across every player before a match is accepted.
+        if (candidate.compact === official.compact) return 116;
+
+        const abbreviated = candidate.first.length === 1;
+        const candidateTail = compactPersonTokens(candidate.parts.slice(1));
+        const officialSurnameKeys = surnameKeys(official);
+        const exactSurname = officialSurnameKeys.includes(candidateTail);
+        if (abbreviated) {
+          if (candidate.first !== official.first.slice(0, 1)) return 0;
+          if (exactSurname) return 110;
+          if (candidateTail.length >= 5) {
+            const allowed = candidateTail.length >= 12 ? 2 : 1;
+            const bestDistance = Math.min(...officialSurnameKeys.map(key => nameEditDistance(candidateTail, key, allowed)), allowed + 1);
+            if (bestDistance <= allowed) return 92 - bestDistance;
+          }
+          return 0;
+        }
+
+        if (candidate.first === official.first && exactSurname) return 108;
+        if (exactSurname && candidate.first.length >= 5 && official.first.length >= 5 && nameEditDistance(candidate.first, official.first, 1) <= 1) return 94;
+        // Last-resort OCR correction: require both a very close first name and
+        // surname plus a unique winning score. This fixes one-character OCR
+        // mistakes without turning ordinary near-duplicate names into guesses.
+        if (candidateTail.length >= 5) {
+          const surnameAllowance = candidateTail.length >= 12 ? 2 : 1;
+          const bestSurnameDistance = Math.min(...officialSurnameKeys.map(key => nameEditDistance(candidateTail, key, surnameAllowance)), surnameAllowance + 1);
+          const firstDistance = nameEditDistance(candidate.first, official.first, 1);
+          if (firstDistance <= 1 && bestSurnameDistance <= surnameAllowance) return 90 - firstDistance - bestSurnameDistance;
+        }
+        return 0;
       }
 
       function findOcrPlayer(candidate, rosters) {
         const raw = String(candidate.name || '').trim();
-        const short = raw.match(/^\s*([A-Za-z])(?:\s*\.\s*|\s+)([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'\-]+)(?:\s+(?:Jr\.?|Sr\.?|II|III|IV))?\s*$/i);
-        const needle = normalizedPersonName(raw);
-        const allPlayers = rosters.flat();
-        let matches = allPlayers.filter(player => normalizedPersonName(player.name) === needle);
-        if (!matches.length && short) {
-          const initial = short[1].toLowerCase();
-          const surname = normalizedPersonName(short[2]);
-          matches = allPlayers.filter(player => {
-            const parts = personNameParts(player.name);
-            return parts.parts.length > 1 && parts.first[0] === initial && parts.surname === surname;
-          });
-        }
-        if (!matches.length && !short) {
-          const wanted = personNameParts(raw);
-          matches = allPlayers.filter(player => {
-            const parts = personNameParts(player.name);
-            return wanted.parts.length > 1 && parts.parts.length > 1 && parts.first === wanted.first && parts.surname === wanted.surname;
-          });
-        }
-        if (!matches.length && !short) matches = allPlayers.filter(player => normalizedPersonName(player.name).includes(needle));
-        const unique = matches.filter((player, index, all) => all.findIndex(x => String(x.id) === String(player.id)) === index);
-        return unique.length === 1 ? unique[0] : null;
+        const byId = new Map();
+        (rosters || []).flat().forEach(player => {
+          if (!player?.id || !player?.name) return;
+          const score = scoreOcrPlayerName(raw, player.name);
+          const key = String(player.id);
+          if (score > (byId.get(key)?.score || 0)) byId.set(key, { player, score });
+        });
+        const ranked = [...byId.values()].filter(item => item.score >= 88).sort((a, b) => b.score - a.score);
+        if (!ranked.length) return null;
+        if (!ranked[1]) return ranked[0].player;
+        if (ranked[0].score === ranked[1].score) return null;
+        // A unique exact full/base/compact name is decisive even when another
+        // player differs only by a suffix (for example Luis García Jr.).
+        if (ranked[0].score >= 116) return ranked[0].player;
+        // Never auto-pick equal or near-equal candidates. A six-point margin
+        // means exact/structural matches can beat fuzzy OCR alternatives, while
+        // true duplicate names remain unresolved for manual confirmation.
+        if (ranked[0].score - ranked[1].score < 6) return null;
+        return ranked[0].player;
       }
 
       async function ensureLeaguePlayerPool(season) {
@@ -3000,8 +3095,54 @@
         }));
       }
 
-      function findOcrGameForPlayer(player, activeRosters) {
-        const rosterIndex = (activeRosters || []).findIndex(roster =>
+      async function ensureOcrGamePlayerPool(game) {
+        const key = String(game?.gamePk || '');
+        if (!key) return [];
+        if (ocrGamePlayerCache.has(key)) return ocrGamePlayerCache.get(key);
+        try {
+          const data = await fetchJson(`${API}/v1/game/${encodeURIComponent(key)}/boxscore`);
+          const rows = [];
+          ['away', 'home'].forEach(side => {
+            const team = data.teams?.[side];
+            const teamId = side === 'away' ? game.awayId : game.homeId;
+            const teamAbbr = side === 'away' ? game.awayAbbr : game.homeAbbr;
+            Object.values(team?.players || {}).forEach(entry => {
+              const person = entry?.person || {};
+              if (!person.id || !person.fullName) return;
+              rows.push({
+                id: person.id,
+                name: person.fullName,
+                number: entry.jerseyNumber || '',
+                position: entry.position?.abbreviation || entry.position?.name || '',
+                teamId,
+                teamAbbr
+              });
+            });
+          });
+          const unique = rows.filter((player, index, all) => all.findIndex(item => String(item.id) === String(player.id)) === index);
+          ocrGamePlayerCache.set(key, unique);
+          return unique;
+        } catch (error) {
+          console.error(`OCR game player pool ${key}`, error);
+          ocrGamePlayerCache.set(key, []);
+          return [];
+        }
+      }
+
+      async function ensureOcrGamePlayerPools() {
+        const output = Array.from({ length: gamesForEditor.length }, () => []);
+        // A full MLB day can contain 15 games. Limit concurrency so an OCR
+        // fallback does not burst every boxscore request at the API at once.
+        for (let start = 0; start < gamesForEditor.length; start += 4) {
+          const batch = gamesForEditor.slice(start, start + 4);
+          const rows = await Promise.all(batch.map(ensureOcrGamePlayerPool));
+          rows.forEach((players, offset) => { output[start + offset] = players; });
+        }
+        return output;
+      }
+
+      function findOcrGameForPlayer(player, gamePlayerRosters) {
+        const rosterIndex = (gamePlayerRosters || []).findIndex(roster =>
           roster.some(item => String(item.id) === String(player?.id))
         );
         if (rosterIndex >= 0) return gamesForEditor[rosterIndex] || null;
@@ -3047,10 +3188,17 @@
           el.legsEditor.innerHTML = '';
           const rosters = await Promise.all(gamesForEditor.map(game => ensureRosterForGame(game.gamePk)));
           let playerSources = rosters;
-          const needsLeagueFallback = parsed.some(candidate => candidate.type === 'PLAYER' && !findOcrPlayer(candidate, rosters));
+          let gamePlayerRosters = rosters;
+          const needsGameFallback = parsed.some(candidate => candidate.type === 'PLAYER' && !findOcrPlayer(candidate, playerSources));
+          if (needsGameFallback) {
+            const gamePools = await ensureOcrGamePlayerPools();
+            gamePlayerRosters = rosters.map((active, index) => [...active, ...(gamePools[index] || [])]);
+            playerSources = gamePlayerRosters;
+          }
+          const needsLeagueFallback = parsed.some(candidate => candidate.type === 'PLAYER' && !findOcrPlayer(candidate, playerSources));
           if (needsLeagueFallback) {
             const leaguePlayers = leaguePlayersForEditorGames(await ensureLeaguePlayerPool(selectedDate));
-            if (leaguePlayers.length) playerSources = [...rosters, leaguePlayers];
+            if (leaguePlayers.length) playerSources = [...gamePlayerRosters, leaguePlayers];
           }
           let added = 0;
           const unresolved = [];
@@ -3065,7 +3213,7 @@
               return;
             }
             const match = findOcrPlayer(candidate, playerSources);
-            const game = match ? findOcrGameForPlayer(match, rosters) : null;
+            const game = match ? findOcrGameForPlayer(match, gamePlayerRosters) : null;
             if (match && game) {
               addLegEditor({ gamePk: game.gamePk, playerId: match.id, playerName: match.name, teamAbbr: match.teamAbbr, market: candidate.market, target: candidate.target });
               added++;
