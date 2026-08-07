@@ -189,6 +189,7 @@
     .leg-icon { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: #172944; font-size: 13px; }
     .leg-player { font-weight: 700; font-size: 14px; }
     .leg-game { color: var(--muted); font-size: 11px; margin-top: 3px; }
+    .leg-exit-note { display: inline-flex; margin-left: 5px; padding: 2px 5px; border: 1px solid rgba(255,107,120,.4); border-radius: 999px; color: #ff9aa5; background: rgba(255,107,120,.08); font-size: 8px; font-weight: 850; }
     .leg-market { color: #b9c7dd; font-size: 13px; }
     .leg-current { font-size: 13px; text-align: right; }
     .leg-current strong { font-size: 15px; }
@@ -650,6 +651,18 @@
     .matchup-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 11px; }
     .matchup-chip { padding: 3px 7px; border: 1px solid var(--border); border-radius: 999px; color: #c8d8ee; background: rgba(255,255,255,.03); font-size: 8px; font-weight: 750; }
     .matchup-note { margin-top: 9px; color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .half-inning-card { grid-column: 1 / -1; }
+    .half-inning-scroll { display: flex; gap: 7px; overflow-x: auto; padding: 10px 12px 12px; scrollbar-width: thin; }
+    .half-inning-item {
+      flex: 0 0 auto; min-width: 180px; max-width: 245px; padding: 9px 10px;
+      border: 1px solid rgba(98,165,255,.22); border-radius: 10px;
+      background: rgba(7,15,27,.45);
+    }
+    .half-inning-item.latest { border-color: rgba(244,201,93,.52); background: rgba(244,201,93,.08); }
+    .half-inning-label { color: var(--accent); font-size: 8px; font-weight: 850; letter-spacing: .05em; }
+    .half-inning-item.latest .half-inning-label { color: var(--yellow); }
+    .half-inning-batter { margin-top: 4px; color: var(--text); font-size: 11px; font-weight: 820; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .half-inning-result { margin-top: 3px; color: var(--muted); font-size: 8px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .team-switch { display: flex; gap: 7px; margin-bottom: 9px; }
     .team-switch button { flex: 1; }
     .live-group + .live-group { margin-top: 12px; }
@@ -705,6 +718,39 @@
     .lineup-toolbar-note { grid-column: 1 / -1; color: var(--muted); font-size: 9px; line-height: 1.45; }
     .lineup-toolbar-note.loading { color: var(--accent); }
     .lineup-toolbar-note.error { color: var(--red); }
+    .recommend-shell {
+      margin-top: 13px; padding: 12px; border: 1px solid rgba(66,211,146,.34);
+      border-radius: 15px; background: linear-gradient(135deg,rgba(18,63,58,.34),rgba(24,45,75,.3));
+    }
+    .recommend-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .recommend-title { font-size: 14px; font-weight: 850; }
+    .recommend-subtitle { margin-top: 3px; color: var(--muted); font-size: 9px; line-height: 1.45; }
+    .recommend-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+    .recommend-controls { display: grid; grid-template-columns: minmax(210px,.8fr) minmax(0,1.2fr); gap: 11px; margin-top: 11px; }
+    .recommend-mode, .recommend-weights { padding: 10px; border: 1px solid rgba(98,165,255,.2); border-radius: 11px; background: rgba(7,15,27,.38); }
+    .recommend-mode .lineup-segmented { margin-top: 6px; }
+    .recommend-weight-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; margin-top: 6px; }
+    .recommend-weight { display: grid; gap: 4px; min-width: 0; color: var(--muted); font-size: 8px; }
+    .recommend-weight input { width: 100%; min-width: 0; padding: 7px 8px; border-radius: 8px; text-align: center; font-size: 11px; }
+    .recommend-weight[aria-disabled="true"] { opacity: .5; }
+    .recommend-status { margin-top: 9px; color: var(--muted); font-size: 9px; line-height: 1.45; }
+    .recommend-status.loading { color: var(--accent); }
+    .recommend-status.error { color: var(--red); }
+    .recommend-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px; margin-top: 11px; }
+    .recommend-card { overflow: hidden; border: 1px solid rgba(98,165,255,.24); border-radius: 12px; background: rgba(7,15,27,.5); }
+    .recommend-card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 9px 10px; border-bottom: 1px solid rgba(38,58,89,.62); }
+    .recommend-metric { color: #fff; font-size: 13px; font-weight: 900; }
+    .recommend-model { color: var(--muted); font-size: 8px; }
+    .recommend-player { display: grid; grid-template-columns: 23px minmax(0,1fr) auto; gap: 7px; align-items: center; padding: 8px 9px; border-bottom: 1px solid rgba(38,58,89,.42); }
+    .recommend-player:last-child { border-bottom: 0; }
+    .recommend-rank { color: var(--accent); font-size: 10px; font-weight: 900; text-align: center; }
+    .recommend-player:first-child .recommend-rank { color: var(--yellow); }
+    .recommend-name { min-width: 0; color: var(--text); font-size: 10px; font-weight: 780; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .recommend-meta { margin-top: 2px; color: var(--muted); font-size: 8px; }
+    .recommend-score { text-align: right; }
+    .recommend-score strong { display: block; color: var(--green); font-size: 12px; }
+    .recommend-score span { display: block; margin-top: 2px; color: var(--muted); font-size: 7px; }
+    .recommend-disclaimer { margin-top: 9px; color: var(--muted); font-size: 8px; line-height: 1.45; }
     .lineup-list { display: grid; }
     .lineup-player {
       width: 100%;
@@ -811,6 +857,7 @@
       .live-summary { grid-template-columns: 1fr; }
       .lineup-stat-toolbar { grid-template-columns: 1fr 1fr; }
       .lineup-period-control, .lineup-sort-control, .lineup-toolbar-note { grid-column: 1 / -1; }
+      .recommend-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
     }
     @media (max-width: 680px) {
       body { background:#07101c; }
@@ -859,6 +906,12 @@
       .lineup-player { grid-template-columns: 24px minmax(0, 1fr) auto; gap: 7px; padding: 10px 9px; }
       .lineup-stat-result { flex-direction: column; gap: 3px; }
       .lineup-stat-value { min-width: 72px; padding: 4px 6px; font-size: 9px; }
+      .recommend-head { flex-direction: column; }
+      .recommend-actions { width: 100%; }
+      .recommend-actions .btn { flex: 1; min-height: 42px; }
+      .recommend-controls { grid-template-columns: 1fr; }
+      .recommend-grid { grid-template-columns: 1fr; }
+      .recommend-weight input { min-height: 40px; font-size: 12px; }
       .player-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .game-detail-tab { min-width: 105px; }
       .pitching-team-grid { grid-template-columns:1fr; }
@@ -1266,9 +1319,17 @@
           gameOverview: '比赛概况', livePlayerStats: '打者表现', pitchingPerformance: '投手表现', inningByInning: '逐局比分', currentMatchup: '当前对决',
           atBat: '当前打者', pitchingNow: '当前投手', countLabel: '球数', outsLabel: '出局',
           liveMatchup: '实时对决', atBatNumber: '本场打席', playStatus: '打席状态',
+          halfInningEnds: '半局结束记录', latestHalfInning: '最新结束', halfInningLastBatter: '最后打者', topHalf: '{inning}局上', bottomHalf: '{inning}局下',
           battersToday: '打者本场数据', pitchersToday: '投手本场数据', player: '球员',
           liveStatsNotStarted: '比赛尚未开始。本场球员数据将在开赛后自动出现。', noLiveStats: '暂时没有本场球员数据。',
           pitchersUsed: '{count} 名投手', starterRole: 'SP', relieverRole: 'RP'
+          ,playerExited: '已下场', playerExitedDetail: '球员已被替换，无法再增加本场数据。'
+          ,recommendTitle: '本场指标推荐', recommendSubtitle: '双方首发公布后，综合最近 3 场、最近 5 场与本赛季的场均表现。'
+          ,recommendRun: '分析本场推荐', recommendRefresh: '重新计算', recommendWaiting: '双方各 9 名首发公布后可生成推荐。'
+          ,recommendSmart: '智能综合', recommendCustom: '自定义权重', recommendMode: '评分模式', recommendWeights: '时间权重（自动归一化）'
+          ,recommendLoading: '正在读取 18 名首发球员的最近比赛并计算推荐…', recommendReady: '已按本场首发生成 6 个常用指标的前三名。', recommendFailed: '部分球员数据读取失败，推荐仅使用可用数据。'
+          ,recommendScore: '综合分', recommendPerGame: '加权场均', recommendDisclaimer: '推荐是数据筛选工具，不保证比赛结果；稀有事件（尤其 HR）会自动提高本赛季样本权重。'
+          ,recommendMetricHRR: 'HRR', recommendCustomTotal: '当前合计 {total}%（计算时会自动归一化）'
           ,comboTracked: 'Combo 追踪', comboPlayers: '{players} 名球员', comboItems: '{items} 项',
           paProjected: '预计全场 {range} PA', paCompleted: '已完成 {count}', paRemaining: '预计剩余 {range} PA',
           paActual: '实际 {count} PA', paChanceHigh: '机会较高', paChanceMedium: '约 1 次机会', paChanceLow: '可能无剩余'
@@ -1346,9 +1407,17 @@
           gameOverview: 'Game Overview', livePlayerStats: 'Batting', pitchingPerformance: 'Pitching', inningByInning: 'Line by Line', currentMatchup: 'Current Matchup',
           atBat: 'At Bat', pitchingNow: 'Pitching', countLabel: 'Count', outsLabel: 'Outs',
           liveMatchup: 'Live Matchup', atBatNumber: 'At Bat', playStatus: 'Play',
+          halfInningEnds: 'Half-inning endings', latestHalfInning: 'Latest completed', halfInningLastBatter: 'Last batter', topHalf: 'Top {inning}', bottomHalf: 'Bottom {inning}',
           battersToday: 'Batting — This Game', pitchersToday: 'Pitching — This Game', player: 'Player',
           liveStatsNotStarted: 'This game has not started. Live player stats will appear automatically after first pitch.', noLiveStats: 'No in-game player stats are available yet.',
           pitchersUsed: '{count} pitchers used', starterRole: 'SP', relieverRole: 'RP'
+          ,playerExited: 'SUBBED OUT', playerExitedDetail: 'The player has been removed and cannot add more game stats.'
+          ,recommendTitle: 'Game Metric Picks', recommendSubtitle: 'Once both lineups are posted, blend per-game form from the last 3, last 5, and season.'
+          ,recommendRun: 'Analyze game picks', recommendRefresh: 'Recalculate', recommendWaiting: 'Available after both nine-player starting lineups are posted.'
+          ,recommendSmart: 'Smart blend', recommendCustom: 'Custom weights', recommendMode: 'Scoring mode', recommendWeights: 'Time weights (normalized automatically)'
+          ,recommendLoading: 'Loading recent logs for all 18 starters and calculating picks…', recommendReady: 'Top three starters are ready for six common metrics.', recommendFailed: 'Some player data could not be loaded; picks use the available periods only.'
+          ,recommendScore: 'Score', recommendPerGame: 'Weighted / G', recommendDisclaimer: 'These picks are a data-screening aid, not a guarantee. Rare events—especially HR—use more season weight for stability.'
+          ,recommendMetricHRR: 'HRR', recommendCustomTotal: 'Current total {total}% (normalized during scoring)'
           ,comboTracked: 'Combo tracked', comboPlayers: '{players} players', comboItems: '{items} legs',
           paProjected: 'Projected {range} PA', paCompleted: '{count} completed', paRemaining: '{range} PA left',
           paActual: '{count} PA actual', paChanceHigh: 'Good opportunity', paChanceMedium: 'About 1 chance', paChanceLow: 'May have no PA left'
@@ -1384,6 +1453,14 @@
       let lineupRecentLoading = new Set();
       let lineupRecentErrors = new Set();
       let lineupGameLogPromises = new Map();
+      const defaultRecommendationWeights = { last3: 35, last5: 35, season: 30 };
+      if (!settings.recommendationWeights || typeof settings.recommendationWeights !== 'object') settings.recommendationWeights = { ...defaultRecommendationWeights };
+      let lineupRecommendationMode = 'smart';
+      let lineupRecommendationWeights = sanitizeRecommendationWeights(settings.recommendationWeights);
+      let lineupRecommendationVisible = false;
+      let lineupRecommendationLoading = false;
+      let lineupRecommendationError = false;
+      let lineupRecommendationGamePk = '';
       let gameDetailTab = 'live';
       let liveStatsTeam = 'away';
       let checkBusy = false;
@@ -1521,6 +1598,19 @@
             if (game) renderGameDetails(game);
             return;
           }
+          const recommendMode = event.target.closest('[data-recommend-mode]');
+          if (recommendMode) {
+            lineupRecommendationMode = recommendMode.dataset.recommendMode === 'custom' ? 'custom' : 'smart';
+            const game = currentDashboardGame();
+            if (game) renderGameDetails(game);
+            return;
+          }
+          const recommendRun = event.target.closest('[data-recommend-run]');
+          if (recommendRun) {
+            const game = currentDashboardGame();
+            if (game) generateLineupRecommendations(game);
+            return;
+          }
           const teamButton = event.target.closest('[data-live-team]');
           if (teamButton) {
             liveStatsTeam = teamButton.dataset.liveTeam;
@@ -1566,6 +1656,19 @@
           }
         });
         el.gameDetailBody.addEventListener('change', (event) => {
+          const recommendationWeight = event.target.closest('[data-recommend-weight]');
+          if (recommendationWeight) {
+            const key = recommendationWeight.dataset.recommendWeight;
+            if (['last3', 'last5', 'season'].includes(key)) {
+              lineupRecommendationWeights[key] = Math.max(0, Math.min(100, Number(recommendationWeight.value) || 0));
+              lineupRecommendationWeights = sanitizeRecommendationWeights(lineupRecommendationWeights);
+              settings.recommendationWeights = { ...lineupRecommendationWeights };
+              saveJson(SETTINGS_KEY, settings);
+              const game = currentDashboardGame();
+              if (game) renderGameDetails(game);
+            }
+            return;
+          }
           const primary = event.target.closest('[data-lineup-primary]');
           const secondary = event.target.closest('[data-lineup-secondary]');
           if (!primary && !secondary) return;
@@ -1724,8 +1827,44 @@
             atBatIndex: feed.liveData?.plays?.currentPlay?.atBatIndex,
             playStatus: feed.liveData?.plays?.currentPlay?.result?.description || feed.liveData?.plays?.currentPlay?.result?.event || ''
           },
+          halfInningEnds: extractHalfInningEnds(feed),
           pitchingDecisions: extractPitchingDecisions(feed)
         };
+      }
+
+      function extractHalfInningEnds(feed) {
+        const plays = (feed?.liveData?.plays?.allPlays || []).filter(play => play?.about?.isComplete && play?.matchup?.batter);
+        if (!plays.length) return [];
+        const groups = [];
+        plays.forEach(play => {
+          const inning = n(play.about?.inning);
+          const half = String(play.about?.halfInning || (play.about?.isTopInning ? 'top' : 'bottom')).toLowerCase();
+          const key = `${inning}|${half}`;
+          let group = groups[groups.length - 1];
+          if (!group || group.key !== key) {
+            group = { key, inning, half, plays: [] };
+            groups.push(group);
+          }
+          group.plays.push(play);
+        });
+        const finalGame = normalizeGameState(feed?.gameData?.status?.abstractGameState, feed?.gameData?.status?.detailedState) === 'Final';
+        return groups.map((group, index) => {
+          const last = group.plays[group.plays.length - 1];
+          const endedByOuts = group.plays.some(play => n(play?.count?.outs) >= 3);
+          const followedByNextHalf = index < groups.length - 1;
+          const completed = endedByOuts || followedByNextHalf || (finalGame && index === groups.length - 1);
+          if (!completed) return null;
+          return {
+            inning: group.inning,
+            half: group.half,
+            batter: last.matchup?.batter?.fullName || '',
+            batterId: last.matchup?.batter?.id || '',
+            event: last.result?.event || last.result?.description || '',
+            awayScore: last.result?.awayScore,
+            homeScore: last.result?.homeScore,
+            atBatIndex: last.about?.atBatIndex
+          };
+        }).filter(Boolean).reverse().slice(0, 8);
       }
 
       function extractPitchingDecisions(feed) {
@@ -1929,6 +2068,12 @@
 
       async function openGameDetails(gamePk) {
         selectedDashboardGamePk = String(gamePk);
+        if (lineupRecommendationGamePk !== selectedDashboardGamePk) {
+          lineupRecommendationVisible = false;
+          lineupRecommendationLoading = false;
+          lineupRecommendationError = false;
+          lineupRecommendationGamePk = selectedDashboardGamePk;
+        }
         let game = dashboardGames.find(row => String(row.gamePk) === selectedDashboardGamePk);
         if (!game) return;
         const state = effectiveGameState(game);
@@ -2004,6 +2149,7 @@
               </div>
               ${lineupToolbarNoteHtml(game)}
             </div>
+            ${lineupRecommendationHtml(game)}
             <div class="lineup-columns">
               ${lineupPanelHtml(game, 'away', game.awayAbbr, game.awayLineup, game.awayLineupState)}
               ${lineupPanelHtml(game, 'home', game.homeAbbr, game.homeLineup, game.homeLineupState)}
@@ -2061,7 +2207,25 @@
               ${matchup.playStatus ? `<div class="matchup-note">${escapeHtml(t('playStatus'))}: ${escapeHtml(matchup.playStatus)}</div>` : ''}
             </div>
           </section>
+          ${halfInningEndsHtml(game)}
         </div>`;
+      }
+
+      function halfInningEndsHtml(game) {
+        const rows = game.halfInningEnds || [];
+        if (!rows.length) return '';
+        return `<section class="live-card half-inning-card">
+          <div class="live-card-head">${escapeHtml(t('halfInningEnds'))}</div>
+          <div class="half-inning-scroll">${rows.map((row, index) => {
+            const label = t(row.half === 'top' ? 'topHalf' : 'bottomHalf', { inning: row.inning });
+            const score = Number.isFinite(Number(row.awayScore)) && Number.isFinite(Number(row.homeScore)) ? `${row.awayScore}–${row.homeScore}` : '';
+            return `<div class="half-inning-item ${index === 0 ? 'latest' : ''}">
+              <div class="half-inning-label">${escapeHtml(index === 0 ? `${t('latestHalfInning')} · ${label}` : label)}</div>
+              <div class="half-inning-batter">${escapeHtml(t('halfInningLastBatter'))}: ${escapeHtml(row.batter || '—')}</div>
+              <div class="half-inning-result">${escapeHtml([row.event, score].filter(Boolean).join(' · '))}</div>
+            </div>`;
+          }).join('')}</div>
+        </section>`;
       }
 
       function livePlayerStatsHtml(game) {
@@ -2385,6 +2549,168 @@
         const text = loading ? t('lineupRecentLoading') : failed ? t('lineupRecentFailed') : t('lineupRecentNote');
         const cls = loading ? ' loading' : failed ? ' error' : '';
         return `<div class="lineup-toolbar-note${cls}"><strong>${escapeHtml(t('lineupStatLabel'))}:</strong> ${escapeHtml(t('lineupStatHint'))}<br>${escapeHtml(text)}</div>`;
+      }
+
+      function sanitizeRecommendationWeights(weights = {}) {
+        const cleaned = {
+          last3: Math.max(0, Math.min(100, Number(weights.last3) || 0)),
+          last5: Math.max(0, Math.min(100, Number(weights.last5) || 0)),
+          season: Math.max(0, Math.min(100, Number(weights.season) || 0))
+        };
+        return cleaned.last3 + cleaned.last5 + cleaned.season > 0 ? cleaned : { ...defaultRecommendationWeights };
+      }
+
+      function lineupRecommendationHtml(game) {
+        const ready = (game.awayLineup || []).length >= 9 && (game.homeLineup || []).length >= 9;
+        const total = lineupRecommendationWeights.last3 + lineupRecommendationWeights.last5 + lineupRecommendationWeights.season;
+        const custom = lineupRecommendationMode === 'custom';
+        const statusKey = !ready ? 'recommendWaiting'
+          : lineupRecommendationLoading ? 'recommendLoading'
+          : lineupRecommendationError ? 'recommendFailed'
+          : lineupRecommendationVisible ? 'recommendReady' : 'recommendSubtitle';
+        const statusClass = lineupRecommendationLoading ? ' loading' : lineupRecommendationError ? ' error' : '';
+        const actionLabel = lineupRecommendationVisible ? t('recommendRefresh') : t('recommendRun');
+        return `<section class="recommend-shell">
+          <div class="recommend-head">
+            <div><div class="recommend-title">${escapeHtml(t('recommendTitle'))}</div><div class="recommend-subtitle">${escapeHtml(t('recommendSubtitle'))}</div></div>
+            <div class="recommend-actions"><button class="btn primary" type="button" data-recommend-run ${!ready || lineupRecommendationLoading ? 'disabled' : ''}>${escapeHtml(actionLabel)}</button></div>
+          </div>
+          <div class="recommend-controls">
+            <div class="recommend-mode">
+              <div class="lineup-control-label">${escapeHtml(t('recommendMode'))}</div>
+              <div class="lineup-segmented">
+                <button class="${custom ? '' : 'active'}" type="button" data-recommend-mode="smart">${escapeHtml(t('recommendSmart'))}</button>
+                <button class="${custom ? 'active' : ''}" type="button" data-recommend-mode="custom">${escapeHtml(t('recommendCustom'))}</button>
+              </div>
+            </div>
+            <div class="recommend-weights">
+              <div class="lineup-control-label">${escapeHtml(t('recommendWeights'))}</div>
+              <div class="recommend-weight-grid">
+                ${recommendationWeightInput('last3', t('lineupLast3'), custom)}
+                ${recommendationWeightInput('last5', t('lineupLast5'), custom)}
+                ${recommendationWeightInput('season', t('lineupSeason'), custom)}
+              </div>
+              <div class="recommend-status">${escapeHtml(t('recommendCustomTotal', { total }))}</div>
+            </div>
+          </div>
+          <div class="recommend-status${statusClass}">${escapeHtml(t(statusKey))}</div>
+          ${lineupRecommendationVisible && !lineupRecommendationLoading && ready ? recommendationCardsHtml(game) : ''}
+          <div class="recommend-disclaimer">${escapeHtml(t('recommendDisclaimer'))}</div>
+        </section>`;
+      }
+
+      function recommendationWeightInput(key, label, enabled) {
+        return `<label class="recommend-weight" aria-disabled="${enabled ? 'false' : 'true'}"><span>${escapeHtml(label)} %</span><input type="number" min="0" max="100" step="5" value="${lineupRecommendationWeights[key]}" data-recommend-weight="${key}" ${enabled ? '' : 'disabled'}></label>`;
+      }
+
+      async function generateLineupRecommendations(game) {
+        if (!game || (game.awayLineup || []).length < 9 || (game.homeLineup || []).length < 9 || lineupRecommendationLoading) return;
+        lineupRecommendationVisible = true;
+        lineupRecommendationLoading = true;
+        lineupRecommendationError = false;
+        lineupRecommendationGamePk = String(game.gamePk);
+        renderGameDetails(game);
+        try {
+          const results = await Promise.allSettled([
+            ensureLineupRecentStats(game, 'last3'),
+            ensureLineupRecentStats(game, 'last5')
+          ]);
+          lineupRecommendationError = results.some(result => result.status === 'rejected')
+            || lineupRecentErrors.has(lineupRequestKey(game, 'last3'))
+            || lineupRecentErrors.has(lineupRequestKey(game, 'last5'));
+        } catch (error) {
+          console.error(error);
+          lineupRecommendationError = true;
+        } finally {
+          lineupRecommendationLoading = false;
+          if (String(selectedDashboardGamePk) === String(game.gamePk) && el.gameDialog.open) renderGameDetails(game);
+        }
+      }
+
+      function recommendationMetrics() {
+        return [
+          ['hits', 'H'], ['homeRuns', 'HR'], ['totalBases', 'TB'],
+          ['rbi', 'RBI'], ['runs', 'R'], ['hrr', t('recommendMetricHRR')]
+        ];
+      }
+
+      function recommendationCardsHtml(game) {
+        const players = [
+          ...(game.awayLineup || []).map(player => ({ ...player, teamAbbr: game.awayAbbr })),
+          ...(game.homeLineup || []).map(player => ({ ...player, teamAbbr: game.homeAbbr }))
+        ];
+        return `<div class="recommend-grid">${recommendationMetrics().map(([field, label]) => {
+          const rows = scoreRecommendationMetric(players, field, game).slice(0, 3);
+          return `<article class="recommend-card">
+            <div class="recommend-card-head"><span class="recommend-metric">${escapeHtml(label)}</span><span class="recommend-model">${escapeHtml(lineupRecommendationMode === 'custom' ? t('recommendCustom') : t('recommendSmart'))}</span></div>
+            ${rows.map((row, index) => `<div class="recommend-player">
+              <div class="recommend-rank">#${index + 1}</div>
+              <div><div class="recommend-name">${escapeHtml(row.player.name)}</div><div class="recommend-meta">${escapeHtml(`${row.player.teamAbbr} · ${t('lineupBattingOrder', { order: row.player.order })} · L3 ${formatRecommendationRate(row.rates.last3)} · L5 ${formatRecommendationRate(row.rates.last5)} · S ${formatRecommendationRate(row.rates.season)}`)}</div></div>
+              <div class="recommend-score"><strong>${row.score.toFixed(0)}</strong><span>${escapeHtml(`${t('recommendPerGame')} ${formatRecommendationRate(row.weightedRate)}`)}</span></div>
+            </div>`).join('')}
+          </article>`;
+        }).join('')}</div>`;
+      }
+
+      function scoreRecommendationMetric(players, field, game) {
+        const periods = ['last3', 'last5', 'season'];
+        const weights = recommendationMetricWeights(field);
+        const rows = players.map(player => {
+          const statsByPeriod = {
+            last3: playerStatsCache.get(lineupPeriodStatsKey(player.id, game, 'last3')),
+            last5: playerStatsCache.get(lineupPeriodStatsKey(player.id, game, 'last5')),
+            season: player.seasonStats || null
+          };
+          const rates = {};
+          periods.forEach(period => { rates[period] = recommendationPerGame(statsByPeriod[period], field); });
+          return { player, rates };
+        });
+        const distributions = {};
+        periods.forEach(period => { distributions[period] = rows.map(row => row.rates[period]).filter(Number.isFinite); });
+        rows.forEach(row => {
+          let scoreTotal = 0;
+          let rateTotal = 0;
+          let usedWeight = 0;
+          periods.forEach(period => {
+            const value = row.rates[period];
+            const weight = weights[period];
+            if (!Number.isFinite(value) || !weight) return;
+            scoreTotal += recommendationPercentile(value, distributions[period]) * weight;
+            rateTotal += value * weight;
+            usedWeight += weight;
+          });
+          const performance = usedWeight ? scoreTotal / usedWeight : 0;
+          const opportunity = Math.max(0, Math.min(100, ((10 - n(row.player.order)) / 9) * 100));
+          row.score = performance * .9 + opportunity * .1;
+          row.weightedRate = usedWeight ? rateTotal / usedWeight : 0;
+        });
+        return rows.sort((a, b) => b.score - a.score || b.weightedRate - a.weightedRate || n(a.player.order) - n(b.player.order));
+      }
+
+      function recommendationMetricWeights(field) {
+        if (lineupRecommendationMode === 'custom') return sanitizeRecommendationWeights(lineupRecommendationWeights);
+        if (field === 'homeRuns') return { last3: 20, last5: 30, season: 50 };
+        if (field === 'rbi' || field === 'runs') return { last3: 30, last5: 35, season: 35 };
+        return { last3: 35, last5: 35, season: 30 };
+      }
+
+      function recommendationPerGame(stats, field) {
+        const games = n(stats?.gamesPlayed);
+        if (!stats || games <= 0) return NaN;
+        const total = field === 'hrr' ? n(stats.hits) + n(stats.runs) + n(stats.rbi) : Number(stats[field]);
+        return Number.isFinite(total) ? total / games : NaN;
+      }
+
+      function recommendationPercentile(value, values) {
+        if (!Number.isFinite(value) || !values.length) return 0;
+        if (values.length === 1) return 50;
+        const lower = values.filter(item => item < value).length;
+        const equal = values.filter(item => item === value).length;
+        return ((lower + Math.max(0, equal - 1) / 2) / (values.length - 1)) * 100;
+      }
+
+      function formatRecommendationRate(value) {
+        return Number.isFinite(value) ? value.toFixed(2) : '—';
       }
 
       function lineupStatLabel(field) {
@@ -2785,7 +3111,7 @@
               <div class="leg-icon">${legState[0]}</div>
               <div>
                 <div class="leg-player">${escapeHtml(isGameBet ? gameBetLabel(leg) : (leg.playerName || t('playerSearch')))} ${leg.teamAbbr ? `<span style="color:var(--muted);font-weight:500">· ${escapeHtml(leg.teamAbbr)}</span>` : ''}</div>
-                <div class="leg-game">${escapeHtml(leg.gameLabel || t('gameNotSet'))} ${leg.gameDetail ? `· ${escapeHtml(leg.gameDetail)}` : ''}</div>
+                <div class="leg-game">${escapeHtml(leg.gameLabel || t('gameNotSet'))} ${leg.gameDetail ? `· ${escapeHtml(leg.gameDetail)}` : ''}${leg.playerExited ? `<span class="leg-exit-note" title="${escapeAttr(t('playerExitedDetail'))}">${escapeHtml(t('playerExited'))}</span>` : ''}</div>
               </div>
               <div class="leg-market">${escapeHtml(isGameBet ? gameBetMarketLabel(leg.market) : `${marketLabel(leg.market)} ≥ ${Number(leg.target || 1)}`)}</div>
               <div class="leg-current">${t('current')} <strong>${escapeHtml(isGameBet ? (leg.current || '0–0') : Number(leg.current || 0))}</strong></div>
@@ -2822,6 +3148,8 @@
         const matched = combo.legs.filter(l => l.status === 'MATCHED').length;
         const required = getRequiredCount(combo);
         if (matched >= required) return 'MATCHED';
+        const stillPossible = combo.legs.filter(l => !['MATCHED', 'FAILED', 'PUSH'].includes(l.status)).length;
+        if (matched + stillPossible < required) return 'FAILED';
         const allFinal = combo.legs.length > 0 && combo.legs.every(l => l.gameState === 'Final');
         if (allFinal) return 'FAILED';
         if (combo.legs.some(l => l.gameState === 'Live') || matched > 0) return 'LIVE';
@@ -3692,18 +4020,25 @@
             if (leg.status === 'MATCHED' && !leg.matchedAt) leg.matchedAt = new Date().toISOString();
             return;
           }
-          const player = allPlayers[`ID${leg.playerId}`];
+          const playerKey = `ID${leg.playerId}`;
+          const player = allPlayers[playerKey];
+          const playerTeamBox = boxscore?.teams?.away?.players?.[playerKey] ? boxscore.teams.away
+            : boxscore?.teams?.home?.players?.[playerKey] ? boxscore.teams.home : null;
           const batting = player?.stats?.batting || {};
           const pitching = player?.stats?.pitching || {};
-          const value = isPitchingStrikeoutLeg(leg, player, boxscore)
+          const pitchingLeg = isPitchingStrikeoutLeg(leg, player, boxscore);
+          const value = pitchingLeg
             ? n(pitching.strikeOuts)
             : getMarketValue(leg.market, batting);
           if (Number.isFinite(value)) leg.current = value;
+          const playerExited = !pitchingLeg && leg.gameState !== 'Preview' && batterHasExited(leg.playerId, player, playerTeamBox);
+          leg.playerExited = playerExited || Boolean(leg.playerExited && leg.gameState !== 'Preview');
+          if (playerExited && !leg.exitedAt) leg.exitedAt = new Date().toISOString();
           const wasMatched = leg.status === 'MATCHED';
           if (Number(leg.current || 0) >= Number(leg.target || 1)) {
             leg.status = 'MATCHED';
             if (!wasMatched) leg.matchedAt = new Date().toISOString();
-          } else if (leg.gameState === 'Final') {
+          } else if (playerExited || leg.gameState === 'Final') {
             leg.status = 'FAILED';
             leg.matchedAt = null;
           } else {
@@ -3711,6 +4046,12 @@
             leg.matchedAt = null;
           }
         }));
+      }
+
+      function batterHasExited(playerId, player, teamBox) {
+        if (!player || !teamBox || !player.battingOrder) return false;
+        const activeBattingOrder = (teamBox.battingOrder || []).map(String);
+        return activeBattingOrder.length >= 9 && !activeBattingOrder.includes(String(playerId));
       }
 
       function isPitchingStrikeoutLeg(leg, player, boxscore) {
