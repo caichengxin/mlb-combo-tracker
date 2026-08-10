@@ -1480,15 +1480,15 @@
           ,bvpVsLineup: '对本场打线 BvP（近 5 年）', noArsenalData: '暂无可用球种数据', noBvpSummary: '暂无可用 BvP 样本'
           ,pitchAnalysisBasis: '规则模型会先区分完整先发与开场投手。近期率数据按实际局数向赛季数据收缩，防止 1–3 局小样本被放大；本场优势同时考虑失分控制、上垒、三振、预计局数与预计总三振。BvP 按样本量降权。'
           ,seasonArsenalSource: '赛季球种来自 Baseball Savant；近期球种由所选比赛前的 MLB 逐球数据计算。', pitcherInsights: '初步分析'
-          ,gameModelTab: '球队模型', gameModelTitle: '赛前球队偏向与比分模拟', gameModelSubtitle: '综合先发、打线、牛棚、近期攻守、主场环境与本季交锋，运行 10,000 次可复现模拟。'
+          ,gameModelTab: '球队模型', gameModelTitle: '赛前球队偏向与比分模拟 v31', gameModelSubtitle: '使用严格赛前快照，综合先发、收缩后的近期进攻、逐人牛棚、赛程与天气环境，运行 10,000 次可复现模拟。'
           ,gameModelRun: '运行球队模型', gameModelRefresh: '重新模拟', gameModelIdle: '点击运行后读取球队、投手、牛棚与本季对阵资料。', gameModelLoading: '正在构建赛前快照并模拟 10,000 场比赛…'
           ,gameModelReady: '模型完成；结果是赛前数据参考，不代表确定赛果。', gameModelFailed: '部分关键资料读取失败，未生成模型结果。', modelDashboardIdle: '模型待运行', modelDashboardRun: '运行模型'
-          ,modelLean: '模型偏向 {team}', modelProjectedScore: '参考比分', modelWinChance: '胜率', modelExpectedRuns: '预期得分', modelTotalRuns: '预期总分', modelTotalRange: '总分 60% 区间', modelPace: '比赛节奏', modelConfidence: '模型置信度'
+          ,modelLean: '模型偏向 {team}', modelLeanClose: '两队接近 · 无明确偏向', modelProjectedScore: '参考比分', modelWinChance: '保守模型胜率', modelExpectedRuns: '预期得分', modelTotalRuns: '预期总分', modelTotalRange: '总分 60% 区间', modelPace: '比赛节奏', modelConfidence: '资料完整度', modelAdvantage: '模型优势', modelAdvantageClose: '接近', modelAdvantageSlight: '轻微', modelAdvantageClear: '较明显', modelDataCutoff: '数据截止'
           ,modelPaceLow: '投手主导 · 前半偏快', modelPaceMedium: '中性节奏 · 后段看牛棚', modelPaceHigh: '上垒偏多 · 高分/慢节奏', modelFirstFive: '前 5 局预期', modelLateRuns: '6 局后预期'
-          ,modelFactors: '模型因素拆解', modelFactorStarter: '先发投手', modelFactorOffense: '近期＋赛季打线', modelFactorBullpen: '牛棚质量／疲劳', modelFactorLineup: '确认打线＋BvP', modelFactorH2h: '本季同队交锋', modelFactorVenue: '主场／场地／天气'
+          ,modelFactors: '模型因素拆解', modelFactorStarter: '先发投手', modelFactorOffense: '赛季＋30/14天进攻', modelFactorBullpen: '牛棚质量／逐人可用性', modelFactorLineup: '确认打线＋BvP', modelFactorH2h: '本季交锋（仅展示）', modelFactorVenue: '主场／天气／赛程'
           ,modelEdgeAway: '偏 {team}', modelEdgeHome: '偏 {team}', modelEdgeEven: '接近', modelTopScores: '常见比分路径', modelSimulationShare: '模拟占比 {pct}', modelInsights: '模型解读'
-          ,modelH2hSummary: '{awayWins}-{homeWins} · {awayRuns}-{homeRuns} 得分', modelNoH2h: '本季尚无已结束交锋', modelBullpenFresh: '负荷正常', modelBullpenTired: '近期负荷偏高', modelLineupUnconfirmed: '首发未齐，使用球队基线', modelWeatherMissing: '天气/屋顶资料未提供'
-          ,modelBasis: '核心得分模型先估算双方每局得分率：球队赛季与近 10 场进攻 × 对方先发预计局数/失分 × 牛棚估计 ERA 与近 3 场负荷，再加入已确认打线、BvP、主场环境和本季交锋的小幅校准。交锋最多只作低权重修正；模拟胜率还会向 50% 收缩，避免单场模型过度自信。'
+          ,modelH2hSummary: '{awayWins}-{homeWins} · {awayRuns}-{homeRuns} 得分', modelNoH2h: '本季尚无已结束交锋', modelBullpenFresh: '主要救援可用', modelBullpenTired: '关键救援可能受限', modelLineupUnconfirmed: '首发未齐，使用球队基线', modelWeatherMissing: '天气资料未提供', modelRoofUnknown: '伸缩屋顶状态未知', modelWeatherIndoor: '室内／关顶，不应用室外天气', modelScheduleNormal: '休息正常', modelScheduleShort: '短休／旅行风险', modelH2hDisplayOnly: '仅展示 · 权重 0'
+          ,modelBasis: 'v31 使用目标比赛前一天为统一数据截止点：赛季基线 60%＋近 30 天 25%＋近 14 天 15%，近期数据按场次向赛季收缩；先发与逐人牛棚分段估分，再加入主场、休息旅行和屋顶感知天气。H2H 仅展示、不进入胜率。比分模拟采用厚尾与共享比赛环境，胜率经更强收缩并限制上限。'
           ,modelDisclaimer: '未接入盘口，也不是投注保证。伤病临时变化、开合屋顶、实际可用救援投手与赛前最后阵容可能改变结果；建议首发公布后重新运行。'
           ,comboTracked: 'Combo 追踪', comboPlayers: '{players} 名球员', comboItems: '{items} 项',
           paProjected: '预计全场 {range} PA', paCompleted: '已完成 {count}', paRemaining: '预计剩余 {range} PA',
@@ -1592,15 +1592,15 @@
           ,bvpVsLineup: 'BvP vs today’s lineup (5Y)', noArsenalData: 'No pitch-mix data is available', noBvpSummary: 'No usable BvP sample'
           ,pitchAnalysisBasis: 'The rules model first separates full starters from openers. Recent rate stats are shrunk toward the season baseline by actual innings so a 1–3 inning sample cannot dominate. The game edge blends run prevention, traffic, strikeouts, expected workload, and projected total strikeouts. BvP is down-weighted by sample size.'
           ,seasonArsenalSource: 'Season pitch mix comes from Baseball Savant; recent pitch mix is calculated from MLB pitch-by-pitch feeds before the selected game.', pitcherInsights: 'Initial read'
-          ,gameModelTab: 'Team Model', gameModelTitle: 'Pregame Team Lean & Score Simulation', gameModelSubtitle: 'Blends starters, lineups, bullpens, recent form, home environment, and season head-to-head before running 10,000 reproducible simulations.'
+          ,gameModelTab: 'Team Model', gameModelTitle: 'Pregame Team Lean & Score Simulation v31', gameModelSubtitle: 'Uses a strict pregame snapshot and blends starters, shrunk recent offense, individual bullpen availability, schedule, and weather in 10,000 reproducible simulations.'
           ,gameModelRun: 'Run team model', gameModelRefresh: 'Resimulate', gameModelIdle: 'Run the model to load team, pitcher, bullpen, and season-series context.', gameModelLoading: 'Building the pregame snapshot and simulating 10,000 games…'
           ,gameModelReady: 'Model complete. This is a pregame data reference, not a certain result.', gameModelFailed: 'Key inputs could not be loaded, so no model result was produced.', modelDashboardIdle: 'Model not run', modelDashboardRun: 'Run model'
-          ,modelLean: 'Model leans {team}', modelProjectedScore: 'Reference score', modelWinChance: 'Win probability', modelExpectedRuns: 'Expected runs', modelTotalRuns: 'Expected total', modelTotalRange: '60% total range', modelPace: 'Game flow', modelConfidence: 'Confidence'
+          ,modelLean: 'Model leans {team}', modelLeanClose: 'Teams close · no clear lean', modelProjectedScore: 'Reference score', modelWinChance: 'Conservative model probability', modelExpectedRuns: 'Expected runs', modelTotalRuns: 'Expected total', modelTotalRange: '60% total range', modelPace: 'Game flow', modelConfidence: 'Data completeness', modelAdvantage: 'Model edge', modelAdvantageClose: 'Close', modelAdvantageSlight: 'Slight', modelAdvantageClear: 'More visible', modelDataCutoff: 'Data cutoff'
           ,modelPaceLow: 'Pitcher-led · quicker early innings', modelPaceMedium: 'Balanced · bullpen decides late', modelPaceHigh: 'More traffic · higher/slow-scoring flow', modelFirstFive: 'Expected first 5', modelLateRuns: 'Expected after 5'
-          ,modelFactors: 'Model factor breakdown', modelFactorStarter: 'Starting pitching', modelFactorOffense: 'Recent + season offense', modelFactorBullpen: 'Bullpen quality / load', modelFactorLineup: 'Confirmed lineup + BvP', modelFactorH2h: 'Season head-to-head', modelFactorVenue: 'Home / venue / weather'
+          ,modelFactors: 'Model factor breakdown', modelFactorStarter: 'Starting pitching', modelFactorOffense: 'Season + 30/14-day offense', modelFactorBullpen: 'Bullpen quality / availability', modelFactorLineup: 'Confirmed lineup + BvP', modelFactorH2h: 'Season H2H (display only)', modelFactorVenue: 'Home / weather / schedule'
           ,modelEdgeAway: 'Lean {team}', modelEdgeHome: 'Lean {team}', modelEdgeEven: 'Even', modelTopScores: 'Common score paths', modelSimulationShare: '{pct} of simulations', modelInsights: 'Model read'
-          ,modelH2hSummary: '{awayWins}-{homeWins} · {awayRuns}-{homeRuns} runs', modelNoH2h: 'No completed season meetings', modelBullpenFresh: 'Normal recent load', modelBullpenTired: 'Elevated recent load', modelLineupUnconfirmed: 'Lineup incomplete; team baseline used', modelWeatherMissing: 'Weather/roof data unavailable'
-          ,modelBasis: 'The run model estimates each team’s scoring rate from season and last-10 offense, opposing starter run prevention and expected innings, estimated bullpen ERA and last-three-game workload, then applies small confirmed-lineup, BvP, home-environment, weather, and season-series adjustments. Head-to-head stays low weight, and simulated win probabilities are shrunk toward 50% to avoid single-game overconfidence.'
+          ,modelH2hSummary: '{awayWins}-{homeWins} · {awayRuns}-{homeRuns} runs', modelNoH2h: 'No completed season meetings', modelBullpenFresh: 'Key relievers available', modelBullpenTired: 'Key relievers may be limited', modelLineupUnconfirmed: 'Lineup incomplete; team baseline used', modelWeatherMissing: 'Weather unavailable', modelRoofUnknown: 'Retractable roof status unknown', modelWeatherIndoor: 'Indoor/closed roof; outdoor weather ignored', modelScheduleNormal: 'Normal rest', modelScheduleShort: 'Short rest/travel risk', modelH2hDisplayOnly: 'Display only · weight 0'
+          ,modelBasis: 'v31 uses the day before first pitch as one shared data cutoff. Offense is 60% season, 25% last 30 days, and 15% last 14 days, with recent samples shrunk toward season. Starter and individual-reliever availability drive split scoring before home, travel/rest, and roof-aware weather adjustments. H2H is display-only. The score simulation uses heavier tails and a shared game environment; probabilities are more strongly shrunk and capped.'
           ,modelDisclaimer: 'No betting lines are used and this is not a betting guarantee. Late injuries, roof status, actual reliever availability, and final lineup changes can move the result; rerun after lineups are posted.'
           ,comboTracked: 'Combo tracked', comboPlayers: '{players} players', comboItems: '{items} legs',
           paProjected: 'Projected {range} PA', paCompleted: '{count} completed', paRemaining: '{range} PA left',
@@ -2065,7 +2065,10 @@
           },
           halfInningEnds: extractHalfInningEnds(feed),
           pitchingDecisions: extractPitchingDecisions(feed),
-          weather: feed.gameData?.weather || game.weather || null
+          weather: feed.gameData?.weather || game.weather || null,
+          roofType: feed.gameData?.venue?.fieldInfo?.roofType || game.roofType || '',
+          venueId: feed.gameData?.venue?.id || game.venueId || '',
+          venueTimeZoneOffset: Number(feed.gameData?.venue?.timeZone?.offset)
         };
       }
 
@@ -2240,8 +2243,9 @@
         if (model) {
           const favorite = model.awayWinPct >= model.homeWinPct ? model.away : model.home;
           const score = `${model.away.abbr} ${model.referenceScore.away}–${model.referenceScore.home} ${model.home.abbr}`;
+          const leanText = model.noClearLean ? t('modelLeanClose') : t('modelLean', { team:favorite.abbr });
           return `<div class="dashboard-model">
-            <div class="dashboard-model-head"><div><div class="dashboard-model-label">${escapeHtml(t('modelProjectedScore'))}</div><div class="dashboard-model-lean">${escapeHtml(t('modelLean', { team:favorite.abbr }))} · ${fmt(Math.max(model.awayWinPct, model.homeWinPct),1)}%</div><div class="dashboard-model-meta">${escapeHtml(score)} · ${escapeHtml(t(model.paceKey))}</div></div>
+            <div class="dashboard-model-head"><div><div class="dashboard-model-label">${escapeHtml(t('modelProjectedScore'))}</div><div class="dashboard-model-lean">${escapeHtml(leanText)} · ${fmt(Math.max(model.awayWinPct, model.homeWinPct),1)}%</div><div class="dashboard-model-meta">${escapeHtml(score)} · ${escapeHtml(t(model.paceKey))} · ${escapeHtml(t('modelDataCutoff'))} ${escapeHtml(model.dataCutoff)}</div></div>
             <button class="btn small" type="button" data-model-run="${escapeAttr(key)}">↻</button></div>
           </div>`;
         }
@@ -3000,6 +3004,7 @@
 
       function gameProjectionResultHtml(model) {
         const favoredSide = model.awayWinPct >= model.homeWinPct ? 'away' : 'home';
+        const leanText = model.noClearLean ? t('modelLeanClose') : t('modelLean', { team:model[favoredSide].abbr });
         const factors = [
           ['modelFactorStarter', model.factors.starter.away, model.factors.starter.edge, model.factors.starter.home],
           ['modelFactorOffense', model.factors.offense.away, model.factors.offense.edge, model.factors.offense.home],
@@ -3009,7 +3014,7 @@
           ['modelFactorVenue', model.factors.venue.away, model.factors.venue.edge, model.factors.venue.home]
         ];
         return `<section class="model-section">
-          <div class="model-section-head">${escapeHtml(t('modelProjectedScore'))} · ${escapeHtml(t('modelLean', { team:model[favoredSide].abbr }))}</div>
+          <div class="model-section-head">${escapeHtml(t('modelProjectedScore'))} · ${escapeHtml(leanText)}</div>
           <div style="padding:14px">
             <div class="model-scoreboard">
               ${modelTeamScoreHtml(model.away, model.referenceScore.away, model.awayWinPct, favoredSide === 'away')}
@@ -3021,6 +3026,8 @@
               <div class="model-summary-cell"><strong>${model.totalRange.low}–${model.totalRange.high}</strong><span>${metricLabelHtml(t('modelTotalRange'),'totalrange')}</span></div>
               <div class="model-summary-cell"><strong>${escapeHtml(t(model.paceKey))}</strong><span>${escapeHtml(t('modelPace'))}</span></div>
               <div class="model-summary-cell"><strong>${escapeHtml(t(model.confidenceKey))}</strong><span>${escapeHtml(t('modelConfidence'))}</span></div>
+              <div class="model-summary-cell"><strong>${escapeHtml(t(model.advantageKey))}</strong><span>${escapeHtml(t('modelAdvantage'))}</span></div>
+              <div class="model-summary-cell"><strong>${escapeHtml(model.dataCutoff)}</strong><span>${escapeHtml(t('modelDataCutoff'))}</span></div>
               <div class="model-summary-cell"><strong>${fmt(model.away.firstFive + model.home.firstFive,1)}</strong><span>${escapeHtml(t('modelFirstFive'))}</span></div>
               <div class="model-summary-cell"><strong>${fmt(model.away.lateRuns + model.home.lateRuns,1)}</strong><span>${escapeHtml(t('modelLateRuns'))}</span></div>
               <div class="model-summary-cell"><strong>${fmt(model.away.expectedRuns,1)}</strong><span>${escapeHtml(model.away.abbr)} · ${escapeHtml(t('modelExpectedRuns'))}</span></div>
@@ -3094,19 +3101,26 @@
       }
 
       async function getTeamModelProfile(teamId, abbr, season, game) {
-        const key = `${teamId}|${season}|${game.date}|${game.gamePk}`;
+        const asOfDate = modelAsOfDate(game);
+        const key = `${teamId}|${season}|${asOfDate}|${game.gamePk}`;
         const cached = teamModelCache.get(key);
         if (cached) return typeof cached.then === 'function' ? await cached : cached;
         const request = (async () => {
-          const [seasonHitting, seasonPitching, pitcherPool, scheduleRows] = await Promise.all([
-            getTeamSeasonStat(teamId, season, 'hitting'), getTeamSeasonStat(teamId, season, 'pitching'),
-            getTeamPitcherPool(teamId, season), getTeamModelSchedule(teamId, season, game.date)
+          const seasonStart = `${season}-03-01`;
+          const [seasonHitting, recent30Hitting, recent14Hitting, seasonPitching, pitcherPool, hitterPool, scheduleRows] = await Promise.all([
+            getTeamStatRange(teamId, season, 'hitting', seasonStart, asOfDate),
+            getTeamStatRange(teamId, season, 'hitting', dateOffsetString(asOfDate,-29), asOfDate),
+            getTeamStatRange(teamId, season, 'hitting', dateOffsetString(asOfDate,-13), asOfDate),
+            getTeamStatRange(teamId, season, 'pitching', seasonStart, asOfDate),
+            getTeamPlayerPool(teamId, season, 'pitching', seasonStart, asOfDate),
+            getTeamPlayerPool(teamId, season, 'hitting', seasonStart, asOfDate),
+            getTeamModelSchedule(teamId, season, game.date)
           ]);
           const priorGames = modelScheduleRows(scheduleRows, teamId, game);
-          const recent10 = priorGames.slice(0, 10);
           const bullpen = estimateBullpenProfile(pitcherPool, seasonPitching);
-          const fatigue = await getBullpenFatigue(teamId, priorGames.slice(0, 3));
-          return { teamId, abbr, seasonHitting, seasonPitching, pitcherPool, priorGames, recent10, bullpen, fatigue };
+          const fatigue = await getBullpenFatigue(teamId, priorGames.slice(0, 3), bullpen);
+          const schedule = buildScheduleContext(priorGames, game, fatigue);
+          return { teamId, abbr, asOfDate, seasonHitting, recent30Hitting, recent14Hitting, seasonPitching, pitcherPool, hitterPool, priorGames, bullpen, fatigue, schedule };
         })();
         teamModelCache.set(key, request);
         try {
@@ -3119,19 +3133,29 @@
         }
       }
 
-      async function getTeamSeasonStat(teamId, season, group) {
-        const key = `team|${teamId}|${group}|${season}`;
+      function modelAsOfDate(game) {
+        return dateOffsetString(String(game?.date || selectedDate).slice(0,10), -1);
+      }
+
+      function dateOffsetString(date, days) {
+        const value = new Date(`${String(date).slice(0,10)}T12:00:00Z`);
+        value.setUTCDate(value.getUTCDate() + days);
+        return value.toISOString().slice(0,10);
+      }
+
+      async function getTeamStatRange(teamId, season, group, startDate, endDate) {
+        const key = `team|${teamId}|${group}|${season}|${startDate}|${endDate}`;
         if (playerStatsCache.has(key)) return playerStatsCache.get(key);
-        const data = await fetchJson(`${API}/v1/teams/${teamId}/stats?stats=season&group=${encodeURIComponent(group)}&season=${encodeURIComponent(season)}`);
+        const data = await fetchJson(`${API}/v1/teams/${teamId}/stats?stats=byDateRange&group=${encodeURIComponent(group)}&season=${encodeURIComponent(season)}&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`);
         const stat = (data.stats || []).flatMap(row => row.splits || [])[0]?.stat || null;
         playerStatsCache.set(key, stat);
         return stat;
       }
 
-      async function getTeamPitcherPool(teamId, season) {
-        const key = `${teamId}|${season}`;
+      async function getTeamPlayerPool(teamId, season, group, startDate, endDate) {
+        const key = `${teamId}|${season}|${group}|${startDate}|${endDate}`;
         if (teamPitcherPoolCache.has(key)) return teamPitcherPoolCache.get(key);
-        const data = await fetchJson(`${API}/v1/stats?stats=season&group=pitching&season=${encodeURIComponent(season)}&teamId=${encodeURIComponent(teamId)}&playerPool=ALL&limit=100`);
+        const data = await fetchJson(`${API}/v1/stats?stats=byDateRange&group=${encodeURIComponent(group)}&season=${encodeURIComponent(season)}&teamId=${encodeURIComponent(teamId)}&playerPool=ALL&limit=100&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`);
         const rows = (data.stats || []).flatMap(row => row.splits || []);
         teamPitcherPoolCache.set(key, rows);
         return rows;
@@ -3158,49 +3182,82 @@
           const away = String(row.teams?.away?.team?.id) === String(teamId);
           const own = away ? row.teams?.away : row.teams?.home;
           const opponent = away ? row.teams?.home : row.teams?.away;
-          return { gamePk:row.gamePk, date:String(row.officialDate || row.gameDate || '').slice(0,10), isHome:!away, runs:n(own?.score), allowed:n(opponent?.score), opponentId:opponent?.team?.id, opponentAbbr:opponent?.team?.abbreviation || abbreviation(opponent?.team?.name || ''), venueId:row.venue?.id || '' };
+          return { gamePk:row.gamePk, date:String(row.officialDate || row.gameDate || '').slice(0,10), gameDate:row.gameDate || '', isHome:!away, runs:n(own?.score), allowed:n(opponent?.score), opponentId:opponent?.team?.id, opponentAbbr:opponent?.team?.abbreviation || abbreviation(opponent?.team?.name || ''), venueId:row.venue?.id || '' };
         }).sort((a,b) => String(b.date).localeCompare(String(a.date)) || n(b.gamePk) - n(a.gamePk));
       }
 
       function estimateBullpenProfile(rows, teamPitching) {
-        const totals = (rows || []).reduce((acc, split) => {
+        const relievers = (rows || []).map(split => {
           const stat = split.stat || {};
           const games = Math.max(1, n(stat.gamesPlayed) || n(stat.gamesPitched));
           const reliefShare = clamp((games - n(stat.gamesStarted)) / games, 0, 1);
-          acc.outs += n(stat.outs) * reliefShare;
-          acc.er += n(stat.earnedRuns) * reliefShare;
-          acc.pitches += n(stat.numberOfPitches) * reliefShare;
-          acc.weight += reliefShare;
+          return { id:String(split.player?.id || ''), name:split.player?.fullName || '', reliefShare, innings:n(stat.outs)/3*reliefShare, earnedRuns:n(stat.earnedRuns)*reliefShare, saves:n(stat.saves), holds:n(stat.holds), gamesFinished:n(stat.gamesFinished), games };
+        }).filter(row => row.id && row.reliefShare >= .45 && row.innings >= 2);
+        const totals = relievers.reduce((acc, row) => {
+          acc.innings += row.innings;
+          acc.er += row.earnedRuns;
           return acc;
-        }, { outs:0, er:0, pitches:0, weight:0 });
-        const innings = totals.outs / 3;
+        }, { innings:0, er:0 });
+        const innings = totals.innings;
         const fallbackEra = Number(teamPitching?.era) || 4.4;
-        return { era:innings >= 20 ? totals.er * 9 / innings : fallbackEra, innings, estimated:true };
+        relievers.forEach(row => { row.leverageScore = row.saves*4 + row.holds*2 + row.gamesFinished + row.innings*.08; });
+        relievers.sort((a,b) => b.leverageScore-a.leverageScore);
+        return { era:innings >= 20 ? totals.er * 9 / innings : fallbackEra, innings, estimated:true, relievers };
       }
 
-      async function getBullpenFatigue(teamId, recentGames) {
-        const loads = [];
+      async function getBullpenFatigue(teamId, recentGames, bullpen) {
+        const days = [];
         for (let index = 0; index < (recentGames || []).length; index += 2) {
           const batch = recentGames.slice(index, index + 2);
           const results = await Promise.allSettled(batch.map(row => fetchGameFeed(row.gamePk, false)));
-          results.forEach(result => {
+          results.forEach((result, resultIndex) => {
             if (result.status !== 'fulfilled' || !result.value) return;
             const feed = result.value;
             const side = String(feed.gameData?.teams?.away?.id) === String(teamId) ? 'away' : 'home';
             const box = feed.liveData?.boxscore?.teams?.[side] || {};
             const pitcherIds = [...new Set(box.pitchers || [])];
-            const pitches = pitcherIds.slice(1).reduce((sum,id) => sum + n(box.players?.[`ID${id}`]?.stats?.pitching?.numberOfPitches), 0);
-            loads.push(pitches);
+            const pitchers = pitcherIds.slice(1).map(id => ({ id:String(id), name:box.players?.[`ID${id}`]?.person?.fullName || '', pitches:n(box.players?.[`ID${id}`]?.stats?.pitching?.numberOfPitches) })).filter(row => row.pitches > 0);
+            days.push({ date:batch[resultIndex]?.date || '', pitches:pitchers.reduce((sum,row) => sum+row.pitches,0), pitchers, venueOffset:Number(feed.gameData?.venue?.timeZone?.offset) });
           });
         }
-        const last1 = loads[0] || 0;
-        const last3 = loads.reduce((sum,value) => sum + value, 0);
-        const penalty = clamp(Math.max(0,last1 - 45) / 300 + Math.max(0,last3 - 135) / 800, 0, .12);
-        return { last1, last3, penalty, tired:penalty >= .035 };
+        days.sort((a,b) => String(b.date).localeCompare(String(a.date)));
+        const usage = new Map();
+        days.forEach((day,dayIndex) => day.pitchers.forEach(row => {
+          const item = usage.get(row.id) || { id:row.id, name:row.name, pitches:[0,0,0] };
+          item.pitches[dayIndex] = row.pitches;
+          usage.set(row.id,item);
+        }));
+        const topRelievers = (bullpen?.relievers || []).slice(0,6).map(row => {
+          const used = usage.get(row.id) || { pitches:[0,0,0] };
+          const last1 = n(used.pitches[0]), last2 = last1+n(used.pitches[1]), last3 = last2+n(used.pitches[2]);
+          const limited = last1 >= 25 || last2 >= 38 || (last1 > 0 && n(used.pitches[1]) > 0) || last3 >= 55;
+          return { ...row, last1, last2, last3, limited };
+        });
+        const limitedKey = topRelievers.filter(row => row.limited).length;
+        const last1 = days[0]?.pitches || 0;
+        const last3 = days.reduce((sum,row) => sum+row.pitches,0);
+        const penalty = clamp(limitedKey*.018 + Math.max(0,last1-45)/450 + Math.max(0,last3-150)/1200, 0, .10);
+        return { last1, last3, penalty, tired:limitedKey >= 2 || penalty >= .035, limitedKey, topRelievers, lastVenueOffset:days[0]?.venueOffset };
       }
 
-      function lineupModelProfile(lineup, teamHitting) {
-        const opsValues = (lineup || []).map((row,index) => ({ value:Number(row.seasonStats?.ops), weight:index < 5 ? 1.15 : 1 })).filter(row => Number.isFinite(row.value));
+      function buildScheduleContext(priorGames, game, fatigue) {
+        const previous = (priorGames || [])[0];
+        const selectedStart = Date.parse(game?.gameDate || `${game?.date}T23:59:59Z`);
+        const previousStart = Date.parse(previous?.gameDate || '');
+        const hoursSinceStart = Number.isFinite(selectedStart) && Number.isFinite(previousStart) ? (selectedStart-previousStart)/36e5 : NaN;
+        const venueChanged = Boolean(previous?.venueId && game?.venueId && String(previous.venueId)!==String(game.venueId));
+        const currentOffset = Number(game?.venueTimeZoneOffset);
+        const previousOffset = Number(fatigue?.lastVenueOffset);
+        const eastwardHours = Number.isFinite(currentOffset) && Number.isFinite(previousOffset) ? Math.max(0,currentOffset-previousOffset) : 0;
+        const shortRest = Number.isFinite(hoursSinceStart) && hoursSinceStart < 22;
+        const penalty = clamp((shortRest ? .018 : 0) + (venueChanged && hoursSinceStart < 30 ? .012 : 0) + eastwardHours*.006,0,.045);
+        const weekend = [0,6].includes(new Date(`${game?.date}T12:00:00Z`).getUTCDay());
+        return { hoursSinceStart, venueChanged, eastwardHours, shortRest, penalty, weekend };
+      }
+
+      function lineupModelProfile(lineup, teamHitting, hitterPool) {
+        const strictStats = new Map((hitterPool || []).map(row => [String(row.player?.id || ''),row.stat || null]));
+        const opsValues = (lineup || []).map((row,index) => ({ value:Number(strictStats.get(String(row.id))?.ops ?? row.seasonStats?.ops), weight:index < 5 ? 1.15 : 1 })).filter(row => Number.isFinite(row.value));
         const lineupOps = opsValues.length ? opsValues.reduce((sum,row) => sum + row.value * row.weight, 0) / opsValues.reduce((sum,row) => sum + row.weight, 0) : NaN;
         const teamOps = Number(teamHitting?.ops);
         const complete = (lineup || []).length >= 9;
@@ -3228,113 +3285,144 @@
         return clamp(1 + (homeTotal / allTotal - 1) * reliability, .95, 1.05);
       }
 
-      function modelWeatherFactor(weather) {
-        if (!weather) return 1;
+      function modelWeatherContext(weather, roofType) {
+        const roof = String(roofType || '').toLowerCase();
+        if (!weather && !roof) return { factor:1, variance:.08, available:false, uncertain:true, indoor:false, delayRisk:false };
+        weather = weather || {};
         const condition = String(weather.condition || '').toLowerCase();
         const wind = String(weather.wind || '').toLowerCase();
         const temp = Number(weather.temp);
-        if (/dome|roof closed|indoor/.test(condition)) return 1;
-        let factor = 1;
+        const indoor = /dome|fixed/.test(roof) || /roof closed|indoor/.test(condition);
+        if (indoor) return { factor:1, variance:.03, available:true, uncertain:false, indoor:true, delayRisk:false };
+        let delta = 0;
         const speed = Number(wind.match(/(\d+)/)?.[1]);
-        if (Number.isFinite(speed) && speed >= 10 && /out to|out toward/.test(wind)) factor += .025;
-        if (Number.isFinite(speed) && speed >= 10 && /in from|in toward/.test(wind)) factor -= .025;
-        if (Number.isFinite(temp) && temp >= 85) factor += .015;
-        if (Number.isFinite(temp) && temp <= 55) factor -= .015;
-        return clamp(factor,.96,1.04);
+        if (Number.isFinite(speed) && /out to|out toward/.test(wind)) delta += clamp(speed*.003,0,.05);
+        if (Number.isFinite(speed) && /in from|in toward/.test(wind)) delta -= clamp(speed*.003,0,.05);
+        if (Number.isFinite(temp)) delta += clamp((temp-70)*.0012,-.03,.03);
+        const delayRisk = /rain|shower|thunder|drizzle/.test(condition);
+        const retractableUnknown = /retractable/.test(roof) && !/roof open|open roof/.test(condition);
+        if (retractableUnknown) delta *= .35;
+        const variance = clamp(.05 + (Number.isFinite(speed) ? speed*.002 : 0) + (delayRisk ? .08 : 0) + (retractableUnknown ? .04 : 0),.04,.18);
+        return { factor:clamp(1+delta,.92,1.08), variance, available:Boolean(weather && Object.keys(weather).length), uncertain:retractableUnknown || !weather, indoor:false, delayRisk };
       }
 
-      function teamRunInputs(teamProfile, lineup, opposingPitcher, opposingTeam, venueFactor, weatherFactor, homeSide) {
+      function modelRatePerGame(stat, fallback) {
+        const games = n(stat?.gamesPlayed);
+        return games > 0 ? n(stat?.runs)/games : fallback;
+      }
+
+      function teamRunInputs(teamProfile, lineup, opposingPitcher, opposingTeam, venueFactor, weather, homeSide) {
         const seasonGames = Math.max(1,n(teamProfile?.seasonHitting?.gamesPlayed));
         const seasonRpg = n(teamProfile?.seasonHitting?.runs) / seasonGames;
-        const recentRpg = teamProfile?.recent10?.length ? average(teamProfile.recent10.map(row => row.runs)) : seasonRpg;
-        const offenseBase = seasonRpg * .68 + recentRpg * .32;
-        const lineupProfile = lineupModelProfile(lineup, teamProfile?.seasonHitting);
+        const recent30Raw = modelRatePerGame(teamProfile?.recent30Hitting,seasonRpg);
+        const recent14Raw = modelRatePerGame(teamProfile?.recent14Hitting,seasonRpg);
+        const recent30Games = n(teamProfile?.recent30Hitting?.gamesPlayed), recent14Games = n(teamProfile?.recent14Hitting?.gamesPlayed);
+        const recent30Rpg = seasonRpg + (recent30Raw-seasonRpg) * recent30Games/(recent30Games+20);
+        const recent14Rpg = seasonRpg + (recent14Raw-seasonRpg) * recent14Games/(recent14Games+15);
+        const offenseBase = seasonRpg*.60 + recent30Rpg*.25 + recent14Rpg*.15;
+        const lineupProfile = lineupModelProfile(lineup, teamProfile?.seasonHitting, teamProfile?.hitterPool);
         const pitcher = pitcherProjection(opposingPitcher, 'last5');
         const staffEra = Number(opposingTeam?.seasonPitching?.era) || 4.4;
-        const starterEra = clamp(Number(pitcher?.era) || staffEra, 2.1, 7.2);
-        const starterIp = clamp(Number(pitcher?.expectedIp) || 5, .5, 7.2);
+        const defenseEra = Number(pitcher?.era) || staffEra;
+        const defenseWhip = Number(pitcher?.whip);
+        const defenseKbb = Number.isFinite(pitcher?.k9) && Number.isFinite(pitcher?.bb9) ? pitcher.k9-pitcher.bb9 : NaN;
+        const starterEra = clamp(defenseEra*.55 + (Number.isFinite(defenseWhip) ? 4.4+(defenseWhip-1.3)*2.2 : defenseEra)*.25 + (Number.isFinite(defenseKbb) ? 4.4-(defenseKbb-5)*.10 : defenseEra)*.20,2.3,6.7);
+        const weatherIpPenalty = weather.delayRisk ? .35 : 0;
+        const starterIp = clamp((Number(pitcher?.expectedIp) || 5)-weatherIpPenalty,.5,7.2);
         const bullpenEra = clamp((Number(opposingTeam?.bullpen?.era) || staffEra) * (1 + n(opposingTeam?.fatigue?.penalty)), 2.5, 7.0);
         const bvpFactor = bvpRunFactor(opposingPitcher?.bvp);
-        const baseAdjusted = offenseBase * lineupProfile.factor * bvpFactor * venueFactor * weatherFactor;
-        const starterRuns = baseAdjusted * Math.pow(starterEra / 4.4,.72) * starterIp / 9;
+        const scheduleFactor = 1-n(teamProfile?.schedule?.penalty);
+        const baseAdjusted = offenseBase * lineupProfile.factor * bvpFactor * venueFactor * weather.factor * scheduleFactor;
+        const starterRuns = baseAdjusted * Math.pow(starterEra / 4.4,.58) * starterIp / 9;
         const bullpenInnings = Math.max(.1,9 - starterIp);
-        const bullpenRuns = baseAdjusted * Math.pow(bullpenEra / 4.4,.72) * bullpenInnings / 9;
-        const homeRuns = homeSide ? .12 : 0;
+        const bullpenRuns = baseAdjusted * Math.pow(bullpenEra / 4.4,.55) * bullpenInnings / 9;
+        const homeRuns = homeSide ? .10 : 0;
         const firstStarterIp = Math.min(5,starterIp);
         const firstBullpenIp = Math.max(0,5 - starterIp);
         const firstFive = starterRuns * firstStarterIp / starterIp + bullpenRuns * firstBullpenIp / bullpenInnings + homeRuns * 5 / 9;
-        return { seasonRpg, recentRpg, lineup:lineupProfile, starterEra, starterIp, bullpenEra, bvpFactor, runs:starterRuns + bullpenRuns + homeRuns, firstFive, lateRuns:starterRuns + bullpenRuns + homeRuns - firstFive };
+        return { seasonRpg, recent30Rpg, recent14Rpg, offenseBase, lineup:lineupProfile, starterEra, starterIp, bullpenEra, bvpFactor, scheduleFactor, runs:starterRuns + bullpenRuns + homeRuns, firstFive, lateRuns:starterRuns + bullpenRuns + homeRuns - firstFive };
       }
 
       function headToHeadModel(awayProfile, homeId) {
         const rows = (awayProfile?.priorGames || []).filter(row => String(row.opponentId) === String(homeId));
         const totals = rows.reduce((acc,row) => { acc.awayRuns += row.runs; acc.homeRuns += row.allowed; acc.awayWins += row.runs > row.allowed ? 1 : 0; acc.homeWins += row.allowed > row.runs ? 1 : 0; return acc; }, { games:rows.length,awayRuns:0,homeRuns:0,awayWins:0,homeWins:0 });
         const runDiff = totals.games ? (totals.awayRuns - totals.homeRuns) / totals.games : 0;
-        const adjustment = clamp(runDiff * (totals.games / (totals.games + 10)) * .12, -.18, .18);
-        return { ...totals, adjustment };
+        return { ...totals, runDiff, adjustment:0 };
       }
 
       function buildGameProjection(game, awayProfile, homeProfile, pitchers) {
         const venueFactor = modelVenueFactor(homeProfile);
-        const weatherFactor = modelWeatherFactor(game.weather);
-        const awayInputs = teamRunInputs(awayProfile, game.awayLineup || [], pitchers.home, homeProfile, venueFactor, weatherFactor, false);
-        const homeInputs = teamRunInputs(homeProfile, game.homeLineup || [], pitchers.away, awayProfile, venueFactor, weatherFactor, true);
+        const weather = modelWeatherContext(game.weather, game.roofType);
+        const historical = String(game?.date || '') < new Date().toISOString().slice(0,10);
+        const modelPitchers = historical ? { away:pitchers.away ? {...pitchers.away,bvp:null}:null, home:pitchers.home ? {...pitchers.home,bvp:null}:null } : pitchers;
+        const awayInputs = teamRunInputs(awayProfile, game.awayLineup || [], modelPitchers.home, homeProfile, venueFactor, weather, false);
+        const homeInputs = teamRunInputs(homeProfile, game.homeLineup || [], modelPitchers.away, awayProfile, venueFactor, weather, true);
         const h2h = headToHeadModel(awayProfile, game.homeId);
-        const awayLambda = clamp(awayInputs.runs + h2h.adjustment, 1.7, 8.2);
-        const homeLambda = clamp(homeInputs.runs - h2h.adjustment, 1.7, 8.2);
-        const simulation = simulateGameScores(awayLambda, homeLambda, game.gamePk, 10000);
-        const awayStarterProjection = pitcherProjection(pitchers.away, 'last5');
-        const homeStarterProjection = pitcherProjection(pitchers.home, 'last5');
+        const awayLambda = clamp(awayInputs.runs, 1.9, 7.4);
+        const homeLambda = clamp(homeInputs.runs, 1.9, 7.4);
+        const simulation = simulateGameScores(awayLambda, homeLambda, game.gamePk, 10000, weather.variance);
+        const awayStarterProjection = pitcherProjection(modelPitchers.away, 'last5');
+        const homeStarterProjection = pitcherProjection(modelPitchers.home, 'last5');
         const edge = (left,right,lowerBetter=false,threshold=.12) => {
           if (!Number.isFinite(left) || !Number.isFinite(right) || Math.abs(left-right) < threshold) return 'even';
           return lowerBetter ? (left < right ? 'away' : 'home') : (left > right ? 'away' : 'home');
         };
-        const awayLineupText = awayInputs.lineup.complete ? `OPS ${fmtRate(awayInputs.lineup.ops)} · BvP ${pitchers.home?.bvp?.pa || 0} PA` : t('modelLineupUnconfirmed');
-        const homeLineupText = homeInputs.lineup.complete ? `OPS ${fmtRate(homeInputs.lineup.ops)} · BvP ${pitchers.away?.bvp?.pa || 0} PA` : t('modelLineupUnconfirmed');
+        const awayLineupText = awayInputs.lineup.complete ? `OPS ${fmtRate(awayInputs.lineup.ops)} · BvP ${modelPitchers.home?.bvp?.pa || 0} PA` : t('modelLineupUnconfirmed');
+        const homeLineupText = homeInputs.lineup.complete ? `OPS ${fmtRate(homeInputs.lineup.ops)} · BvP ${modelPitchers.away?.bvp?.pa || 0} PA` : t('modelLineupUnconfirmed');
         const h2hSummary = h2h.games ? t('modelH2hSummary', h2h) : t('modelNoH2h');
-        const weatherText = game.weather ? [game.weather.condition, game.weather.temp ? `${game.weather.temp}°F` : '', game.weather.wind || ''].filter(Boolean).join(' · ') : t('modelWeatherMissing');
-        const confidencePoints = 35 + (pitchers.away && pitchers.home ? 20 : 0) + (awayInputs.lineup.complete && homeInputs.lineup.complete ? 20 : 0) + (awayProfile.bullpen?.innings > 20 && homeProfile.bullpen?.innings > 20 ? 10 : 0) + (h2h.games >= 3 ? 5 : 0) + (game.weather ? 5 : 0);
+        const rawWeatherText = game.weather ? [game.weather.condition, game.weather.temp ? `${game.weather.temp}°F` : '', game.weather.wind || ''].filter(Boolean).join(' · ') : t('modelWeatherMissing');
+        const weatherText = weather.indoor ? t('modelWeatherIndoor') : weather.uncertain && /retractable/i.test(game.roofType || '') ? `${rawWeatherText} · ${t('modelRoofUnknown')}` : rawWeatherText;
+        const confidencePoints = 30 + (modelPitchers.away && modelPitchers.home ? 25 : 0) + (awayInputs.lineup.complete && homeInputs.lineup.complete ? 20 : 0) + (awayProfile.bullpen?.innings > 20 && homeProfile.bullpen?.innings > 20 ? 15 : 0) + (weather.available || weather.indoor ? 10 : 0) - (weather.uncertain ? 5 : 0);
         const confidenceKey = confidencePoints >= 80 ? 'confidenceHigh' : confidencePoints >= 60 ? 'confidenceMedium' : 'confidenceLimited';
         const total = awayLambda + homeLambda;
-        const avgPpi = average([pitchers.away?.periods?.last5?.pitchesPerInning,pitchers.home?.periods?.last5?.pitchesPerInning].filter(Number.isFinite));
+        const avgPpi = average([modelPitchers.away?.periods?.last5?.pitchesPerInning,modelPitchers.home?.periods?.last5?.pitchesPerInning].filter(Number.isFinite));
         const paceKey = total <= 7.4 && (!Number.isFinite(avgPpi) || avgPpi < 16.5) ? 'modelPaceLow' : total >= 9.3 || (Number.isFinite(avgPpi) && avgPpi > 17.3) ? 'modelPaceHigh' : 'modelPaceMedium';
         const favored = simulation.awayWinPct >= simulation.homeWinPct ? game.awayAbbr : game.homeAbbr;
-        const insights = gameModelInsightLines(game, awayInputs, homeInputs, awayProfile, homeProfile, pitchers, h2h, simulation, paceKey);
+        const advantage = Math.max(simulation.awayWinPct,simulation.homeWinPct);
+        const advantageKey = advantage < 54 ? 'modelAdvantageClose' : advantage < 58 ? 'modelAdvantageSlight' : 'modelAdvantageClear';
+        const insights = gameModelInsightLines(game, awayInputs, homeInputs, awayProfile, homeProfile, modelPitchers, h2h, simulation, paceKey, weather);
+        if (historical) insights.push(currentLanguage === 'zh' ? '历史日期的 BvP 无法按当日截断，因此已自动设为中性，避免未来交手数据泄漏。' : 'Historical BvP cannot be date-truncated, so it is neutralized to prevent future matchup leakage.');
         return {
           gamePk:String(game.gamePk), loadedAt:Date.now(), away:{ abbr:game.awayAbbr, expectedRuns:awayLambda, firstFive:awayInputs.firstFive, lateRuns:Math.max(0,awayLambda-awayInputs.firstFive) }, home:{ abbr:game.homeAbbr, expectedRuns:homeLambda, firstFive:homeInputs.firstFive, lateRuns:Math.max(0,homeLambda-homeInputs.firstFive) },
-          awayWinPct:simulation.awayWinPct, homeWinPct:simulation.homeWinPct, referenceScore:simulation.referenceScore, topScores:simulation.topScores, totalRange:simulation.totalRange, confidenceKey, paceKey, favored,
+          awayWinPct:simulation.awayWinPct, homeWinPct:simulation.homeWinPct, referenceScore:simulation.referenceScore, topScores:simulation.topScores, totalRange:simulation.totalRange, confidenceKey, advantageKey, noClearLean:advantage < 54, dataCutoff:awayProfile.asOfDate || homeProfile.asOfDate || modelAsOfDate(game), paceKey, favored,
           factors:{
-            starter:{ away:`${pitchers.away?.name || game.awayProbable?.fullName || '—'} · ERA ${fmt(awayStarterProjection?.era,2)} / ${fmt(awayStarterProjection?.expectedIp,1)} IP`, home:`${pitchers.home?.name || game.homeProbable?.fullName || '—'} · ERA ${fmt(homeStarterProjection?.era,2)} / ${fmt(homeStarterProjection?.expectedIp,1)} IP`, edge:edge(awayStarterProjection?.score,homeStarterProjection?.score,false,4) },
-            offense:{ away:`${fmt(awayInputs.seasonRpg,2)} R/G · L10 ${fmt(awayInputs.recentRpg,2)}`, home:`${fmt(homeInputs.seasonRpg,2)} R/G · L10 ${fmt(homeInputs.recentRpg,2)}`, edge:edge(awayInputs.seasonRpg*.68+awayInputs.recentRpg*.32,homeInputs.seasonRpg*.68+homeInputs.recentRpg*.32,false,.18) },
-            bullpen:{ away:`ERA ${fmt(awayProfile.bullpen?.era,2)} · ${awayProfile.fatigue?.last3 || 0} P / 3G · ${t(awayProfile.fatigue?.tired?'modelBullpenTired':'modelBullpenFresh')}`, home:`ERA ${fmt(homeProfile.bullpen?.era,2)} · ${homeProfile.fatigue?.last3 || 0} P / 3G · ${t(homeProfile.fatigue?.tired?'modelBullpenTired':'modelBullpenFresh')}`, edge:edge((awayProfile.bullpen?.era||4.4)*(1+n(awayProfile.fatigue?.penalty)),(homeProfile.bullpen?.era||4.4)*(1+n(homeProfile.fatigue?.penalty)),true,.22) },
+            starter:{ away:`${modelPitchers.away?.name || game.awayProbable?.fullName || '—'} · ERA ${fmt(awayStarterProjection?.era,2)} / ${fmt(awayStarterProjection?.expectedIp,1)} IP`, home:`${modelPitchers.home?.name || game.homeProbable?.fullName || '—'} · ERA ${fmt(homeStarterProjection?.era,2)} / ${fmt(homeStarterProjection?.expectedIp,1)} IP`, edge:edge(awayStarterProjection?.score,homeStarterProjection?.score,false,4) },
+            offense:{ away:`${fmt(awayInputs.seasonRpg,2)} S · ${fmt(awayInputs.recent30Rpg,2)} 30D · ${fmt(awayInputs.recent14Rpg,2)} 14D`, home:`${fmt(homeInputs.seasonRpg,2)} S · ${fmt(homeInputs.recent30Rpg,2)} 30D · ${fmt(homeInputs.recent14Rpg,2)} 14D`, edge:edge(awayInputs.offenseBase,homeInputs.offenseBase,false,.16) },
+            bullpen:{ away:`ERA ${fmt(awayProfile.bullpen?.era,2)} · ${awayProfile.fatigue?.limitedKey || 0} limited · ${t(awayProfile.fatigue?.tired?'modelBullpenTired':'modelBullpenFresh')}`, home:`ERA ${fmt(homeProfile.bullpen?.era,2)} · ${homeProfile.fatigue?.limitedKey || 0} limited · ${t(homeProfile.fatigue?.tired?'modelBullpenTired':'modelBullpenFresh')}`, edge:edge((awayProfile.bullpen?.era||4.4)*(1+n(awayProfile.fatigue?.penalty)),(homeProfile.bullpen?.era||4.4)*(1+n(homeProfile.fatigue?.penalty)),true,.22) },
             lineup:{ away:awayLineupText, home:homeLineupText, edge:edge(awayInputs.lineup.factor*awayInputs.bvpFactor,homeInputs.lineup.factor*homeInputs.bvpFactor,false,.025) },
-            h2h:{ away:h2hSummary, home:h2h.games ? `${h2h.games} G · Δ ${h2h.adjustment >= 0 ? '+' : ''}${fmt(h2h.adjustment,2)} R` : t('modelNoH2h'), edge:h2h.adjustment > .04 ? 'away' : h2h.adjustment < -.04 ? 'home' : 'even' },
-            venue:{ away:`${game.awayAbbr} · Away`, home:`${game.homeAbbr} · Home · ×${fmt(venueFactor*weatherFactor,2)} · ${weatherText}`, edge:'home' }
+            h2h:{ away:h2hSummary, home:h2h.games ? `${h2h.games} G · ${t('modelH2hDisplayOnly')}` : t('modelNoH2h'), edge:'even' },
+            venue:{ away:`${game.awayAbbr} · ${t(awayProfile.schedule?.penalty ? 'modelScheduleShort':'modelScheduleNormal')}`, home:`${game.homeAbbr} · ${t(homeProfile.schedule?.penalty ? 'modelScheduleShort':'modelScheduleNormal')} · ×${fmt(venueFactor*weather.factor,2)} · ${weatherText}`, edge:edge(awayProfile.schedule?.penalty||0,homeProfile.schedule?.penalty||0,true,.012) }
           }, insights
         };
       }
 
-      function gameModelInsightLines(game, away, home, awayProfile, homeProfile, pitchers, h2h, simulation, paceKey) {
+      function gameModelInsightLines(game, away, home, awayProfile, homeProfile, pitchers, h2h, simulation, paceKey, weather) {
         const zh = currentLanguage === 'zh';
         const favored = simulation.awayWinPct >= simulation.homeWinPct ? game.awayAbbr : game.homeAbbr;
         const probability = Math.max(simulation.awayWinPct,simulation.homeWinPct);
-        const lines = [zh ? `10,000 次模拟偏向 ${favored}，胜率约 ${fmt(probability,1)}%；最常见参考比分为 ${game.awayAbbr} ${simulation.referenceScore.away}–${simulation.referenceScore.home} ${game.homeAbbr}。` : `Across 10,000 simulations, ${favored} leads at ${fmt(probability,1)}%; the most common reference score is ${game.awayAbbr} ${simulation.referenceScore.away}–${simulation.referenceScore.home} ${game.homeAbbr}.`];
+        const close = probability < 54;
+        const lines = [zh ? `${close?'两队接近、暂无明确偏向':`10,000 次模拟偏向 ${favored}`}，保守模型胜率约 ${fmt(probability,1)}%；参考比分为 ${game.awayAbbr} ${simulation.referenceScore.away}–${simulation.referenceScore.home} ${game.homeAbbr}。` : `${close?'The teams are close with no clear lean':`Across 10,000 simulations, ${favored} leads`} at a conservative ${fmt(probability,1)}%; the reference score is ${game.awayAbbr} ${simulation.referenceScore.away}–${simulation.referenceScore.home} ${game.homeAbbr}.`];
         const awayStarter = pitcherProjection(pitchers.away,'last5'), homeStarter = pitcherProjection(pitchers.home,'last5');
         lines.push(zh ? `先发层：${game.awayAbbr} ${fmt(awayStarter?.era,2)} ERA / ${fmt(awayStarter?.expectedIp,1)} IP；${game.homeAbbr} ${fmt(homeStarter?.era,2)} ERA / ${fmt(homeStarter?.expectedIp,1)} IP。开场投手会自动把更多局数交给牛棚。` : `Starter layer: ${game.awayAbbr} ${fmt(awayStarter?.era,2)} ERA / ${fmt(awayStarter?.expectedIp,1)} IP versus ${game.homeAbbr} ${fmt(homeStarter?.era,2)} ERA / ${fmt(homeStarter?.expectedIp,1)} IP. Openers automatically shift more innings to the bullpen.`);
-        lines.push(zh ? `进攻层：${game.awayAbbr} 本季/近10场 ${fmt(away.seasonRpg,2)}/${fmt(away.recentRpg,2)} R/G；${game.homeAbbr} 为 ${fmt(home.seasonRpg,2)}/${fmt(home.recentRpg,2)} R/G。` : `Offense layer: ${game.awayAbbr} scores ${fmt(away.seasonRpg,2)} season and ${fmt(away.recentRpg,2)} last-10 R/G; ${game.homeAbbr} is at ${fmt(home.seasonRpg,2)} and ${fmt(home.recentRpg,2)}.`);
-        lines.push(zh ? `后段风险：${game.awayAbbr}/${game.homeAbbr} 牛棚估计 ERA 为 ${fmt(awayProfile.bullpen?.era,2)}/${fmt(homeProfile.bullpen?.era,2)}，近三场救援用球 ${awayProfile.fatigue?.last3||0}/${homeProfile.fatigue?.last3||0}。` : `Late-game risk: estimated bullpen ERAs are ${fmt(awayProfile.bullpen?.era,2)}/${fmt(homeProfile.bullpen?.era,2)} for ${game.awayAbbr}/${game.homeAbbr}, with ${awayProfile.fatigue?.last3||0}/${homeProfile.fatigue?.last3||0} relief pitches over the last three games.`);
-        if (h2h.games) lines.push(zh ? `本季交锋 ${h2h.awayWins}-${h2h.homeWins}、得分 ${h2h.awayRuns}-${h2h.homeRuns}；只带来 ${h2h.adjustment >= 0 ? '+' : ''}${fmt(h2h.adjustment,2)} 分校准，不会覆盖当前投手与打线。` : `Season meetings stand at ${h2h.awayWins}-${h2h.homeWins} with a ${h2h.awayRuns}-${h2h.homeRuns} run total; they add only a ${h2h.adjustment >= 0 ? '+' : ''}${fmt(h2h.adjustment,2)}-run adjustment and cannot override current pitchers and lineups.`);
+        lines.push(zh ? `进攻层：${game.awayAbbr} 本季/30天/14天 ${fmt(away.seasonRpg,2)}/${fmt(away.recent30Rpg,2)}/${fmt(away.recent14Rpg,2)} R/G；${game.homeAbbr} 为 ${fmt(home.seasonRpg,2)}/${fmt(home.recent30Rpg,2)}/${fmt(home.recent14Rpg,2)}，近期样本已经收缩。` : `Offense: ${game.awayAbbr} season/30-day/14-day rates are ${fmt(away.seasonRpg,2)}/${fmt(away.recent30Rpg,2)}/${fmt(away.recent14Rpg,2)} R/G; ${game.homeAbbr} is ${fmt(home.seasonRpg,2)}/${fmt(home.recent30Rpg,2)}/${fmt(home.recent14Rpg,2)}, with recent samples shrunk.`);
+        lines.push(zh ? `牛棚层：${game.awayAbbr}/${game.homeAbbr} 估计 ERA ${fmt(awayProfile.bullpen?.era,2)}/${fmt(homeProfile.bullpen?.era,2)}；可能受限的关键救援为 ${awayProfile.fatigue?.limitedKey||0}/${homeProfile.fatigue?.limitedKey||0} 人。` : `Bullpen: estimated ERAs are ${fmt(awayProfile.bullpen?.era,2)}/${fmt(homeProfile.bullpen?.era,2)} for ${game.awayAbbr}/${game.homeAbbr}; likely limited key relievers are ${awayProfile.fatigue?.limitedKey||0}/${homeProfile.fatigue?.limitedKey||0}.`);
+        if (weather?.delayRisk) lines.push(zh ? '天气存在降雨/延迟风险，双方先发预计局数已小幅下调，比分区间也会扩大。' : 'Rain/delay risk trims both starter workloads and widens the score range.');
+        if (h2h.games) lines.push(zh ? `本季交锋 ${h2h.awayWins}-${h2h.homeWins}、得分 ${h2h.awayRuns}-${h2h.homeRuns}；v31 仅展示，公式权重为 0。` : `Season meetings are ${h2h.awayWins}-${h2h.homeWins} with ${h2h.awayRuns}-${h2h.homeRuns} runs; v31 displays this with zero formula weight.`);
         if (!away.lineup.complete || !home.lineup.complete) lines.push(t('modelLineupUnconfirmed'));
         lines.push(t(paceKey));
         return lines;
       }
 
-      function simulateGameScores(awayLambda, homeLambda, seedValue, iterations=10000) {
+      function simulateGameScores(awayLambda, homeLambda, seedValue, iterations=10000, environmentSigma=.08) {
         const random = seededRandom(Number(seedValue) || 1);
         let awayWins=0, homeWins=0;
         const scores = new Map(), totals=[];
         for (let i=0;i<iterations;i++) {
-          let away=poissonDraw(awayLambda,random), home=poissonDraw(homeLambda,random);
+          const shared = Math.exp(normalDraw(random)*environmentSigma-environmentSigma*environmentSigma/2);
+          const teamSigma = .18;
+          const awayShock = Math.exp(normalDraw(random)*teamSigma-teamSigma*teamSigma/2);
+          const homeShock = Math.exp(normalDraw(random)*teamSigma-teamSigma*teamSigma/2);
+          let away=poissonDraw(awayLambda*shared*awayShock,random), home=poissonDraw(homeLambda*shared*homeShock,random);
           if (away === home) {
             const awayExtraChance = 1/(1+Math.exp(-(awayLambda-homeLambda)/1.8)) * .96;
             if (random() < awayExtraChance) away++; else home++;
@@ -3351,8 +3439,13 @@
           if (awayLambda > homeLambda) referenceScore.away++; else referenceScore.home++;
         }
         const rawAwayPct=awayWins/iterations*100;
-        const awayWinPct=50+(rawAwayPct-50)*.72;
+        const awayWinPct=clamp(50+(rawAwayPct-50)*.30,35,65);
         return { awayWinPct, homeWinPct:100-awayWinPct, rawAwayWinPct:rawAwayPct, topScores, referenceScore, totalRange:{ low:totals[Math.floor(iterations*.20)]||0, high:totals[Math.floor(iterations*.80)]||0 } };
+      }
+
+      function normalDraw(random) {
+        const u1=Math.max(1e-9,random()),u2=random();
+        return Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
       }
 
       function seededRandom(seed) {
@@ -3859,12 +3952,12 @@
           spin:['Spin','转速','球离手后的平均每分钟转数（rpm）。','没有统一越高越好；应与该投手自己的赛季基线和球种形状比较。','转速本身不能完整说明位移或球质。'],
           whiff:['Whiff%','挥空率','打者出棒后没有碰到球的比例。','通常越高代表该球种制造空挥能力越强。','近期样本可能很小，必须同时看出棒次数。'],
           bvp:['BvP','打者对投手历史交手','Batter vs. Pitcher：本场打者过去面对该投手的实际结果汇总。','不是单纯越高越好；从投手角度希望对手 AVG、H、HR 低，SO 高。','交手样本通常很小，且会受年份、球场和球员状态变化影响，因此模型最多只给有限权重。'],
-          winprob:['胜率','模型胜率','10,000 次比分模拟的胜负结果，并向 50% 收缩以降低单场过度自信。','越高代表模型越偏向该队；55% 左右只是轻微倾向，65% 以上才是较明显差距。','不是市场赔率或真实必胜概率；临场阵容和牛棚可用性会改变结果。'],
+          winprob:['胜率','保守模型胜率','10,000 次厚尾比分模拟的胜负结果，再向 50% 强收缩并限制在 35%–65%。','54% 以下显示两队接近；54%–58% 是轻微倾向，58% 以上只表示差距较明显。','这是启发式收缩，不是完整赛季训练出的校准概率，也不是市场赔率。'],
           xrun:['预期得分','模型平均得分','由进攻、先发、牛棚、场地和小幅对阵校准得到的平均得分参数。','双方差值用于判断偏向，总和用于判断比赛可能的得分环境。','预期值不是整数比分；单场实际波动通常很大。'],
           totalrange:['总分区间','模拟总分 60% 区间','按 10,000 次模拟结果取第 20 到第 80 百分位。','区间越宽代表比分不确定性越大。','仍有约 40% 的模拟落在区间之外，不能当作上下限。'],
-          rpg:['R/G','场均得分','球队每场平均得分；页面同时比较本赛季与最近 10 场。','通常越高代表进攻产出越强。','赛程强弱、球场与短期高低潮都会影响近期数值。'],
-          bullpenmodel:['牛棚估计','救援投手质量与负荷','按投手救援出场占比分摊赛季局数与自责分，估计牛棚 ERA，并叠加最近三场救援用球负荷。','ERA 越低、近期用球越少通常越有利。','这是公开数据下的估计，不能确认当天每位救援投手是否可用。'],
-          h2hmodel:['本季交锋','同队对阵校准','汇总本赛季两队已结束比赛的胜负和得分差。','只用于小幅修正，不会覆盖先发、打线和牛棚。','样本小且已经部分反映球队实力，权重过高会重复计数。'],
+          rpg:['R/G','收缩后场均得分','按 60% 本季、25% 近 30 天、15% 近 14 天合成；近期数据按场次向赛季均值收缩。','通常越高代表进攻产出越强。','仍会受赛程和球场影响，但比直接使用最近 10 场得分更稳定。'],
+          bullpenmodel:['牛棚估计','逐人牛棚质量与可用性','按救援出场占比估计牛棚 ERA，并检查六名高杠杆救援过去三场的逐人用球、连续登板和两日负荷。','ERA 越低且受限关键救援越少通常越有利。','公开数据无法确认教练临场决定，因此显示为“可能受限”而非确定缺阵。'],
+          h2hmodel:['本季交锋','同队对阵资料','汇总本赛季两队已结束比赛的胜负和得分。','v31 仅展示，公式权重为 0。','样本小且与球队实力重复，因此不再用于调整胜率。'],
           pa:['PA','打席','打者完成一次打席的次数。','这里主要用来判断 BvP 样本大小；PA 越多，参考稳定性通常越高。','即使 PA 较多，过去交手也可能不代表当前状态。'],
           h:['H','安打','打者对该投手击出的安打数。','对投手而言通常越低越好。','必须与 AB/PA 一起看，单看总数会被样本量误导。'],
           hr:['HR','本垒打','打者对该投手击出的本垒打数。','对投手而言越低越好。','低频事件，小样本不应直接作为强结论。'],
@@ -3887,12 +3980,12 @@
           spin:['Spin','Spin Rate','Average revolutions per minute at release.','Higher is not universally better; compare with that pitcher’s own baseline and pitch shape.','Spin alone does not describe movement or pitch quality.'],
           whiff:['Whiff%','Whiff Rate','The share of swings that miss the pitch.','Higher usually means stronger bat-missing ability.','Recent swing samples can be very small.'],
           bvp:['BvP','Batter vs. Pitcher','Historical results for the expected hitters when facing this pitcher.','There is no single higher-is-better direction; pitchers prefer lower opponent AVG/H/HR and higher SO.','Samples are often small and may span different seasons, parks, and player form, so the model keeps the weight limited.'],
-          winprob:['Win%','Model Win Probability','The win share from 10,000 score simulations, shrunk toward 50% to reduce single-game overconfidence.','Higher means a stronger model lean; roughly 55% is light, while 65% or more is more meaningful.','It is not a market price or certainty; late lineup and bullpen changes matter.'],
+          winprob:['Win%','Conservative Model Probability','The win share from 10,000 heavy-tail score simulations, strongly shrunk toward 50% and capped at 35%–65%.','Below 54% is close, 54%–58% is slight, and above 58% only means a more visible model gap.','This is heuristic shrinkage, not full-season probability calibration or a market price.'],
           xrun:['Exp. Runs','Expected Runs','The model scoring average derived from offense, starters, bullpens, environment, and small matchup adjustments.','The team gap informs the lean; the combined value informs scoring environment.','Expected runs are not an integer score and single-game variance is large.'],
           totalrange:['Total Range','60% Simulated Total Range','The 20th-to-80th percentile of total runs across 10,000 simulations.','A wider range means more score uncertainty.','About 40% of simulations still fall outside it, so it is not a hard floor or ceiling.'],
-          rpg:['R/G','Runs per Game','Average team runs per game, shown for the season and last 10 games.','Higher generally means more offensive production.','Schedule strength, parks, and short-term streaks affect recent values.'],
-          bullpenmodel:['Bullpen Est.','Bullpen Quality and Workload','Allocates pitcher season innings and earned runs by relief-appearance share to estimate bullpen ERA, then adds last-three-game relief workload.','Lower ERA and fewer recent pitches are generally favorable.','It is an estimate and cannot confirm which individual relievers are available today.'],
-          h2hmodel:['H2H','Season-Series Adjustment','Summarizes completed meetings this season by wins and run differential.','It only makes a small adjustment and cannot override starters, lineups, or bullpens.','The sample is small and partly repeats team strength already captured elsewhere.'],
+          rpg:['R/G','Shrunk Runs per Game','Blends 60% season, 25% last 30 days, and 15% last 14 days; recent samples shrink toward the season mean by games played.','Higher generally means more offensive production.','It remains schedule- and park-sensitive but is more stable than raw last-10 scoring.'],
+          bullpenmodel:['Bullpen Est.','Individual Bullpen Quality and Availability','Estimates bullpen ERA by relief share, then checks six high-leverage relievers for individual pitch load, consecutive use, and two-day workload.','Lower ERA and fewer limited key relievers are generally favorable.','Public data cannot confirm a manager’s decision, so availability is labeled likely rather than certain.'],
+          h2hmodel:['H2H','Season-Series Context','Summarizes completed season meetings by wins and runs.','v31 displays it with zero formula weight.','The sample is small and duplicates team-strength signals, so it no longer adjusts win probability.'],
           pa:['PA','Plate Appearances','Completed batter appearances.','Here it mainly identifies BvP sample size; more PA generally improves stability.','Past matchups may not represent current form even with more PA.'],
           h:['H','Hits','Hits recorded by the lineup against the pitcher.','Lower is generally better for the pitcher.','Always pair the total with AB/PA.'],
           hr:['HR','Home Runs','Home runs recorded against the pitcher.','Lower is better for the pitcher.','This is a rare event, so small samples should not drive the conclusion.'],
@@ -5099,7 +5192,8 @@
             detailedState: g.status?.detailedState || '',
             detail: gameDetailFromSchedule(g),
             gameDate: g.gameDate,
-            venue: g.venue?.name || ''
+            venue: g.venue?.name || '',
+            venueId: g.venue?.id || ''
           }));
           scheduleCache.set(date, games);
           return games;
