@@ -4602,6 +4602,23 @@
           .trim();
       }
 
+      function parseOcrChoiceLine(value) {
+        const normalized = String(value || '')
+          .replace(/[|•]/g, ' ')
+          .replace(/[–—]/g, ' - ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        const match = normalized.match(/^\s*(yes|no)\b(?:\s*[·.\-:]\s*|\s+)(.+)$/i);
+        if (!match) return null;
+        return { answer: match[1].toUpperCase(), choice: normalizeOcrLine(match[2]), source: normalized };
+      }
+
+      function parseOcrMatchupLine(value) {
+        const normalized = normalizeOcrLine(value).toUpperCase();
+        const match = normalized.match(/^([A-Z]{2,3})\s+(?:VS\.?|V\.?|@)\s+([A-Z]{2,3})$/i);
+        return match ? [match[1], match[2]] : null;
+      }
+
       function normalizeOcrPlayerName(value) {
         const cleaned = String(value || '')
           .replace(/[’‘`´]/g, "'")
@@ -4631,11 +4648,38 @@
           [/\b(strikeouts?|strike outs?|ks|so)\b/i, 'SO'], [/\b(stolen bases?|sb)\b/i, 'SB'],
           [/\b(hits?)\b/i, 'H'], [/\b(runs?)\b/i, 'R'], [/\b(walks?|bb)\b/i, 'BB']
         ];
-        const lines = String(text || '').split(/\r?\n/).map(normalizeOcrLine)
-          .filter(line => line && !/^(?:yes|no)$/i.test(line));
+        const rows = String(text || '').split(/\r?\n/)
+          .map(raw => ({ raw: String(raw || '').trim(), line: normalizeOcrLine(raw) }))
+          .filter(row => row.line && !/^(?:yes|no)$/i.test(row.line));
         const results = [];
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i];
+        let pendingMatchup = null;
+        for (let i = 0; i < rows.length; i++) {
+          const { raw: rawLine, line } = rows[i];
+          const matchup = parseOcrMatchupLine(rawLine);
+          if (matchup) {
+            pendingMatchup = matchup;
+            continue;
+          }
+          const choice = parseOcrChoiceLine(rawLine);
+          if (choice) {
+            const byTeam = choice.choice.match(/^([A-Z]{2,3})\s+by\s+(\d+(?:\.5)?)/i);
+            const straightTeam = choice.choice.match(/^([A-Z]{2,3})(?:\s+(?:moneyline|ml))?$/i);
+            const selectedAbbr = (byTeam?.[1] || straightTeam?.[1] || '').toUpperCase();
+            if (selectedAbbr && pendingMatchup?.includes(selectedAbbr)) {
+              const isYes = choice.answer === 'YES';
+              const finalTeam = isYes ? selectedAbbr : pendingMatchup.find(team => team !== selectedAbbr);
+              if (finalTeam) {
+                results.push({
+                  type: 'GAME', teamAbbr: finalTeam,
+                  market: byTeam ? 'SPREAD' : 'MONEYLINE',
+                  line: byTeam ? (isYes ? -Number(byTeam[2]) : Number(byTeam[2])) : null,
+                  source: choice.source
+                });
+                pendingMatchup = null;
+                continue;
+              }
+            }
+          }
           const byTeam = line.match(/\b([A-Z]{2,3})\s+by\s+(\d+(?:\.5)?)/i);
           if (byTeam) {
             results.push({ type: 'GAME', teamAbbr: byTeam[1].toUpperCase(), market: 'SPREAD', line: -Number(byTeam[2]), source: line });
@@ -4652,7 +4696,7 @@
           const target = Math.max(1, Math.ceil(Number(targetMatch?.[1] || 1)));
           let name = normalizeOcrPlayerName(line.replace(found[0], ' '));
           if (name.split(' ').length < 2 && i > 0) {
-            name = normalizeOcrPlayerName(lines[i - 1].replace(/[^A-Za-zÀ-ÿ' .-]/g, ' '));
+            name = normalizeOcrPlayerName(rows[i - 1].line.replace(/[^A-Za-zÀ-ÿ' .-]/g, ' '));
           }
           name = name.replace(/^(mlb|baseball)\s+/i, '').trim();
           if (name.split(' ').length >= 2) results.push({ type: 'PLAYER', name, market: found[1], target, source: line });
