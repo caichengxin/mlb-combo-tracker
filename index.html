@@ -786,6 +786,22 @@
     .recommend-status { margin-top: 9px; color: var(--muted); font-size: 9px; line-height: 1.45; }
     .recommend-status.loading { color: var(--accent); }
     .recommend-status.error { color: var(--red); }
+    .recommend-section-label { display:flex; justify-content:space-between; align-items:end; gap:10px; margin-top:13px; padding-top:12px; border-top:1px solid rgba(98,165,255,.18); }
+    .recommend-section-label strong { color:#f3f7ff; font-size:11px; }
+    .recommend-section-label span { color:var(--muted); font-size:8px; line-height:1.4; text-align:right; }
+    .recommend-pitcher-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin-top:9px; }
+    .recommend-pitcher-card { min-width:0; padding:11px 12px; border:1px solid rgba(177,126,255,.34); border-radius:12px; background:linear-gradient(135deg,rgba(76,45,126,.22),rgba(7,15,27,.52)); }
+    .recommend-pitcher-head { display:flex; justify-content:space-between; align-items:flex-start; gap:9px; }
+    .recommend-pitcher-name { min-width:0; color:#fff; font-size:12px; font-weight:850; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .recommend-pitcher-meta { margin-top:3px; color:var(--muted); font-size:8px; }
+    .recommend-pitcher-role { flex:none; padding:3px 6px; border:1px solid rgba(177,126,255,.4); border-radius:999px; color:#dcc8ff; background:rgba(177,126,255,.09); font-size:7px; font-weight:850; }
+    .recommend-so-row { display:grid; grid-template-columns:auto repeat(3,minmax(0,1fr)); gap:8px; align-items:center; margin-top:10px; }
+    .recommend-so-main { min-width:82px; padding-right:10px; border-right:1px solid rgba(177,126,255,.25); }
+    .recommend-so-main strong { display:block; color:#cdaaff; font-size:27px; line-height:1; font-weight:950; }
+    .recommend-so-main span,.recommend-so-stat span { display:block; margin-top:4px; color:var(--muted); font-size:7px; }
+    .recommend-so-stat { min-width:0; text-align:center; }
+    .recommend-so-stat strong { display:block; color:#eef4ff; font-size:11px; }
+    .recommend-pitcher-note { margin-top:9px; color:#bfcce0; font-size:8px; line-height:1.45; }
     .recommend-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px; margin-top: 11px; }
     .recommend-card { overflow: hidden; border: 1px solid rgba(98,165,255,.24); border-radius: 12px; background: rgba(7,15,27,.5); }
     .recommend-card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 9px 10px; border-bottom: 1px solid rgba(38,58,89,.62); }
@@ -1019,6 +1035,9 @@
       .recommend-actions { width: 100%; }
       .recommend-actions .btn { flex: 1; min-height: 42px; }
       .recommend-controls { grid-template-columns: 1fr; }
+      .recommend-pitcher-grid { grid-template-columns:1fr; }
+      .recommend-section-label { align-items:flex-start; flex-direction:column; }
+      .recommend-section-label span { text-align:left; }
       .recommend-grid { grid-template-columns: 1fr; }
       .recommend-weight input { min-height: 40px; font-size: 12px; }
       .pitch-analysis-head { flex-direction:column; }
@@ -1460,12 +1479,16 @@
           liveStatsNotStarted: '比赛尚未开始。本场球员数据将在开赛后自动出现。', noLiveStats: '暂时没有本场球员数据。',
           pitchersUsed: '{count} 名投手', starterRole: 'SP', relieverRole: 'RP'
           ,playerExited: '已下场', playerExitedDetail: '球员已被替换，无法再增加本场数据。'
-          ,recommendTitle: '本场指标推荐', recommendSubtitle: '双方首发公布后，综合最近 3 场、最近 5 场与本赛季的场均表现。'
+          ,recommendTitle: '本场指标推荐', recommendSubtitle: '一处查看两位先发的 SO 数量预测，以及双方打手最近 3 场、最近 5 场与本赛季的综合排名。'
           ,recommendRun: '分析本场推荐', recommendRefresh: '重新计算', recommendWaiting: '双方各 9 名首发公布后可生成推荐。'
           ,recommendSmart: '智能综合', recommendCustom: '自定义权重', recommendMode: '评分模式', recommendWeights: '时间权重（自动归一化）'
-          ,recommendLoading: '正在读取 18 名首发球员的最近比赛并计算推荐…', recommendReady: '已按本场首发生成 6 个常用指标的前三名。', recommendFailed: '部分球员数据读取失败，推荐仅使用可用数据。'
+          ,recommendLoading: '正在读取两位先发投手及 18 名首发打手的赛前数据…', recommendReady: '已生成两位先发的 SO 预测，并列出 6 项打手指标前五名。', recommendFailed: '部分球员数据读取失败，以下预测仅使用可用资料。'
           ,recommendScore: '综合分', recommendPerGame: '加权场均', recommendDisclaimer: '推荐是数据筛选工具，不保证比赛结果；稀有事件（尤其 HR）会自动提高本赛季样本权重。'
-          ,recommendMetricHRR: 'HRR', recommendCustomTotal: '当前合计 {total}%（计算时会自动归一化）'
+          ,recommendMetricHRR: 'H+R+RBI', recommendCustomTotal: '当前合计 {total}%（计算时会自动归一化）'
+          ,recommendPitcherTitle: '先发投手 SO 预测', recommendPitcherSubtitle: '近 5 场按投球局数向赛季基线收缩，并结合预计局数与对手首发打线三振率。'
+          ,recommendBattersTitle: '推荐打手 · 每项前五', recommendBattersSubtitle: '排名基于加权场均表现，并小幅考虑打序机会。'
+          ,recommendSoForecast: '预计 SO', recommendSoRange: '合理区间', recommendSoIp: '预计 IP', recommendSoOpponentK: '对手 K%'
+          ,recommendSoBasis: '中位预测 {value} SO；区间反映单场用球与临场换投波动。', recommendPitcherUnavailable: '两队先发确认后显示 SO 预测。'
           ,pitchAnalysisTab: '投手分析', pitchAnalysisTitle: '本场先发投手分析', pitchAnalysisSubtitle: '近期状态、球种变化、对手打线与 BvP 的赛前综合判断。'
           ,pitchAnalysisRun: '分析两位先发', pitchAnalysisRefresh: '重新分析', pitchAnalysisWaiting: '两队先发投手确认后可开始分析。'
           ,pitchAnalysisIdle: '点击分析后读取两位先发的近期比赛、Statcast 球种和对手打线数据。', pitchAnalysisLoading: '正在读取投手日志、最近比赛逐球资料与 BvP…'
@@ -1480,7 +1503,7 @@
           ,bvpVsLineup: '对本场打线 BvP（近 5 年）', noArsenalData: '暂无可用球种数据', noBvpSummary: '暂无可用 BvP 样本'
           ,pitchAnalysisBasis: '规则模型会先区分完整先发与开场投手。近期率数据按实际局数向赛季数据收缩，防止 1–3 局小样本被放大；本场优势同时考虑失分控制、上垒、三振、预计局数与预计总三振。BvP 按样本量降权。'
           ,seasonArsenalSource: '赛季球种来自 Baseball Savant；近期球种由所选比赛前的 MLB 逐球数据计算。', pitcherInsights: '初步分析'
-          ,gameModelTab: '球队模型', gameModelTitle: '赛前球队偏向与比分模拟 v31', gameModelSubtitle: '使用严格赛前快照，综合先发、收缩后的近期进攻、逐人牛棚、赛程与天气环境，运行 10,000 次可复现模拟。'
+          ,gameModelTab: '球队模型', gameModelTitle: '赛前球队偏向与比分模拟 v32', gameModelSubtitle: '使用严格赛前快照，综合先发、收缩后的近期进攻、逐人牛棚、赛程与天气环境，运行 10,000 次可复现模拟。'
           ,gameModelRun: '运行球队模型', gameModelRefresh: '重新模拟', gameModelIdle: '点击运行后读取球队、投手、牛棚与本季对阵资料。', gameModelLoading: '正在构建赛前快照并模拟 10,000 场比赛…'
           ,gameModelReady: '模型完成；结果是赛前数据参考，不代表确定赛果。', gameModelFailed: '部分关键资料读取失败，未生成模型结果。', modelDashboardIdle: '模型待运行', modelDashboardRun: '运行模型'
           ,modelLean: '模型偏向 {team}', modelLeanClose: '两队接近 · 无明确偏向', modelProjectedScore: '参考比分', modelWinChance: '保守模型胜率', modelExpectedRuns: '预期得分', modelTotalRuns: '预期总分', modelTotalRange: '总分 60% 区间', modelPace: '比赛节奏', modelConfidence: '资料完整度', modelAdvantage: '模型优势', modelAdvantageClose: '接近', modelAdvantageSlight: '轻微', modelAdvantageClear: '较明显', modelDataCutoff: '数据截止'
@@ -1488,7 +1511,7 @@
           ,modelFactors: '模型因素拆解', modelFactorStarter: '先发投手', modelFactorOffense: '赛季＋30/14天进攻', modelFactorBullpen: '牛棚质量／逐人可用性', modelFactorLineup: '确认打线＋BvP', modelFactorH2h: '本季交锋（仅展示）', modelFactorVenue: '主场／天气／赛程'
           ,modelEdgeAway: '偏 {team}', modelEdgeHome: '偏 {team}', modelEdgeEven: '接近', modelTopScores: '常见比分路径', modelSimulationShare: '模拟占比 {pct}', modelInsights: '模型解读'
           ,modelH2hSummary: '{awayWins}-{homeWins} · {awayRuns}-{homeRuns} 得分', modelNoH2h: '本季尚无已结束交锋', modelBullpenFresh: '主要救援可用', modelBullpenTired: '关键救援可能受限', modelLineupUnconfirmed: '首发未齐，使用球队基线', modelWeatherMissing: '天气资料未提供', modelRoofUnknown: '伸缩屋顶状态未知', modelWeatherIndoor: '室内／关顶，不应用室外天气', modelScheduleNormal: '休息正常', modelScheduleShort: '短休／旅行风险', modelH2hDisplayOnly: '仅展示 · 权重 0'
-          ,modelBasis: 'v31 使用目标比赛前一天为统一数据截止点：赛季基线 60%＋近 30 天 25%＋近 14 天 15%，近期数据按场次向赛季收缩；先发与逐人牛棚分段估分，再加入主场、休息旅行和屋顶感知天气。H2H 仅展示、不进入胜率。比分模拟采用厚尾与共享比赛环境，胜率经更强收缩并限制上限。'
+          ,modelBasis: 'v32 沿用严格赛前模型：目标比赛前一天为统一数据截止点；赛季基线 60%＋近 30 天 25%＋近 14 天 15%，近期数据按场次向赛季收缩；先发与逐人牛棚分段估分，再加入主场、休息旅行和屋顶感知天气。H2H 仅展示、不进入胜率。比分模拟采用厚尾与共享比赛环境，胜率经更强收缩并限制上限。'
           ,modelDisclaimer: '未接入盘口，也不是投注保证。伤病临时变化、开合屋顶、实际可用救援投手与赛前最后阵容可能改变结果；建议首发公布后重新运行。'
           ,comboTracked: 'Combo 追踪', comboPlayers: '{players} 名球员', comboItems: '{items} 项',
           paProjected: '预计全场 {range} PA', paCompleted: '已完成 {count}', paRemaining: '预计剩余 {range} PA',
@@ -1572,12 +1595,16 @@
           liveStatsNotStarted: 'This game has not started. Live player stats will appear automatically after first pitch.', noLiveStats: 'No in-game player stats are available yet.',
           pitchersUsed: '{count} pitchers used', starterRole: 'SP', relieverRole: 'RP'
           ,playerExited: 'SUBBED OUT', playerExitedDetail: 'The player has been removed and cannot add more game stats.'
-          ,recommendTitle: 'Game Metric Picks', recommendSubtitle: 'Once both lineups are posted, blend per-game form from the last 3, last 5, and season.'
+          ,recommendTitle: 'Game Metric Picks', recommendSubtitle: 'See both starters’ projected strikeout totals plus hitter rankings blended from the last 3, last 5, and season.'
           ,recommendRun: 'Analyze game picks', recommendRefresh: 'Recalculate', recommendWaiting: 'Available after both nine-player starting lineups are posted.'
           ,recommendSmart: 'Smart blend', recommendCustom: 'Custom weights', recommendMode: 'Scoring mode', recommendWeights: 'Time weights (normalized automatically)'
-          ,recommendLoading: 'Loading recent logs for all 18 starters and calculating picks…', recommendReady: 'Top three starters are ready for six common metrics.', recommendFailed: 'Some player data could not be loaded; picks use the available periods only.'
+          ,recommendLoading: 'Loading pregame data for both starting pitchers and all 18 starting hitters…', recommendReady: 'Starter SO forecasts and the top five hitters for six metrics are ready.', recommendFailed: 'Some player data could not be loaded; forecasts use the available inputs only.'
           ,recommendScore: 'Score', recommendPerGame: 'Weighted / G', recommendDisclaimer: 'These picks are a data-screening aid, not a guarantee. Rare events—especially HR—use more season weight for stability.'
-          ,recommendMetricHRR: 'HRR', recommendCustomTotal: 'Current total {total}% (normalized during scoring)'
+          ,recommendMetricHRR: 'H+R+RBI', recommendCustomTotal: 'Current total {total}% (normalized during scoring)'
+          ,recommendPitcherTitle: 'Starting Pitcher SO Forecast', recommendPitcherSubtitle: 'Last 5 is shrunk toward the season baseline by innings, then adjusted for expected workload and the opposing lineup’s strikeout rate.'
+          ,recommendBattersTitle: 'Hitter Picks · Top Five Each', recommendBattersSubtitle: 'Ranks weighted per-game production with a small batting-order opportunity adjustment.'
+          ,recommendSoForecast: 'Projected SO', recommendSoRange: 'Likely range', recommendSoIp: 'Expected IP', recommendSoOpponentK: 'Opponent K%'
+          ,recommendSoBasis: 'Median forecast {value} SO; the range reflects pitch-count and removal volatility.', recommendPitcherUnavailable: 'SO forecasts appear after both starters are confirmed.'
           ,pitchAnalysisTab: 'Pitcher Analysis', pitchAnalysisTitle: 'Starting Pitcher Matchup', pitchAnalysisSubtitle: 'Pregame view of recent form, pitch-mix changes, opposing lineups, and BvP.'
           ,pitchAnalysisRun: 'Analyze starters', pitchAnalysisRefresh: 'Reanalyze', pitchAnalysisWaiting: 'Available after both starting pitchers are confirmed.'
           ,pitchAnalysisIdle: 'Run the analysis to load recent starts, pitch-level Statcast data, and BvP for both lineups.', pitchAnalysisLoading: 'Loading pitching logs, recent pitch data, and BvP…'
@@ -1592,7 +1619,7 @@
           ,bvpVsLineup: 'BvP vs today’s lineup (5Y)', noArsenalData: 'No pitch-mix data is available', noBvpSummary: 'No usable BvP sample'
           ,pitchAnalysisBasis: 'The rules model first separates full starters from openers. Recent rate stats are shrunk toward the season baseline by actual innings so a 1–3 inning sample cannot dominate. The game edge blends run prevention, traffic, strikeouts, expected workload, and projected total strikeouts. BvP is down-weighted by sample size.'
           ,seasonArsenalSource: 'Season pitch mix comes from Baseball Savant; recent pitch mix is calculated from MLB pitch-by-pitch feeds before the selected game.', pitcherInsights: 'Initial read'
-          ,gameModelTab: 'Team Model', gameModelTitle: 'Pregame Team Lean & Score Simulation v31', gameModelSubtitle: 'Uses a strict pregame snapshot and blends starters, shrunk recent offense, individual bullpen availability, schedule, and weather in 10,000 reproducible simulations.'
+          ,gameModelTab: 'Team Model', gameModelTitle: 'Pregame Team Lean & Score Simulation v32', gameModelSubtitle: 'Uses a strict pregame snapshot and blends starters, shrunk recent offense, individual bullpen availability, schedule, and weather in 10,000 reproducible simulations.'
           ,gameModelRun: 'Run team model', gameModelRefresh: 'Resimulate', gameModelIdle: 'Run the model to load team, pitcher, bullpen, and season-series context.', gameModelLoading: 'Building the pregame snapshot and simulating 10,000 games…'
           ,gameModelReady: 'Model complete. This is a pregame data reference, not a certain result.', gameModelFailed: 'Key inputs could not be loaded, so no model result was produced.', modelDashboardIdle: 'Model not run', modelDashboardRun: 'Run model'
           ,modelLean: 'Model leans {team}', modelLeanClose: 'Teams close · no clear lean', modelProjectedScore: 'Reference score', modelWinChance: 'Conservative model probability', modelExpectedRuns: 'Expected runs', modelTotalRuns: 'Expected total', modelTotalRange: '60% total range', modelPace: 'Game flow', modelConfidence: 'Data completeness', modelAdvantage: 'Model edge', modelAdvantageClose: 'Close', modelAdvantageSlight: 'Slight', modelAdvantageClear: 'More visible', modelDataCutoff: 'Data cutoff'
@@ -1600,7 +1627,7 @@
           ,modelFactors: 'Model factor breakdown', modelFactorStarter: 'Starting pitching', modelFactorOffense: 'Season + 30/14-day offense', modelFactorBullpen: 'Bullpen quality / availability', modelFactorLineup: 'Confirmed lineup + BvP', modelFactorH2h: 'Season H2H (display only)', modelFactorVenue: 'Home / weather / schedule'
           ,modelEdgeAway: 'Lean {team}', modelEdgeHome: 'Lean {team}', modelEdgeEven: 'Even', modelTopScores: 'Common score paths', modelSimulationShare: '{pct} of simulations', modelInsights: 'Model read'
           ,modelH2hSummary: '{awayWins}-{homeWins} · {awayRuns}-{homeRuns} runs', modelNoH2h: 'No completed season meetings', modelBullpenFresh: 'Key relievers available', modelBullpenTired: 'Key relievers may be limited', modelLineupUnconfirmed: 'Lineup incomplete; team baseline used', modelWeatherMissing: 'Weather unavailable', modelRoofUnknown: 'Retractable roof status unknown', modelWeatherIndoor: 'Indoor/closed roof; outdoor weather ignored', modelScheduleNormal: 'Normal rest', modelScheduleShort: 'Short rest/travel risk', modelH2hDisplayOnly: 'Display only · weight 0'
-          ,modelBasis: 'v31 uses the day before first pitch as one shared data cutoff. Offense is 60% season, 25% last 30 days, and 15% last 14 days, with recent samples shrunk toward season. Starter and individual-reliever availability drive split scoring before home, travel/rest, and roof-aware weather adjustments. H2H is display-only. The score simulation uses heavier tails and a shared game environment; probabilities are more strongly shrunk and capped.'
+          ,modelBasis: 'v32 retains the strict pregame model: the day before first pitch is one shared data cutoff. Offense is 60% season, 25% last 30 days, and 15% last 14 days, with recent samples shrunk toward season. Starter and individual-reliever availability drive split scoring before home, travel/rest, and roof-aware weather adjustments. H2H is display-only. The score simulation uses heavier tails and a shared game environment; probabilities are more strongly shrunk and capped.'
           ,modelDisclaimer: 'No betting lines are used and this is not a betting guarantee. Late injuries, roof status, actual reliever availability, and final lineup changes can move the result; rerun after lineups are posted.'
           ,comboTracked: 'Combo tracked', comboPlayers: '{players} players', comboItems: '{items} legs',
           paProjected: 'Projected {range} PA', paCompleted: '{count} completed', paRemaining: '{range} PA left',
@@ -1645,6 +1672,7 @@
       let lineupRecommendationLoading = false;
       let lineupRecommendationError = false;
       let lineupRecommendationGamePk = '';
+      let recommendationPitcherCache = new Map();
       let pitcherAnalysisPeriod = 'last5';
       let pitcherAnalysisVisible = false;
       let pitcherAnalysisLoading = false;
@@ -2866,7 +2894,7 @@
             </div>
           </div>
           <div class="recommend-status${statusClass}">${escapeHtml(t(statusKey))}</div>
-          ${lineupRecommendationVisible && !lineupRecommendationLoading && ready ? recommendationCardsHtml(game) : ''}
+          ${lineupRecommendationVisible && !lineupRecommendationLoading && ready ? recommendationResultsHtml(game) : ''}
           <div class="recommend-disclaimer">${escapeHtml(t('recommendDisclaimer'))}</div>
         </section>`;
       }
@@ -2885,11 +2913,13 @@
         try {
           const results = await Promise.allSettled([
             ensureLineupRecentStats(game, 'last3'),
-            ensureLineupRecentStats(game, 'last5')
+            ensureLineupRecentStats(game, 'last5'),
+            ensureRecommendationPitcherData(game)
           ]);
           lineupRecommendationError = results.some(result => result.status === 'rejected')
             || lineupRecentErrors.has(lineupRequestKey(game, 'last3'))
-            || lineupRecentErrors.has(lineupRequestKey(game, 'last5'));
+            || lineupRecentErrors.has(lineupRequestKey(game, 'last5'))
+            || Boolean(results[2]?.value?.partial);
         } catch (error) {
           console.error(error);
           lineupRecommendationError = true;
@@ -2906,13 +2936,88 @@
         ];
       }
 
+      function recommendationResultsHtml(game) {
+        return `${recommendationPitchersHtml(game)}
+          <div class="recommend-section-label"><strong>${escapeHtml(t('recommendBattersTitle'))}</strong><span>${escapeHtml(t('recommendBattersSubtitle'))}</span></div>
+          ${recommendationCardsHtml(game)}`;
+      }
+
+      function recommendationPitcherData(game) {
+        const key = String(game?.gamePk || '');
+        const signature = gameLineupSignature(game);
+        const full = pitcherAnalysisCache.get(key);
+        if (full && full.lineupSignature === signature) return full;
+        const compact = recommendationPitcherCache.get(key);
+        return compact && compact.lineupSignature === signature ? compact : null;
+      }
+
+      async function ensureRecommendationPitcherData(game) {
+        const key = String(game?.gamePk || '');
+        const existing = recommendationPitcherData(game);
+        if (existing || !game?.awayProbable?.id || !game?.homeProbable?.id) return existing;
+        const emptyArsenal = new Map();
+        const requests = [
+          buildPitcherAnalysis(game.awayProbable, game.awayAbbr, game.homeLineup || [], game.homeAbbr, game, emptyArsenal, { includeBvp:false, includePitchMix:false }),
+          buildPitcherAnalysis(game.homeProbable, game.homeAbbr, game.awayLineup || [], game.awayAbbr, game, emptyArsenal, { includeBvp:false, includePitchMix:false })
+        ];
+        const results = await Promise.allSettled(requests);
+        const data = {
+          away:results[0].status === 'fulfilled' ? results[0].value : null,
+          home:results[1].status === 'fulfilled' ? results[1].value : null,
+          partial:results.some(result => result.status === 'rejected'),
+          loadedAt:Date.now(), lineupSignature:gameLineupSignature(game)
+        };
+        results.filter(result => result.status === 'rejected').forEach(result => console.error('Recommendation pitcher forecast', result.reason));
+        if (data.away || data.home) recommendationPitcherCache.set(key, data);
+        return data;
+      }
+
+      function recommendationPitcherProjection(pitcher) {
+        const base = pitcherProjection(pitcher, 'last5');
+        if (!base || !Number.isFinite(base.projectedSo)) return null;
+        const opponentK = Number(pitcher?.opponent?.kRate);
+        const matchupFactor = Number.isFinite(opponentK) ? clamp(1 + (opponentK - 22.5) * .012, .90, 1.10) : 1;
+        const projectedSo = clamp(base.projectedSo * matchupFactor, 0, 14);
+        const roleExtra = pitcher?.role?.cls === 'opener' ? .65 : pitcher?.role?.cls === 'swing' ? .35 : 0;
+        const spread = .9 * Math.sqrt(Math.max(1, projectedSo)) + roleExtra;
+        return {
+          ...base, projectedSo,
+          rangeLow:Math.max(0, Math.floor(projectedSo - spread)),
+          rangeHigh:Math.max(1, Math.ceil(projectedSo + spread)),
+          opponentK
+        };
+      }
+
+      function recommendationPitchersHtml(game) {
+        const data = recommendationPitcherData(game);
+        const pitchers = [data?.away, data?.home].filter(Boolean);
+        return `<div class="recommend-section-label"><strong>${escapeHtml(t('recommendPitcherTitle'))}</strong><span>${escapeHtml(t('recommendPitcherSubtitle'))}</span></div>
+          ${pitchers.length ? `<div class="recommend-pitcher-grid">${pitchers.map(recommendationPitcherCardHtml).join('')}</div>` : `<div class="recommend-status">${escapeHtml(t('recommendPitcherUnavailable'))}</div>`}`;
+      }
+
+      function recommendationPitcherCardHtml(pitcher) {
+        const projection = recommendationPitcherProjection(pitcher);
+        const value = projection ? fmt(projection.projectedSo, 1) : '—';
+        const range = projection ? `${projection.rangeLow}–${projection.rangeHigh}` : '—';
+        return `<article class="recommend-pitcher-card">
+          <div class="recommend-pitcher-head"><div><div class="recommend-pitcher-name">${escapeHtml(pitcher.name)}</div><div class="recommend-pitcher-meta">${escapeHtml(`${pitcher.teamAbbr || '—'} · vs ${pitcher.opponentAbbr || '—'} · ${pitcher.pitchHand || '—'}HP`)}</div></div><span class="recommend-pitcher-role">${escapeHtml(t(pitcher.role?.key || 'roleStarter'))}</span></div>
+          <div class="recommend-so-row">
+            <div class="recommend-so-main"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(t('recommendSoForecast'))}</span></div>
+            <div class="recommend-so-stat"><strong>${escapeHtml(range)}</strong><span>${escapeHtml(t('recommendSoRange'))}</span></div>
+            <div class="recommend-so-stat"><strong>${escapeHtml(fmt(projection?.expectedIp, 1))}</strong><span>${escapeHtml(t('recommendSoIp'))}</span></div>
+            <div class="recommend-so-stat"><strong>${escapeHtml(pct(projection?.opponentK))}</strong><span>${escapeHtml(t('recommendSoOpponentK'))}</span></div>
+          </div>
+          <div class="recommend-pitcher-note">${escapeHtml(t('recommendSoBasis', { value }))}</div>
+        </article>`;
+      }
+
       function recommendationCardsHtml(game) {
         const players = [
           ...(game.awayLineup || []).map(player => ({ ...player, teamAbbr: game.awayAbbr })),
           ...(game.homeLineup || []).map(player => ({ ...player, teamAbbr: game.homeAbbr }))
         ];
         return `<div class="recommend-grid">${recommendationMetrics().map(([field, label]) => {
-          const rows = scoreRecommendationMetric(players, field, game).slice(0, 3);
+          const rows = scoreRecommendationMetric(players, field, game).slice(0, 5);
           return `<article class="recommend-card">
             <div class="recommend-card-head"><span class="recommend-metric">${escapeHtml(label)}</span><span class="recommend-model">${escapeHtml(lineupRecommendationMode === 'custom' ? t('recommendCustom') : t('recommendSmart'))}</span></div>
             ${rows.map((row, index) => `<div class="recommend-player">
