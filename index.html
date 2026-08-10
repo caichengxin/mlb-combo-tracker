@@ -4588,7 +4588,10 @@
 
       function normalizeOcrLine(value) {
         const normalized = String(value || '')
-          .replace(/[|•·]/g, ' ')
+          // A capital I in an abbreviated name is often read as a vertical
+          // bar. Repair it before removing unrelated separators.
+          .replace(/\|(?=\s*\.)/g, 'I')
+          .replace(/[|•·«»‹›]/g, ' ')
           .replace(/[–—]/g, ' - ')
           .replace(/\s+/g, ' ')
           .trim();
@@ -4596,7 +4599,7 @@
         // "Yes ·" or "No ·". Remove that result marker before looking for a
         // player name, while preserving team rows such as "SF Yes".
         return normalized
-          .replace(/^(?:yes|no)\b(?:\s*[-:]\s*|\s+)/i, '')
+          .replace(/^(?:yes|no)\b(?:\s*[-:.•·«»‹›]\s*|\s+)/i, '')
           .replace(/^[-:]\s*/, '')
           .replace(/\s+/g, ' ')
           .trim();
@@ -4604,11 +4607,12 @@
 
       function parseOcrChoiceLine(value) {
         const normalized = String(value || '')
+          .replace(/\|(?=\s*\.)/g, 'I')
           .replace(/[|•]/g, ' ')
           .replace(/[–—]/g, ' - ')
           .replace(/\s+/g, ' ')
           .trim();
-        const match = normalized.match(/^\s*(yes|no)\b(?:\s*[·.\-:]\s*|\s+)(.+)$/i);
+        const match = normalized.match(/^\s*(yes|no)\b(?:\s*[·•«»‹›.\-:]\s*|\s+)(.+)$/i);
         if (!match) return null;
         return { answer: match[1].toUpperCase(), choice: normalizeOcrLine(match[2]), source: normalized };
       }
@@ -4621,6 +4625,8 @@
 
       function normalizeOcrPlayerName(value) {
         const cleaned = String(value || '')
+          .replace(/^\s*[|l](?=\s*\.)/i, 'I')
+          .replace(/[•·«»‹›]/g, ' ')
           .replace(/[’‘`´]/g, "'")
           .replace(/[‐‑‒–—―]/g, '-')
           .replace(/\b(over|under|more|less|yes|no|or more|at least)\b/ig, ' ')
@@ -4653,6 +4659,7 @@
           .filter(row => row.line && !/^(?:yes|no)$/i.test(row.line));
         const results = [];
         let pendingMatchup = null;
+        const consumedNameRows = new Set();
         for (let i = 0; i < rows.length; i++) {
           const { raw: rawLine, line } = rows[i];
           const matchup = parseOcrMatchupLine(rawLine);
@@ -4700,11 +4707,30 @@
           const targetMatch = line.match(/(?:over\s*)?(\d+(?:\.5)?)\s*\+?/i) || line.match(/\b(\d+(?:\.5)?)\b/);
           const target = Math.max(1, Math.ceil(Number(targetMatch?.[1] || 1)));
           let name = normalizeOcrPlayerName(line.replace(found[0], ' '));
-          if (name.split(' ').length < 2 && i > 0) {
-            name = normalizeOcrPlayerName(rows[i - 1].line.replace(/[^A-Za-zÀ-ÿ' .-]/g, ' '));
+          // Support a genuine two-line layout (name on one line, market on
+          // the next), but never borrow a previous completed leg. The prior
+          // row must contain a plausible standalone name and no market,
+          // matchup, number, or interface label.
+          if (name.split(' ').length < 2 && i > 0 && !consumedNameRows.has(i - 1)) {
+            const previousRaw = rows[i - 1].raw;
+            const previousLine = rows[i - 1].line;
+            const previousChoice = parseOcrChoiceLine(previousRaw);
+            const previousCandidate = normalizeOcrPlayerName(previousChoice?.choice || previousLine);
+            const previousHasMarket = marketMap.some(([rx]) => rx.test(previousLine));
+            const previousLooksLikeName = previousCandidate.split(' ').length >= 2
+              && !previousHasMarket
+              && !parseOcrMatchupLine(previousRaw)
+              && !/\d|^(?:legs?|limit buy|order status|filled|time in force|submitted|entered|dollars?)$/i.test(previousLine);
+            if (previousLooksLikeName) {
+              name = previousCandidate;
+              consumedNameRows.add(i - 1);
+            }
           }
           name = name.replace(/^(mlb|baseball)\s+/i, '').trim();
-          if (name.split(' ').length >= 2) results.push({ type: 'PLAYER', name, market: found[1], target, source: line });
+          if (name.split(' ').length >= 2) results.push({
+            type: 'PLAYER', name, market: found[1], target, source: line,
+            matchupTeams: pendingMatchup ? [...pendingMatchup] : []
+          });
         }
         return results.filter((row, index, all) => all.findIndex(x =>
           x.type === row.type && x.market === row.market &&
@@ -4837,6 +4863,60 @@
         return ranked[0].player;
       }
 
+      function ocrGameIndexesForMatchup(matchupTeams) {
+        const wanted = (matchupTeams || []).map(normalizedTeamAbbr).filter(Boolean);
+        if (wanted.length !== 2) return [];
+        return gamesForEditor.map((game, index) => {
+          const teams = [normalizedTeamAbbr(game.awayAbbr), normalizedTeamAbbr(game.homeAbbr)];
+          return wanted.every(team => teams.includes(team)) ? index : -1;
+        }).filter(index => index >= 0);
+      }
+
+      function ocrPlayerSourcesForCandidate(candidate, rosters) {
+        const gameIndexes = ocrGameIndexesForMatchup(candidate?.matchupTeams);
+        if (!gameIndexes.length) return rosters || [];
+        const allowedTeamIds = new Set();
+        gameIndexes.forEach(index => {
+          const game = gamesForEditor[index];
+          if (game?.awayId) allowedTeamIds.add(String(game.awayId));
+          if (game?.homeId) allowedTeamIds.add(String(game.homeId));
+        });
+        return (rosters || []).map((pool, index) => {
+          if (!Array.isArray(pool)) return [];
+          if (index < gamesForEditor.length) return gameIndexes.includes(index) ? pool : [];
+          return pool.filter(player => allowedTeamIds.has(String(player?.teamId || '')));
+        });
+      }
+
+      function findOcrPlayerInContext(candidate, rosters) {
+        const scoped = ocrPlayerSourcesForCandidate(candidate, rosters);
+        let player = findOcrPlayer(candidate, scoped);
+        if (player || candidate?.market !== 'SO') return player;
+        // When identical pitcher initials exist in one matchup, a strikeout
+        // contract almost always targets the announced starter. Use that only
+        // as a narrow tie-breaker, never as a general fuzzy-name guess.
+        const gameIndexes = ocrGameIndexesForMatchup(candidate?.matchupTeams);
+        const probableIds = new Set(gameIndexes.flatMap(index => {
+          const game = gamesForEditor[index] || {};
+          return [game.awayProbable?.id, game.homeProbable?.id].filter(Boolean).map(String);
+        }));
+        if (!probableIds.size) return null;
+        const probablePools = scoped.map(pool => (pool || []).filter(item => probableIds.has(String(item?.id || ''))));
+        return findOcrPlayer(candidate, probablePools);
+      }
+
+      function findOcrGameForCandidate(candidate, player, gamePlayerRosters) {
+        const gameIndexes = ocrGameIndexesForMatchup(candidate?.matchupTeams);
+        for (const index of gameIndexes) {
+          const game = gamesForEditor[index];
+          const roster = gamePlayerRosters?.[index] || [];
+          if (roster.some(item => String(item.id) === String(player?.id))) return game || null;
+          const teamId = String(player?.teamId || '');
+          if (teamId && (String(game?.awayId) === teamId || String(game?.homeId) === teamId)) return game || null;
+        }
+        return findOcrGameForPlayer(player, gamePlayerRosters);
+      }
+
       async function ensureLeaguePlayerPool(season) {
         const key = String(season || selectedDate || todayString()).slice(0, 4);
         if (leaguePlayerCache.has(key)) return leaguePlayerCache.get(key);
@@ -4964,13 +5044,13 @@
           const rosters = await Promise.all(gamesForEditor.map(game => ensureRosterForGame(game.gamePk)));
           let playerSources = rosters;
           let gamePlayerRosters = rosters;
-          const needsGameFallback = parsed.some(candidate => candidate.type === 'PLAYER' && !findOcrPlayer(candidate, playerSources));
+          const needsGameFallback = parsed.some(candidate => candidate.type === 'PLAYER' && !findOcrPlayerInContext(candidate, playerSources));
           if (needsGameFallback) {
             const gamePools = await ensureOcrGamePlayerPools();
             gamePlayerRosters = rosters.map((active, index) => [...active, ...(gamePools[index] || [])]);
             playerSources = gamePlayerRosters;
           }
-          const needsLeagueFallback = parsed.some(candidate => candidate.type === 'PLAYER' && !findOcrPlayer(candidate, playerSources));
+          const needsLeagueFallback = parsed.some(candidate => candidate.type === 'PLAYER' && !findOcrPlayerInContext(candidate, playerSources));
           if (needsLeagueFallback) {
             const leaguePlayers = leaguePlayersForEditorGames(await ensureLeaguePlayerPool(selectedDate));
             if (leaguePlayers.length) playerSources = [...gamePlayerRosters, leaguePlayers];
@@ -4987,8 +5067,8 @@
               } else unresolved.push(candidate.source || candidate.teamAbbr);
               return;
             }
-            const match = findOcrPlayer(candidate, playerSources);
-            const game = match ? findOcrGameForPlayer(match, gamePlayerRosters) : null;
+            const match = findOcrPlayerInContext(candidate, playerSources);
+            const game = match ? findOcrGameForCandidate(candidate, match, gamePlayerRosters) : null;
             if (match && game) {
               addLegEditor({ gamePk: game.gamePk, playerId: match.id, playerName: match.name, teamAbbr: match.teamAbbr, market: candidate.market, target: candidate.target });
               added++;
