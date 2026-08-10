@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="dark" />
-  <title>MLB Game Center & Combo Tracker v28</title>
+  <title>MLB Game Center & Combo Tracker v29</title>
   <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     :root {
@@ -773,13 +773,19 @@
     .pitch-analysis-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; padding:11px 12px; border-bottom:1px solid rgba(38,58,89,.68); }
     .pitch-analysis-name { font-size:14px; font-weight:880; }
     .pitch-analysis-meta { margin-top:3px; color:var(--muted); font-size:8px; }
+    .pitch-role-row { display:flex; flex-wrap:wrap; gap:5px; align-items:center; margin-top:6px; }
+    .pitch-role-pill { display:inline-flex; align-items:center; padding:3px 6px; border-radius:999px; color:#cfe1ff; background:rgba(98,165,255,.1); border:1px solid rgba(98,165,255,.34); font-size:7px; font-weight:900; letter-spacing:.05em; }
+    .pitch-role-pill.opener { color:#ffd992; background:rgba(244,201,93,.09); border-color:rgba(244,201,93,.4); }
+    .pitch-role-pill.swing { color:#d6bcff; background:rgba(177,126,255,.09); border-color:rgba(177,126,255,.38); }
     .pitch-form-pill { flex:0 0 auto; padding:4px 7px; border-radius:999px; border:1px solid rgba(98,165,255,.35); color:#bcd6ff; font-size:8px; font-weight:850; }
     .pitch-form-pill.good { color:var(--green); border-color:rgba(66,211,146,.4); background:rgba(66,211,146,.08); }
     .pitch-form-pill.risk { color:var(--red); border-color:rgba(255,107,125,.4); background:rgba(255,107,125,.08); }
     .pitch-metric-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; padding:10px 11px 0; }
     .pitch-metric { min-width:0; padding:7px 5px; border:1px solid rgba(38,58,89,.72); border-radius:9px; text-align:center; background:rgba(24,45,75,.22); }
     .pitch-metric strong { display:block; font-size:12px; }
-    .pitch-metric span { display:block; margin-top:2px; color:var(--muted); font-size:7px; }
+    .pitch-metric span { display:flex; justify-content:center; align-items:center; gap:3px; margin-top:2px; color:var(--muted); font-size:7px; }
+    .metric-help-mark { display:inline-grid; place-items:center; width:14px; height:14px; padding:0; border:1px solid rgba(98,165,255,.46); border-radius:50%; color:#aecdff; background:rgba(98,165,255,.09); font:900 9px/1 inherit; cursor:pointer; }
+    .metric-help-mark:hover,.metric-help-mark:focus-visible { color:#fff; border-color:var(--accent); background:rgba(98,165,255,.22); outline:none; }
     .pitch-section-label { padding:11px 11px 6px; color:#d7e5fa; font-size:9px; font-weight:850; letter-spacing:.03em; }
     .arsenal-wrap { padding:0 11px 10px; overflow-x:auto; }
     .arsenal-table { width:100%; min-width:430px; border-collapse:collapse; font-size:9px; }
@@ -796,6 +802,13 @@
     .pitch-insights { margin:0; padding:0 14px 12px 28px; color:#c8d8ef; font-size:9px; line-height:1.55; }
     .pitch-insights li + li { margin-top:5px; }
     .pitch-analysis-note { padding:10px 12px; border:1px solid rgba(38,58,89,.72); border-radius:11px; color:var(--muted); background:rgba(7,15,27,.38); font-size:8px; line-height:1.55; }
+    .metric-help-dialog { width:min(480px,calc(100vw - 24px)); }
+    .metric-help-body { padding:16px 17px 18px; }
+    .metric-help-abbr { color:var(--accent); font-size:11px; font-weight:900; letter-spacing:.08em; }
+    .metric-help-name { margin-top:4px; color:#fff; font-size:20px; font-weight:900; }
+    .metric-help-copy { margin-top:12px; color:#c8d8ef; font-size:11px; line-height:1.65; }
+    .metric-help-direction { margin-top:12px; padding:10px 11px; border:1px solid rgba(66,211,146,.3); border-radius:10px; color:#c9f7e3; background:rgba(66,211,146,.07); font-size:10px; line-height:1.55; }
+    .metric-help-caution { margin-top:8px; color:var(--muted); font-size:9px; line-height:1.55; }
     .lineup-list { display: grid; }
     .lineup-player {
       width: 100%;
@@ -1256,6 +1269,21 @@
     <div class="modal-body" id="gameDetailBody"></div>
   </dialog>
 
+  <dialog class="metric-help-dialog" id="metricHelpDialog">
+    <div class="modal-head">
+      <div>
+        <div class="eyebrow" id="metricHelpAbbr">METRIC</div>
+        <div class="modal-title" id="metricHelpTitle">Metric guide</div>
+      </div>
+      <button class="btn icon" id="closeMetricHelpDialog" type="button" aria-label="关闭" data-i18n-aria="close">×</button>
+    </div>
+    <div class="metric-help-body">
+      <div class="metric-help-copy" id="metricHelpMeaning"></div>
+      <div class="metric-help-direction" id="metricHelpDirection"></div>
+      <div class="metric-help-caution" id="metricHelpCaution"></div>
+    </div>
+  </dialog>
+
   <dialog id="authDialog">
     <div class="modal-head">
       <div class="modal-title">登录并同步</div>
@@ -1386,13 +1414,15 @@
           ,pitchAnalysisRun: '分析两位先发', pitchAnalysisRefresh: '重新分析', pitchAnalysisWaiting: '两队先发投手确认后可开始分析。'
           ,pitchAnalysisIdle: '点击分析后读取两位先发的近期比赛、Statcast 球种和对手打线数据。', pitchAnalysisLoading: '正在读取投手日志、最近比赛逐球资料与 BvP…'
           ,pitchAnalysisReady: '分析完成；可切换最近 3 场、最近 5 场和本赛季。', pitchAnalysisFailed: '部分投手资料读取失败；以下结果仅使用已取得的数据。'
-          ,starterEdge: '先发优势', gamePace: '比赛节奏倾向', analysisConfidence: '分析置信度', edgeEven: '两位先发接近', edgeLean: '偏 {team} · {pitcher}'
+          ,starterEdge: '本场投手方案优势', gamePace: '比赛节奏倾向', analysisConfidence: '分析置信度', edgeEven: '两边投手方案接近', edgeLean: '偏 {team} · {pitcher}'
+          ,edgeOpener: '{openerTeam} 为开场投手/牛棚战；完整先发偏 {starterTeam} · {starter}'
           ,paceFast: '偏快 · 投球效率较高', paceBalanced: '中性 · 正常节奏', paceSlow: '偏慢 · 上垒/用球风险较高'
           ,confidenceHigh: '较高', confidenceMedium: '中等', confidenceLimited: '有限', throwsHand: '{hand}投 · 对 {opponent}'
           ,formImproving: '近期改善', formStable: '表现稳定', formRisk: '近期风险', pitcherSampleGames: '{count} 场样本'
-          ,inningsPerStart: 'IP/场', pitchesPerInning: 'P/IP', strikeRate: '好球率', pitchArsenal: '球种分析', pitchType: '球种', usageSeason: '赛季%', usageRecent: '近期%', usageChange: '变化', velocity: '球速', spinRate: '转速', whiffRate: '挥空%'
+          ,roleStarter: '完整先发', roleOpener: '开场投手 / 牛棚战', roleSwing: '摇摆投手', roleReliever: '救援角色'
+          ,inningsPerStart: 'IP/场', pitchesPerInning: 'P/IP', strikeRate: '好球率', strikeoutsPerGame: 'SO/场', projectedStrikeouts: '预计 SO', pitchArsenal: '球种分析', pitchType: '球种', usageSeason: '赛季%', usageRecent: '近期%', usageChange: '变化', velocity: '球速', spinRate: '转速', whiffRate: '挥空%'
           ,bvpVsLineup: '对本场打线 BvP（近 5 年）', noArsenalData: '暂无可用球种数据', noBvpSummary: '暂无可用 BvP 样本'
-          ,pitchAnalysisBasis: '初步判断为浏览器内规则分析：近期 3/5 场与赛季投球效率为主，球种变化和对手打线为辅助；BvP 会按样本量降权。未计入牛棚临场状态、天气、裁判好球带与最终阵容变化。'
+          ,pitchAnalysisBasis: '规则模型会先区分完整先发与开场投手。近期率数据按实际局数向赛季数据收缩，防止 1–3 局小样本被放大；本场优势同时考虑失分控制、上垒、三振、预计局数与预计总三振。BvP 按样本量降权。'
           ,seasonArsenalSource: '赛季球种来自 Baseball Savant；近期球种由所选比赛前的 MLB 逐球数据计算。', pitcherInsights: '初步分析'
           ,comboTracked: 'Combo 追踪', comboPlayers: '{players} 名球员', comboItems: '{items} 项',
           paProjected: '预计全场 {range} PA', paCompleted: '已完成 {count}', paRemaining: '预计剩余 {range} PA',
@@ -1486,13 +1516,15 @@
           ,pitchAnalysisRun: 'Analyze starters', pitchAnalysisRefresh: 'Reanalyze', pitchAnalysisWaiting: 'Available after both starting pitchers are confirmed.'
           ,pitchAnalysisIdle: 'Run the analysis to load recent starts, pitch-level Statcast data, and BvP for both lineups.', pitchAnalysisLoading: 'Loading pitching logs, recent pitch data, and BvP…'
           ,pitchAnalysisReady: 'Analysis ready. Switch between Last 3, Last 5, and Season.', pitchAnalysisFailed: 'Some pitcher data could not be loaded; the view below uses available data only.'
-          ,starterEdge: 'Starter edge', gamePace: 'Game-flow lean', analysisConfidence: 'Confidence', edgeEven: 'Starters grade similarly', edgeLean: 'Lean {team} · {pitcher}'
+          ,starterEdge: 'Pitching-plan edge', gamePace: 'Game-flow lean', analysisConfidence: 'Confidence', edgeEven: 'Pitching plans grade similarly', edgeLean: 'Lean {team} · {pitcher}'
+          ,edgeOpener: '{openerTeam} is using an opener/bullpen game; full-start workload leans {starterTeam} · {starter}'
           ,paceFast: 'Faster · efficient pitching', paceBalanced: 'Neutral · typical pace', paceSlow: 'Slower · traffic/pitch-count risk'
           ,confidenceHigh: 'Higher', confidenceMedium: 'Medium', confidenceLimited: 'Limited', throwsHand: '{hand}HP · vs {opponent}'
           ,formImproving: 'Trending up', formStable: 'Stable form', formRisk: 'Recent risk', pitcherSampleGames: '{count} game sample'
-          ,inningsPerStart: 'IP/GS', pitchesPerInning: 'P/IP', strikeRate: 'Strike%', pitchArsenal: 'Pitch mix', pitchType: 'Pitch', usageSeason: 'Season%', usageRecent: 'Recent%', usageChange: 'Change', velocity: 'Velo', spinRate: 'Spin', whiffRate: 'Whiff%'
+          ,roleStarter: 'Full starter', roleOpener: 'Opener / bullpen game', roleSwing: 'Swingman', roleReliever: 'Relief role'
+          ,inningsPerStart: 'IP/G', pitchesPerInning: 'P/IP', strikeRate: 'Strike%', strikeoutsPerGame: 'SO/G', projectedStrikeouts: 'Proj. SO', pitchArsenal: 'Pitch mix', pitchType: 'Pitch', usageSeason: 'Season%', usageRecent: 'Recent%', usageChange: 'Change', velocity: 'Velo', spinRate: 'Spin', whiffRate: 'Whiff%'
           ,bvpVsLineup: 'BvP vs today’s lineup (5Y)', noArsenalData: 'No pitch-mix data is available', noBvpSummary: 'No usable BvP sample'
-          ,pitchAnalysisBasis: 'This is an in-browser rules-based preliminary view. Recent 3/5-game and season efficiency carry the most weight; pitch-mix changes and opponent context are supporting signals, and BvP is down-weighted by sample size. Bullpen form, weather, umpire zone, and late lineup changes are not included.'
+          ,pitchAnalysisBasis: 'The rules model first separates full starters from openers. Recent rate stats are shrunk toward the season baseline by actual innings so a 1–3 inning sample cannot dominate. The game edge blends run prevention, traffic, strikeouts, expected workload, and projected total strikeouts. BvP is down-weighted by sample size.'
           ,seasonArsenalSource: 'Season pitch mix comes from Baseball Savant; recent pitch mix is calculated from MLB pitch-by-pitch feeds before the selected game.', pitcherInsights: 'Initial read'
           ,comboTracked: 'Combo tracked', comboPlayers: '{players} players', comboItems: '{items} legs',
           paProjected: 'Projected {range} PA', paCompleted: '{count} completed', paRemaining: '{range} PA left',
@@ -1571,7 +1603,7 @@
         quickSearch: $('quickSearch'), quickRoster: $('quickRoster'), quickSelectedCount: $('quickSelectedCount'), quickAddPlayersBtn: $('quickAddPlayersBtn'),
         mobilePlayerDialog: $('mobilePlayerDialog'), mobilePlayerSearch: $('mobilePlayerSearch'), mobilePlayerTeams: $('mobilePlayerTeams'), mobilePlayerList: $('mobilePlayerList'),
         gameGrid: $('gameGrid'), dashboardLoadingBar: $('dashboardLoadingBar'), gameDialog: $('gameDialog'),
-        gameDialogTitle: $('gameDialogTitle'), gameDetailBody: $('gameDetailBody'),
+        gameDialogTitle: $('gameDialogTitle'), gameDetailBody: $('gameDetailBody'), metricHelpDialog: $('metricHelpDialog'),
         authDialog: $('authDialog'), authForm: $('authForm'), authEmail: $('authEmail'),
         authPassword: $('authPassword'), authStatus: $('authStatus'), syncStatus: $('syncStatus'),
         accountEmail: $('accountEmail'), signedInActions: $('signedInActions')
@@ -1644,6 +1676,7 @@
         $('signOutBtn').addEventListener('click', signOut);
         $('syncNowBtn').addEventListener('click', () => syncWithCloud(true));
         $('closeGameDialog').addEventListener('click', () => el.gameDialog.close());
+        $('closeMetricHelpDialog').addEventListener('click', () => el.metricHelpDialog.close());
         el.gameGrid.addEventListener('click', (event) => {
           const favorite = event.target.closest('[data-favorite-game]');
           if (favorite) {
@@ -1654,6 +1687,11 @@
           if (button) openGameDetails(button.dataset.gameDetail);
         });
         el.gameDetailBody.addEventListener('click', (event) => {
+          const metricHelp = event.target.closest('[data-metric-help]');
+          if (metricHelp) {
+            openMetricHelp(metricHelp.dataset.metricHelp);
+            return;
+          }
           const detailTab = event.target.closest('[data-detail-tab]');
           if (detailTab) {
             gameDetailTab = detailTab.dataset.detailTab;
@@ -2892,6 +2930,7 @@
         const eligible = starts.length ? starts : prior;
         const recentRows = eligible.slice(0, 5);
         const pitchSamples = await getRecentPitchSamples(pitcher.id, recentRows);
+        const role = classifyPitcherRole(prior, starts);
         return {
           id: pitcher.id,
           name: pitcher.fullName || pitcher.name || `Pitcher ${pitcher.id}`,
@@ -2901,7 +2940,7 @@
           periods: {
             last3: aggregatePitchingRows(eligible.slice(0, 3)),
             last5: aggregatePitchingRows(eligible.slice(0, 5)),
-            season: pitchingProfileFromStats(seasonStats)
+            season: aggregatePitchingRows(eligible) || pitchingProfileFromStats(seasonStats)
           },
           arsenal: {
             season: seasonArsenal.get(String(pitcher.id)) || [],
@@ -2909,8 +2948,20 @@
             last5: aggregatePitchSamples(pitchSamples.slice(0, 5).flat())
           },
           bvp,
-          opponent: opponentLineupProfile(opponentLineup)
+          opponent: opponentLineupProfile(opponentLineup),
+          role
         };
+      }
+
+      function classifyPitcherRole(prior, starts) {
+        const games = prior?.length || 0;
+        const startCount = starts?.length || 0;
+        const startRate = games ? startCount / games : 0;
+        const allProfile = aggregatePitchingRows(prior || []);
+        if (startCount >= 5 || (startCount >= 3 && startRate >= .4)) return { key:'roleStarter', cls:'starter', startCount, games };
+        if (!startCount && (!allProfile || allProfile.ipPerStart < 2.25)) return { key:'roleOpener', cls:'opener', startCount, games };
+        if (startCount || (allProfile && allProfile.ipPerStart >= 2.25)) return { key:'roleSwing', cls:'swing', startCount, games };
+        return { key:'roleReliever', cls:'opener', startCount, games };
       }
 
       async function getPitchingGameLog(playerId, season) {
@@ -2975,6 +3026,7 @@
           k9:totals.so * 9 / innings, bb9:totals.bb * 9 / innings, hr9:totals.hr * 9 / innings,
           ipPerStart:innings / starts, pitchesPerInning:totals.pitches ? totals.pitches / innings : NaN,
           strikePct:totals.pitches && totals.strikes ? totals.strikes / totals.pitches * 100 : NaN,
+          soPerGame:games ? totals.so / games : NaN,
           so:totals.so, bb:totals.bb, hr:totals.hr, pitches:totals.pitches
         };
       }
@@ -3128,6 +3180,7 @@
       function pitcherAnalysisCardHtml(pitcher) {
         const profile = pitcher.periods[pitcherAnalysisPeriod];
         const season = pitcher.periods.season;
+        const projection = pitcherProjection(pitcher, pitcherAnalysisPeriod);
         const form = pitcherForm(profile, season, pitcherAnalysisPeriod);
         const recentKey = pitcherAnalysisPeriod === 'last3' ? 'last3' : 'last5';
         const recentArsenal = pitcher.arsenal[recentKey] || [];
@@ -3136,22 +3189,31 @@
         const sampleCount = profile?.starts || profile?.games || 0;
         const bvp = pitcher.bvp;
         return `<article class="pitch-analysis-card">
-          <div class="pitch-analysis-card-head"><div><div class="pitch-analysis-name">${escapeHtml(pitcher.name)}</div><div class="pitch-analysis-meta">${escapeHtml(t('throwsHand', { hand:pitcher.pitchHand || '—', opponent:pitcher.opponentAbbr }))} · ${escapeHtml(periodLabel)} · ${escapeHtml(t('pitcherSampleGames', { count:sampleCount }))}</div></div><span class="pitch-form-pill ${form.cls}">${escapeHtml(t(form.key))}</span></div>
+          <div class="pitch-analysis-card-head"><div><div class="pitch-analysis-name">${escapeHtml(pitcher.name)}</div><div class="pitch-analysis-meta">${escapeHtml(t('throwsHand', { hand:pitcher.pitchHand || '—', opponent:pitcher.opponentAbbr }))} · ${escapeHtml(periodLabel)} · ${escapeHtml(t('pitcherSampleGames', { count:sampleCount }))}</div><div class="pitch-role-row"><span class="pitch-role-pill ${escapeAttr(pitcher.role?.cls || '')}">${escapeHtml(t(pitcher.role?.key || 'roleStarter'))}</span></div></div><span class="pitch-form-pill ${form.cls}">${escapeHtml(t(form.key))}</span></div>
           <div class="pitch-metric-grid">${[
-            ['ERA',fmt(profile?.era,2)], ['WHIP',fmt(profile?.whip,2)], ['K/9',fmt(profile?.k9,1)], ['BB/9',fmt(profile?.bb9,1)],
-            [t('inningsPerStart'),fmt(profile?.ipPerStart,1)], [t('pitchesPerInning'),fmt(profile?.pitchesPerInning,1)], [t('strikeRate'),pct(profile?.strikePct)], ['HR/9',fmt(profile?.hr9,1)]
-          ].map(([label,value]) => `<div class="pitch-metric"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`).join('')}</div>
+            ['era','ERA',fmt(profile?.era,2)], ['whip','WHIP',fmt(profile?.whip,2)], ['k9','K/9',fmt(profile?.k9,1)], ['bb9','BB/9',fmt(profile?.bb9,1)],
+            ['ipg',t('inningsPerStart'),fmt(profile?.ipPerStart,1)], ['ppi',t('pitchesPerInning'),fmt(profile?.pitchesPerInning,1)], ['strikepct',t('strikeRate'),pct(profile?.strikePct)], ['hr9','HR/9',fmt(profile?.hr9,1)],
+            ['sog',t('strikeoutsPerGame'),fmt(profile?.soPerGame,1)], ['projectedso',t('projectedStrikeouts'),fmt(projection?.projectedSo,1)]
+          ].map(([key,label,value]) => pitchMetricHtml(key,label,value)).join('')}</div>
           <div class="pitch-section-label">${escapeHtml(t('pitchArsenal'))}</div>
-          <div class="arsenal-wrap">${arsenalRows.length ? `<table class="arsenal-table"><thead><tr><th>${escapeHtml(t('pitchType'))}</th><th>${escapeHtml(t('usageSeason'))}</th><th>${escapeHtml(recentKey === 'last3' ? t('lineupLast3') : t('lineupLast5'))}</th><th>${escapeHtml(t('usageChange'))}</th><th>${escapeHtml(t('velocity'))}</th><th>${escapeHtml(t('spinRate'))}</th><th>${escapeHtml(t('whiffRate'))}</th></tr></thead><tbody>${arsenalRows.map(row => {
+          <div class="arsenal-wrap">${arsenalRows.length ? `<table class="arsenal-table"><thead><tr><th>${escapeHtml(t('pitchType'))}</th><th>${metricLabelHtml(t('usageSeason'),'usage')}</th><th>${escapeHtml(recentKey === 'last3' ? t('lineupLast3') : t('lineupLast5'))}</th><th>${escapeHtml(t('usageChange'))}</th><th>${metricLabelHtml(t('velocity'),'velocity')}</th><th>${metricLabelHtml(t('spinRate'),'spin')}</th><th>${metricLabelHtml(t('whiffRate'),'whiff')}</th></tr></thead><tbody>${arsenalRows.map(row => {
             const change = Number.isFinite(row.recentUsage) && Number.isFinite(row.seasonUsage) ? row.recentUsage - row.seasonUsage : NaN;
             const changeClass = Number.isFinite(change) ? change > 2 ? 'up' : change < -2 ? 'down' : '' : '';
             return `<tr><td><strong>${escapeHtml(row.name)}</strong></td><td>${pct(row.seasonUsage)}</td><td>${pct(row.recentUsage)}</td><td class="arsenal-change ${changeClass}">${signedPct(change)}</td><td>${mph(row.recentSpeed ?? row.seasonSpeed)}</td><td>${rpm(row.recentSpin ?? row.seasonSpin)}</td><td>${pct(row.whiffPct)}</td></tr>`;
           }).join('')}</tbody></table>` : `<div class="bvp-empty">${escapeHtml(t('noArsenalData'))}</div>`}</div>
-          <div class="pitch-section-label">${escapeHtml(t('bvpVsLineup'))}</div>
-          ${bvp ? `<div class="pitch-bvp-strip">${[['PA',bvp.pa],['H',bvp.h],['HR',bvp.hr],['SO',bvp.so],['AVG',fmtRate(bvp.avg)]].map(([label,value]) => `<div class="pitch-bvp-cell"><strong>${escapeHtml(value)}</strong><span>${label}</span></div>`).join('')}</div>` : `<div class="bvp-empty" style="margin:0 11px 11px">${escapeHtml(t('noBvpSummary'))}</div>`}
+          <div class="pitch-section-label">${metricLabelHtml(t('bvpVsLineup'),'bvp')}</div>
+          ${bvp ? `<div class="pitch-bvp-strip">${[['pa','PA',bvp.pa],['h','H',bvp.h],['hr','HR',bvp.hr],['so','SO',bvp.so],['avg','AVG',fmtRate(bvp.avg)]].map(([key,label,value]) => `<div class="pitch-bvp-cell"><strong>${escapeHtml(value)}</strong><span>${metricLabelHtml(label,key)}</span></div>`).join('')}</div>` : `<div class="bvp-empty" style="margin:0 11px 11px">${escapeHtml(t('noBvpSummary'))}</div>`}
           <div class="pitch-section-label">${escapeHtml(t('pitcherInsights'))}</div>
           <ul class="pitch-insights">${pitcherInsightLines(pitcher, profile, season, recentArsenal).map(line => `<li>${escapeHtml(line)}</li>`).join('')}</ul>
         </article>`;
+      }
+
+      function pitchMetricHtml(key, label, value) {
+        return `<div class="pitch-metric"><strong>${escapeHtml(value)}</strong><span>${metricLabelHtml(label,key)}</span></div>`;
+      }
+
+      function metricLabelHtml(label, key) {
+        return `${escapeHtml(label)}<button class="metric-help-mark" type="button" data-metric-help="${escapeAttr(key)}" aria-label="${escapeAttr(`${label} help`)}">?</button>`;
       }
 
       function mergePitchArsenal(seasonRows, recentRows) {
@@ -3164,21 +3226,55 @@
       }
 
       function pitcherAnalysisScore(pitcher, period) {
-        const profile = pitcher?.periods?.[period];
-        if (!profile) return 0;
-        let score = 52 + (4 - profile.era) * 7 + (1.3 - profile.whip) * 18 + (profile.k9 - 8) * 2.4 - Math.max(0, profile.bb9 - 3) * 3.5 - Math.max(0, profile.hr9 - 1.1) * 5;
-        score += (profile.ipPerStart - 5) * 2;
+        const projection = pitcherProjection(pitcher, period);
+        if (!projection) return 0;
+        let score = projection.score;
         const bvp = pitcher.bvp;
         if (bvp?.pa >= 10) {
-          const weight = Math.min(.15, bvp.pa / 300);
+          const weight = Math.min(.10, bvp.pa / 400);
           const bvpScore = 55 + (bvp.so / Math.max(1,bvp.pa) - .22) * 100 - (bvp.h / Math.max(1,bvp.ab) - .25) * 90 - (bvp.hr / Math.max(1,bvp.pa) - .03) * 120;
           score = score * (1 - weight) + bvpScore * weight;
         }
         return clamp(score, 0, 100);
       }
 
+      function pitcherProjection(pitcher, period) {
+        const profile = pitcher?.periods?.[period];
+        const season = pitcher?.periods?.season || profile;
+        if (!profile || !season) return null;
+        const reliability = period === 'season' ? 1 : clamp(n(profile.innings) / (n(profile.innings) + 12), .08, .82);
+        const blend = key => {
+          const recent = Number(profile[key]);
+          const baseline = Number(season[key]);
+          if (!Number.isFinite(recent)) return baseline;
+          if (!Number.isFinite(baseline)) return recent;
+          return recent * reliability + baseline * (1 - reliability);
+        };
+        const era = blend('era'), whip = blend('whip'), k9 = blend('k9'), bb9 = blend('bb9'), hr9 = blend('hr9');
+        const expectedIp = clamp(blend('ipPerStart'), .2, 7.5);
+        const projectedSo = Number.isFinite(k9) ? k9 / 9 * expectedIp : NaN;
+        let quality = 50;
+        if (Number.isFinite(era)) quality += clamp((4 - era) * 4, -15, 15);
+        if (Number.isFinite(whip)) quality += clamp((1.3 - whip) * 14, -12, 12);
+        if (Number.isFinite(k9)) quality += clamp((k9 - 8) * 1.5, -8, 10);
+        if (Number.isFinite(bb9)) quality += clamp((3 - bb9) * 1.5, -9, 5);
+        if (Number.isFinite(hr9)) quality += clamp((1.1 - hr9) * 3, -6, 5);
+        const workload = clamp(12 + (expectedIp - 1) * 16, 8, 92);
+        const strikeoutVolume = Number.isFinite(projectedSo) ? clamp(20 + projectedSo * 10, 20, 90) : 40;
+        const roleClass = pitcher?.role?.cls || 'starter';
+        const score = roleClass === 'opener'
+          ? quality * .35 + workload * .40 + strikeoutVolume * .25
+          : roleClass === 'swing'
+            ? quality * .55 + workload * .28 + strikeoutVolume * .17
+            : quality * .68 + workload * .18 + strikeoutVolume * .14;
+        return { reliability, era, whip, k9, bb9, hr9, expectedIp, projectedSo, quality, workload, strikeoutVolume, score };
+      }
+
       function pitcherEdgeText(rows) {
         if (rows.length < 2) return t('confidenceLimited');
+        const opener = rows.find(row => row.pitcher?.role?.cls === 'opener');
+        const starter = rows.find(row => row.pitcher?.role?.cls === 'starter');
+        if (opener && starter) return t('edgeOpener', { openerTeam:opener.pitcher.teamAbbr || '—', starterTeam:starter.pitcher.teamAbbr || '—', starter:starter.pitcher.name });
         const sorted = [...rows].sort((a,b) => b.score - a.score);
         if (sorted[0].score - sorted[1].score < 5) return t('edgeEven');
         return t('edgeLean', { team:sorted[0].pitcher.teamAbbr || '—', pitcher:sorted[0].pitcher.name });
@@ -3196,6 +3292,7 @@
 
       function matchupConfidence(pitchers) {
         if (pitchers.length < 2) return 'confidenceLimited';
+        if (pitchers.some(row => row.role?.cls === 'opener')) return 'confidenceLimited';
         const complete = pitchers.filter(row => row.periods?.last5?.games >= 5 && row.periods?.season && row.arsenal?.season?.length).length;
         const bvpPa = pitchers.reduce((sum,row) => sum + n(row.bvp?.pa), 0);
         if (complete === 2 && bvpPa >= 60) return 'confidenceHigh';
@@ -3226,8 +3323,11 @@
           : `${fmt(profile.pitchesPerInning,1)} pitches per inning and ${fmt(profile.ipPerStart,1)} IP per start suggest ${profile.pitchesPerInning < 15.7 ? 'efficient pace and deeper-start potential' : profile.pitchesPerInning > 17.3 ? 'elevated pitch-count and earlier bullpen risk' : 'a neutral efficiency profile'}.`);
         const opponentK = pitcher.opponent?.kRate;
         lines.push(zh
-          ? `K/9 ${fmt(profile.k9,1)}、BB/9 ${fmt(profile.bb9,1)}${Number.isFinite(opponentK) ? `；对手首发本季三振率约 ${fmt(opponentK,1)}%` : ''}。`
-          : `K/9 ${fmt(profile.k9,1)}, BB/9 ${fmt(profile.bb9,1)}${Number.isFinite(opponentK) ? `; the opposing lineup owns an estimated ${fmt(opponentK,1)}% season strikeout rate` : ''}.`);
+          ? `K/9 ${fmt(profile.k9,1)}，但更接近本场总量的 SO/场为 ${fmt(profile.soPerGame,1)}、预计 SO 为 ${fmt(pitcherProjection(pitcher,pitcherAnalysisPeriod)?.projectedSo,1)}；BB/9 ${fmt(profile.bb9,1)}${Number.isFinite(opponentK) ? `；对手首发本季三振率约 ${fmt(opponentK,1)}%` : ''}。`
+          : `K/9 is ${fmt(profile.k9,1)}, while the workload-aware SO/G is ${fmt(profile.soPerGame,1)} with ${fmt(pitcherProjection(pitcher,pitcherAnalysisPeriod)?.projectedSo,1)} projected SO; BB/9 is ${fmt(profile.bb9,1)}${Number.isFinite(opponentK) ? `; the opposing lineup owns an estimated ${fmt(opponentK,1)}% season strikeout rate` : ''}.`);
+        if (pitcher.role?.cls === 'opener') lines.push(zh
+          ? '该投手此前主要是短局数救援，本场按开场投手处理；率数据不等于完整先发产量，后续牛棚质量会显著影响整场判断。'
+          : 'This pitcher has primarily worked short relief outings and is treated as an opener. Rate stats do not equal full-start volume, and the following bullpen materially affects the game outlook.');
         const top = (arsenal || [])[0];
         const changeup = (arsenal || []).find(row => row.code === 'CH');
         if (top) lines.push(zh ? `近期主投 ${top.name}（${pct(top.usage)}，${mph(top.speed)}），挥空率 ${pct(top.whiffPct)}。` : `Primary recent pitch: ${top.name} (${pct(top.usage)}, ${mph(top.speed)}) with a ${pct(top.whiffPct)} whiff rate.`);
@@ -3236,6 +3336,65 @@
           ? `对本场打线 BvP：${pitcher.bvp.pa} PA、${pitcher.bvp.h} H、${pitcher.bvp.hr} HR、${pitcher.bvp.so} SO；${pitcher.bvp.pa < 30 ? '样本较小，仅作辅助' : '样本达到中等参考量'}。`
           : `BvP vs this lineup: ${pitcher.bvp.pa} PA, ${pitcher.bvp.h} H, ${pitcher.bvp.hr} HR, ${pitcher.bvp.so} SO; ${pitcher.bvp.pa < 30 ? 'small sample, supporting context only' : 'a moderate reference sample'}.`);
         return lines;
+      }
+
+      function metricGlossary() {
+        const zh = {
+          era:['ERA','自责分率','每投 9 局平均允许的自责分。','通常越低越好；大致低于 3.50 较强，高于 4.50 风险增加。','容易受守备、球场与短期运气影响；少局数样本会非常不稳定。'],
+          whip:['WHIP','每局上垒人数','每局平均允许的安打加保送，公式为（H + BB）÷ IP。','越低越好；约 1.10 以下很强，1.30 左右中性，1.45 以上上垒压力较高。','不包含失误上垒，也没有区分安打类型。'],
+          k9:['K/9','每九局三振','按 9 局换算的三振率，用来衡量制造三振的频率。','通常越高越好；但它是“频率”，不是本场三振总数。','一局投 2 K 就是 18.0 K/9，因此开场投手和短救援会被放大；要同时看 IP/场与预计 SO。'],
+          bb9:['BB/9','每九局保送','按 9 局换算的保送数。','越低越好；低于 2.5 通常控球较好，高于 4.0 容易制造上垒与高用球。','少量登板可能因一两次保送产生很大波动。'],
+          hr9:['HR/9','每九局被本垒打','按 9 局换算的被本垒打数。','越低越好；超过约 1.3 通常代表长打风险偏高。','受球场、天气、对手和小样本影响明显。'],
+          ipg:['IP/场','场均投球局数','所选时间范围内平均每场承担的局数；完整先发与 opener 的关键区别。','越高通常表示能更久控制比赛，也让三振总量有更多机会累积。','高局数不一定代表投得更好，但会减少牛棚暴露。'],
+          ppi:['P/IP','每局用球','平均完成一局需要的投球数。','通常越低越有效率；约 15–16 较顺，17.5 以上较容易提前进入牛棚。','三振型投手可能用球较多但仍有效，需与 BB/9、好球率一起看。'],
+          strikepct:['Strike%','好球率','全部投球中被记为好球的比例。','通常越高代表更主动进攻好球带；约 63%–66% 常见。','好球率高不等于球质好，也可能在好球带内被强击。'],
+          sog:['SO/场','场均三振总数','所选范围内每次登板实际完成的平均三振数。','用于比较本场总三振机会时，通常比单看 K/9 更直观。','仍需确认投手角色；完整先发和 opener 的预期局数完全不同。'],
+          projectedso:['预计 SO','工作量修正三振预测','把样本局数收缩后的 K/9 与预计投球局数结合，估算本场三振总量。','越高代表本场累积三振机会越多。','这是范围判断而非保证；最终取决于用球数、比分、对手与临场换投。'],
+          usage:['Usage%','球种使用率','某种球占全部投球的比例。','没有统一的高低好坏；重点看近期是否明显改变，以及该球种效果。','少量逐球数据中，几颗球就会造成较大百分点变化。'],
+          velocity:['Velo','平均球速','该球种的平均出手速度，页面以 mph 显示。','同一投手近期下降约 1–2 mph 值得留意；不同投手不能只按绝对球速比较。','天气、球场设备、热身与球种分类都可能产生小幅差异。'],
+          spin:['Spin','转速','球离手后的平均每分钟转数（rpm）。','没有统一越高越好；应与该投手自己的赛季基线和球种形状比较。','转速本身不能完整说明位移或球质。'],
+          whiff:['Whiff%','挥空率','打者出棒后没有碰到球的比例。','通常越高代表该球种制造空挥能力越强。','近期样本可能很小，必须同时看出棒次数。'],
+          bvp:['BvP','打者对投手历史交手','Batter vs. Pitcher：本场打者过去面对该投手的实际结果汇总。','不是单纯越高越好；从投手角度希望对手 AVG、H、HR 低，SO 高。','交手样本通常很小，且会受年份、球场和球员状态变化影响，因此模型最多只给有限权重。'],
+          pa:['PA','打席','打者完成一次打席的次数。','这里主要用来判断 BvP 样本大小；PA 越多，参考稳定性通常越高。','即使 PA 较多，过去交手也可能不代表当前状态。'],
+          h:['H','安打','打者对该投手击出的安打数。','对投手而言通常越低越好。','必须与 AB/PA 一起看，单看总数会被样本量误导。'],
+          hr:['HR','本垒打','打者对该投手击出的本垒打数。','对投手而言越低越好。','低频事件，小样本不应直接作为强结论。'],
+          so:['SO','三振','投手对该打线历史交手取得的三振数。','对投手而言通常越高越好。','必须结合 PA 看成比例，同时注意当前打线与过去交手可能不同。'],
+          avg:['AVG','打击率','安打数除以正式打数（H ÷ AB）。','从投手角度越低越好。','不计保送，也无法反映长打价值。']
+        };
+        const en = {
+          era:['ERA','Earned Run Average','Earned runs allowed per nine innings.','Lower is generally better; below roughly 3.50 is strong, while above 4.50 signals more risk.','Defense, park, and short-term luck affect ERA, and tiny inning samples are highly volatile.'],
+          whip:['WHIP','Walks plus Hits per Inning Pitched','Average hits plus walks allowed per inning: (H + BB) ÷ IP.','Lower is better; below 1.10 is strong, around 1.30 is neutral, and above 1.45 means more traffic.','It excludes reaching on errors and does not distinguish hit quality.'],
+          k9:['K/9','Strikeouts per Nine','Strikeout frequency scaled to nine innings.','Higher is generally better, but it is a rate—not projected game strikeout volume.','Two strikeouts in one inning equals 18.0 K/9, so short reliever/opener samples can look extreme. Pair it with IP/G and projected SO.'],
+          bb9:['BB/9','Walks per Nine','Walks allowed scaled to nine innings.','Lower is better; below 2.5 usually shows solid control, while above 4.0 adds traffic and pitch-count risk.','One or two walks can swing a small sample sharply.'],
+          hr9:['HR/9','Home Runs per Nine','Home runs allowed scaled to nine innings.','Lower is better; above roughly 1.3 indicates elevated power risk.','Park, weather, opponents, and small samples matter.'],
+          ipg:['IP/G','Innings per Game','Average innings handled per appearance in the selected range.','More innings usually mean greater game control and more opportunity to accumulate strikeouts.','Workload is not the same as quality, but it changes bullpen exposure.'],
+          ppi:['P/IP','Pitches per Inning','Average pitches needed to complete an inning.','Lower is usually more efficient; around 15–16 is smooth, while above 17.5 raises early-bullpen risk.','Strikeout pitchers can work deeper counts effectively, so pair it with BB/9 and Strike%.'],
+          strikepct:['Strike%','Strike Percentage','The share of all pitches recorded as strikes.','Higher generally signals more zone pressure; roughly 63%–66% is common.','A high rate does not guarantee good pitch quality or weak contact.'],
+          sog:['SO/G','Strikeouts per Appearance','Actual average strikeouts per outing in the selected range.','More directly reflects total-game strikeout opportunity than K/9 alone.','Role still matters: full starters and openers carry very different workloads.'],
+          projectedso:['Proj. SO','Workload-adjusted Strikeout Projection','Shrunken K/9 multiplied by expected innings to estimate game strikeout volume.','Higher means more opportunity to accumulate strikeouts.','It is a range signal, not a guarantee; pitch count, score, opponent, and removal timing matter.'],
+          usage:['Usage%','Pitch Usage','The share of all pitches represented by one pitch type.','No universal higher-is-better rule; focus on recent change and pitch effectiveness.','A few pitches can move the percentage sharply in small samples.'],
+          velocity:['Velo','Average Velocity','Average release speed for the pitch type, shown in mph.','A 1–2 mph change versus the same pitcher’s baseline can matter; do not compare pitchers on velocity alone.','Weather, tracking, warmup, and pitch classification can create small differences.'],
+          spin:['Spin','Spin Rate','Average revolutions per minute at release.','Higher is not universally better; compare with that pitcher’s own baseline and pitch shape.','Spin alone does not describe movement or pitch quality.'],
+          whiff:['Whiff%','Whiff Rate','The share of swings that miss the pitch.','Higher usually means stronger bat-missing ability.','Recent swing samples can be very small.'],
+          bvp:['BvP','Batter vs. Pitcher','Historical results for the expected hitters when facing this pitcher.','There is no single higher-is-better direction; pitchers prefer lower opponent AVG/H/HR and higher SO.','Samples are often small and may span different seasons, parks, and player form, so the model keeps the weight limited.'],
+          pa:['PA','Plate Appearances','Completed batter appearances.','Here it mainly identifies BvP sample size; more PA generally improves stability.','Past matchups may not represent current form even with more PA.'],
+          h:['H','Hits','Hits recorded by the lineup against the pitcher.','Lower is generally better for the pitcher.','Always pair the total with AB/PA.'],
+          hr:['HR','Home Runs','Home runs recorded against the pitcher.','Lower is better for the pitcher.','This is a rare event, so small samples should not drive the conclusion.'],
+          so:['SO','Strikeouts','Strikeouts the pitcher recorded against the lineup.','Higher is generally better for the pitcher.','Use the rate alongside PA and confirm the current lineup.'],
+          avg:['AVG','Batting Average','Hits divided by official at-bats (H ÷ AB).','Lower is better from the pitcher’s perspective.','It excludes walks and does not capture extra-base-hit value.']
+        };
+        return currentLanguage === 'zh' ? zh : en;
+      }
+
+      function openMetricHelp(key) {
+        const item = metricGlossary()[key];
+        if (!item) return;
+        $('metricHelpAbbr').textContent = item[0];
+        $('metricHelpTitle').textContent = item[1];
+        $('metricHelpMeaning').textContent = item[2];
+        $('metricHelpDirection').textContent = item[3];
+        $('metricHelpCaution').textContent = item[4];
+        if (!el.metricHelpDialog.open) el.metricHelpDialog.showModal();
       }
 
       function average(values) { return values?.length ? values.reduce((sum,value) => sum + value, 0) / values.length : NaN; }
