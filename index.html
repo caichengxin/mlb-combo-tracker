@@ -4667,7 +4667,12 @@
             const selectedAbbr = (byTeam?.[1] || straightTeam?.[1] || '').toUpperCase();
             if (selectedAbbr && pendingMatchup?.includes(selectedAbbr)) {
               const isYes = choice.answer === 'YES';
-              const finalTeam = isYes ? selectedAbbr : pendingMatchup.find(team => team !== selectedAbbr);
+              // Robinhood's team spread choice keeps the named team on both
+              // sides of the contract: Yes = named team -line, No = named
+              // team +line. A straight moneyline No still selects the opponent.
+              const finalTeam = byTeam
+                ? selectedAbbr
+                : (isYes ? selectedAbbr : pendingMatchup.find(team => team !== selectedAbbr));
               if (finalTeam) {
                 results.push({
                   type: 'GAME', teamAbbr: finalTeam,
