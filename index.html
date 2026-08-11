@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="dark" />
-  <title>MLB Game Center & Combo Tracker v29</title>
+  <title>MLB Game Center & Combo Tracker v36</title>
   <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     :root {
@@ -843,6 +843,8 @@
     .pitch-role-pill { display:inline-flex; align-items:center; padding:3px 6px; border-radius:999px; color:#cfe1ff; background:rgba(98,165,255,.1); border:1px solid rgba(98,165,255,.34); font-size:7px; font-weight:900; letter-spacing:.05em; }
     .pitch-role-pill.opener { color:#ffd992; background:rgba(244,201,93,.09); border-color:rgba(244,201,93,.4); }
     .pitch-role-pill.swing { color:#d6bcff; background:rgba(177,126,255,.09); border-color:rgba(177,126,255,.38); }
+    .pitch-sample-note { margin-top:6px; max-width:430px; color:#aebed5; font-size:7px; line-height:1.45; }
+    .pitch-sample-note.limited { color:#ffd992; }
     .pitch-form-pill { flex:0 0 auto; padding:4px 7px; border-radius:999px; border:1px solid rgba(98,165,255,.35); color:#bcd6ff; font-size:8px; font-weight:850; }
     .pitch-form-pill.good { color:var(--green); border-color:rgba(66,211,146,.4); background:rgba(66,211,146,.08); }
     .pitch-form-pill.risk { color:var(--red); border-color:rgba(255,107,125,.4); background:rgba(255,107,125,.08); }
@@ -1493,15 +1495,18 @@
           ,pitchAnalysisRun: '分析两位先发', pitchAnalysisRefresh: '重新分析', pitchAnalysisWaiting: '两队先发投手确认后可开始分析。'
           ,pitchAnalysisIdle: '点击分析后读取两位先发的近期比赛、Statcast 球种和对手打线数据。', pitchAnalysisLoading: '正在读取投手日志、最近比赛逐球资料与 BvP…'
           ,pitchAnalysisReady: '分析完成；可切换最近 3 场、最近 5 场和本赛季。', pitchAnalysisFailed: '部分投手资料读取失败；以下结果仅使用已取得的数据。'
-          ,starterEdge: '本场投手方案优势', gamePace: '比赛节奏倾向', analysisConfidence: '分析置信度', edgeEven: '两边投手方案接近', edgeLean: '偏 {team} · {pitcher}'
+          ,starterEdge: '本场投手方案优势', gamePace: '比赛节奏倾向', analysisConfidence: '分析置信度', edgeEven: '两边投手方案接近', edgeSlight: '{team} 轻微优势 · {pitcher}', edgeClear: '{team} 较明显优势 · {pitcher}'
           ,edgeOpener: '{openerTeam} 为开场投手/牛棚战；完整先发偏 {starterTeam} · {starter}'
           ,paceFast: '偏快 · 投球效率较高', paceBalanced: '中性 · 正常节奏', paceSlow: '偏慢 · 上垒/用球风险较高'
           ,confidenceHigh: '较高', confidenceMedium: '中等', confidenceLimited: '有限', throwsHand: '{hand}投 · 对 {opponent}'
           ,formImproving: '近期改善', formStable: '表现稳定', formRisk: '近期风险', pitcherSampleGames: '{count} 场样本'
           ,roleStarter: '完整先发', roleOpener: '开场投手 / 牛棚战', roleSwing: '摇摆投手', roleReliever: '救援角色'
+          ,pitchSampleLimited: '先发样本有限：{starts} 场 / {innings} IP；率数据按 {pct}% 先发样本并结合完整赛季表现收缩'
+          ,pitchSampleEstablished: '先发基线稳定：{starts} 场 / {innings} IP'
+          ,pitchSampleNoStarts: '赛前无本季先发样本；能力与工作量按完整赛季及当前角色估计'
           ,inningsPerStart: 'IP/场', pitchesPerInning: 'P/IP', strikeRate: '好球率', strikeoutsPerGame: 'SO/场', projectedStrikeouts: '预计 SO', pitchArsenal: '球种分析', pitchType: '球种', usageSeason: '赛季%', usageRecent: '近期%', usageChange: '变化', velocity: '球速', spinRate: '转速', whiffRate: '挥空%'
           ,bvpVsLineup: '对本场打线 BvP（近 5 年）', noArsenalData: '暂无可用球种数据', noBvpSummary: '暂无可用 BvP 样本'
-          ,pitchAnalysisBasis: '规则模型会先区分完整先发与开场投手。近期率数据按实际局数向赛季数据收缩，防止 1–3 局小样本被放大；本场优势同时考虑失分控制、上垒、三振、预计局数与预计总三振。BvP 按样本量降权。'
+          ,pitchAnalysisBasis: '规则模型会先区分完整先发、摇摆投手与开场投手。少于 8 场或 40 局的先发率数据会按样本量向完整赛季表现收缩；优势评分再独立考虑每局能力、预计局数、先发经验与稳定性、预计总三振。BvP 按样本量降权。'
           ,seasonArsenalSource: '赛季球种来自 Baseball Savant；近期球种由所选比赛前的 MLB 逐球数据计算。', pitcherInsights: '初步分析'
           ,gameModelTab: '球队模型', gameModelTitle: '赛前球队偏向与比分模拟 v32', gameModelSubtitle: '使用严格赛前快照，综合先发、收缩后的近期进攻、逐人牛棚、赛程与天气环境，运行 10,000 次可复现模拟。'
           ,gameModelRun: '运行球队模型', gameModelRefresh: '重新模拟', gameModelIdle: '点击运行后读取球队、投手、牛棚与本季对阵资料。', gameModelLoading: '正在构建赛前快照并模拟 10,000 场比赛…'
@@ -1609,15 +1614,18 @@
           ,pitchAnalysisRun: 'Analyze starters', pitchAnalysisRefresh: 'Reanalyze', pitchAnalysisWaiting: 'Available after both starting pitchers are confirmed.'
           ,pitchAnalysisIdle: 'Run the analysis to load recent starts, pitch-level Statcast data, and BvP for both lineups.', pitchAnalysisLoading: 'Loading pitching logs, recent pitch data, and BvP…'
           ,pitchAnalysisReady: 'Analysis ready. Switch between Last 3, Last 5, and Season.', pitchAnalysisFailed: 'Some pitcher data could not be loaded; the view below uses available data only.'
-          ,starterEdge: 'Pitching-plan edge', gamePace: 'Game-flow lean', analysisConfidence: 'Confidence', edgeEven: 'Pitching plans grade similarly', edgeLean: 'Lean {team} · {pitcher}'
+          ,starterEdge: 'Pitching-plan edge', gamePace: 'Game-flow lean', analysisConfidence: 'Confidence', edgeEven: 'Pitching plans grade similarly', edgeSlight: 'Slight {team} edge · {pitcher}', edgeClear: 'Clearer {team} edge · {pitcher}'
           ,edgeOpener: '{openerTeam} is using an opener/bullpen game; full-start workload leans {starterTeam} · {starter}'
           ,paceFast: 'Faster · efficient pitching', paceBalanced: 'Neutral · typical pace', paceSlow: 'Slower · traffic/pitch-count risk'
           ,confidenceHigh: 'Higher', confidenceMedium: 'Medium', confidenceLimited: 'Limited', throwsHand: '{hand}HP · vs {opponent}'
           ,formImproving: 'Trending up', formStable: 'Stable form', formRisk: 'Recent risk', pitcherSampleGames: '{count} game sample'
           ,roleStarter: 'Full starter', roleOpener: 'Opener / bullpen game', roleSwing: 'Swingman', roleReliever: 'Relief role'
+          ,pitchSampleLimited: 'Limited starting sample: {starts} starts / {innings} IP; rate stats use {pct}% start-role weight and regress toward full-season performance'
+          ,pitchSampleEstablished: 'Established starting baseline: {starts} starts / {innings} IP'
+          ,pitchSampleNoStarts: 'No pregame starts this season; skill and workload are estimated from full-season performance and current role'
           ,inningsPerStart: 'IP/G', pitchesPerInning: 'P/IP', strikeRate: 'Strike%', strikeoutsPerGame: 'SO/G', projectedStrikeouts: 'Proj. SO', pitchArsenal: 'Pitch mix', pitchType: 'Pitch', usageSeason: 'Season%', usageRecent: 'Recent%', usageChange: 'Change', velocity: 'Velo', spinRate: 'Spin', whiffRate: 'Whiff%'
           ,bvpVsLineup: 'BvP vs today’s lineup (5Y)', noArsenalData: 'No pitch-mix data is available', noBvpSummary: 'No usable BvP sample'
-          ,pitchAnalysisBasis: 'The rules model first separates full starters from openers. Recent rate stats are shrunk toward the season baseline by actual innings so a 1–3 inning sample cannot dominate. The game edge blends run prevention, traffic, strikeouts, expected workload, and projected total strikeouts. BvP is down-weighted by sample size.'
+          ,pitchAnalysisBasis: 'The rules model separates full starters, swingmen, and openers. Starting rate stats below 8 starts or 40 innings regress toward full-season performance by sample size. The edge then scores per-inning skill, expected workload, starting experience and stability, and projected strikeout volume separately. BvP is down-weighted by sample size.'
           ,seasonArsenalSource: 'Season pitch mix comes from Baseball Savant; recent pitch mix is calculated from MLB pitch-by-pitch feeds before the selected game.', pitcherInsights: 'Initial read'
           ,gameModelTab: 'Team Model', gameModelTitle: 'Pregame Team Lean & Score Simulation v32', gameModelSubtitle: 'Uses a strict pregame snapshot and blends starters, shrunk recent offense, individual bullpen availability, schedule, and weather in 10,000 reproducible simulations.'
           ,gameModelRun: 'Run team model', gameModelRefresh: 'Resimulate', gameModelIdle: 'Run the model to load team, pitcher, bullpen, and season-series context.', gameModelLoading: 'Building the pregame snapshot and simulating 10,000 games…'
@@ -3633,6 +3641,9 @@
         const recentRows = eligible.slice(0, 5);
         const pitchSamples = options.includePitchMix === false ? [] : await getRecentPitchSamples(pitcher.id, recentRows);
         const role = classifyPitcherRole(prior, starts);
+        const overallSeason = aggregatePitchingRows(prior) || pitchingProfileFromStats(seasonStats);
+        const starterSeason = aggregatePitchingRows(starts);
+        const roleBaseline = regularizePitcherRoleProfile(starterSeason, overallSeason, role);
         return {
           id: pitcher.id,
           name: pitcher.fullName || pitcher.name || `Pitcher ${pitcher.id}`,
@@ -3642,7 +3653,7 @@
           periods: {
             last3: aggregatePitchingRows(eligible.slice(0, 3)),
             last5: aggregatePitchingRows(eligible.slice(0, 5)),
-            season: aggregatePitchingRows(eligible) || pitchingProfileFromStats(seasonStats)
+            season: roleBaseline.profile
           },
           arsenal: {
             season: seasonArsenal.get(String(pitcher.id)) || [],
@@ -3651,7 +3662,8 @@
           },
           bvp,
           opponent: opponentLineupProfile(opponentLineup),
-          role
+          role,
+          roleSample: roleBaseline.sample
         };
       }
 
@@ -3726,10 +3738,50 @@
           games, starts, innings, era:Number.isFinite(Number(original.era)) ? Number(original.era) : totals.er * 9 / innings,
           whip:Number.isFinite(Number(original.whip)) ? Number(original.whip) : (totals.h + totals.bb) / innings,
           k9:totals.so * 9 / innings, bb9:totals.bb * 9 / innings, hr9:totals.hr * 9 / innings,
-          ipPerStart:innings / starts, pitchesPerInning:totals.pitches ? totals.pitches / innings : NaN,
+          ipPerStart:innings / starts, ipPerAppearance:games ? innings / games : NaN, pitchesPerInning:totals.pitches ? totals.pitches / innings : NaN,
           strikePct:totals.pitches && totals.strikes ? totals.strikes / totals.pitches * 100 : NaN,
           soPerGame:games ? totals.so / games : NaN,
           so:totals.so, bb:totals.bb, hr:totals.hr, pitches:totals.pitches
+        };
+      }
+
+      function regularizePitcherRoleProfile(starterProfile, overallProfile, role = {}) {
+        const starts = n(starterProfile?.starts || role.startCount);
+        const starterInnings = n(starterProfile?.innings);
+        const overall = overallProfile || starterProfile;
+        if (!overall) return { profile:null, sample:{ weight:0, limited:true, starts, innings:starterInnings } };
+        if (!starterProfile || !starts) {
+          const appearanceIp = Number.isFinite(overall.ipPerAppearance) ? overall.ipPerAppearance : overall.ipPerStart;
+          return {
+            profile:{ ...overall, ipPerStart:clamp(appearanceIp, .2, role.cls === 'opener' ? 2.5 : 4.2) },
+            sample:{ weight:0, limited:true, starts:0, innings:0, overallGames:n(overall.games), overallInnings:n(overall.innings) }
+          };
+        }
+        const sampleProgress = clamp(Math.min(starts / 8, starterInnings / 40), 0, 1);
+        const weight = sampleProgress >= 1 ? 1 : .15 + .85 * sampleProgress;
+        const blendRate = key => {
+          const startValue = Number(starterProfile[key]);
+          const fullValue = Number(overall[key]);
+          if (!Number.isFinite(startValue)) return fullValue;
+          if (!Number.isFinite(fullValue)) return startValue;
+          return startValue * weight + fullValue * (1 - weight);
+        };
+        const workloadPrior = role.cls === 'starter' ? 5.2 : role.cls === 'swing' ? 3.8 : 1.8;
+        const rawStartIp = Number.isFinite(starterProfile.ipPerStart) ? starterProfile.ipPerStart : workloadPrior;
+        const expectedIp = rawStartIp * weight + workloadPrior * (1 - weight);
+        const k9 = blendRate('k9');
+        return {
+          profile:{
+            ...starterProfile,
+            era:blendRate('era'), whip:blendRate('whip'), k9, bb9:blendRate('bb9'), hr9:blendRate('hr9'),
+            pitchesPerInning:blendRate('pitchesPerInning'), strikePct:blendRate('strikePct'),
+            ipPerStart:expectedIp, ipPerAppearance:expectedIp,
+            soPerGame:Number.isFinite(k9) ? k9 / 9 * expectedIp : blendRate('soPerGame')
+          },
+          sample:{
+            weight, limited:sampleProgress < 1, starts, innings:starterInnings,
+            overallGames:n(overall.games), overallInnings:n(overall.innings)
+          }
         };
       }
 
@@ -3868,7 +3920,7 @@
 
       function pitcherAnalysisDataHtml(game, data) {
         const pitchers = [data.away, data.home].filter(Boolean);
-        const summaries = pitchers.map(pitcher => ({ pitcher, profile:pitcher.periods[pitcherAnalysisPeriod], score:pitcherAnalysisScore(pitcher, pitcherAnalysisPeriod) }));
+        const summaries = pitchers.map(pitcher => ({ pitcher, profile:pitcher.periods[pitcherAnalysisPeriod], projection:pitcherProjection(pitcher, pitcherAnalysisPeriod), score:pitcherAnalysisScore(pitcher, pitcherAnalysisPeriod) }));
         const edge = pitcherEdgeText(summaries);
         const pace = matchupPaceText(summaries);
         const confidence = matchupConfidence(pitchers);
@@ -3890,8 +3942,11 @@
         const periodLabel = t(pitcherAnalysisPeriod === 'last3' ? 'lineupLast3' : pitcherAnalysisPeriod === 'last5' ? 'lineupLast5' : 'lineupSeason');
         const sampleCount = profile?.starts || profile?.games || 0;
         const bvp = pitcher.bvp;
+        const sample = pitcher.roleSample || {};
+        const sampleKey = !n(sample.starts) ? 'pitchSampleNoStarts' : sample.limited ? 'pitchSampleLimited' : 'pitchSampleEstablished';
+        const sampleText = t(sampleKey, { starts:n(sample.starts), innings:fmt(sample.innings,1), pct:Math.round(n(sample.weight) * 100) });
         return `<article class="pitch-analysis-card">
-          <div class="pitch-analysis-card-head"><div><div class="pitch-analysis-name">${escapeHtml(pitcher.name)}</div><div class="pitch-analysis-meta">${escapeHtml(t('throwsHand', { hand:pitcher.pitchHand || '—', opponent:pitcher.opponentAbbr }))} · ${escapeHtml(periodLabel)} · ${escapeHtml(t('pitcherSampleGames', { count:sampleCount }))}</div><div class="pitch-role-row"><span class="pitch-role-pill ${escapeAttr(pitcher.role?.cls || '')}">${escapeHtml(t(pitcher.role?.key || 'roleStarter'))}</span></div></div><span class="pitch-form-pill ${form.cls}">${escapeHtml(t(form.key))}</span></div>
+          <div class="pitch-analysis-card-head"><div><div class="pitch-analysis-name">${escapeHtml(pitcher.name)}</div><div class="pitch-analysis-meta">${escapeHtml(t('throwsHand', { hand:pitcher.pitchHand || '—', opponent:pitcher.opponentAbbr }))} · ${escapeHtml(periodLabel)} · ${escapeHtml(t('pitcherSampleGames', { count:sampleCount }))}</div><div class="pitch-role-row"><span class="pitch-role-pill ${escapeAttr(pitcher.role?.cls || '')}">${escapeHtml(t(pitcher.role?.key || 'roleStarter'))}</span></div><div class="pitch-sample-note${sample.limited ? ' limited' : ''}">${escapeHtml(sampleText)}</div></div><span class="pitch-form-pill ${form.cls}">${escapeHtml(t(form.key))}</span></div>
           <div class="pitch-metric-grid">${[
             ['era','ERA',fmt(profile?.era,2)], ['whip','WHIP',fmt(profile?.whip,2)], ['k9','K/9',fmt(profile?.k9,1)], ['bb9','BB/9',fmt(profile?.bb9,1)],
             ['ipg',t('inningsPerStart'),fmt(profile?.ipPerStart,1)], ['ppi',t('pitchesPerInning'),fmt(profile?.pitchesPerInning,1)], ['strikepct',t('strikeRate'),pct(profile?.strikePct)], ['hr9','HR/9',fmt(profile?.hr9,1)],
@@ -3964,12 +4019,14 @@
         const workload = clamp(12 + (expectedIp - 1) * 16, 8, 92);
         const strikeoutVolume = Number.isFinite(projectedSo) ? clamp(20 + projectedSo * 10, 20, 90) : 40;
         const roleClass = pitcher?.role?.cls || 'starter';
+        const sampleWeight = Number.isFinite(Number(pitcher?.roleSample?.weight)) ? Number(pitcher.roleSample.weight) : (roleClass === 'starter' ? 1 : .25);
+        const stability = clamp(25 + sampleWeight * 65, 25, 90);
         const score = roleClass === 'opener'
-          ? quality * .35 + workload * .40 + strikeoutVolume * .25
+          ? quality * .30 + workload * .34 + strikeoutVolume * .18 + stability * .18
           : roleClass === 'swing'
-            ? quality * .55 + workload * .28 + strikeoutVolume * .17
-            : quality * .68 + workload * .18 + strikeoutVolume * .14;
-        return { reliability, era, whip, k9, bb9, hr9, expectedIp, projectedSo, quality, workload, strikeoutVolume, score };
+            ? quality * .48 + workload * .24 + strikeoutVolume * .12 + stability * .16
+            : quality * .60 + workload * .16 + strikeoutVolume * .12 + stability * .12;
+        return { reliability, sampleWeight, era, whip, k9, bb9, hr9, expectedIp, projectedSo, quality, workload, strikeoutVolume, stability, score };
       }
 
       function pitcherEdgeText(rows) {
@@ -3978,8 +4035,9 @@
         const starter = rows.find(row => row.pitcher?.role?.cls === 'starter');
         if (opener && starter) return t('edgeOpener', { openerTeam:opener.pitcher.teamAbbr || '—', starterTeam:starter.pitcher.teamAbbr || '—', starter:starter.pitcher.name });
         const sorted = [...rows].sort((a,b) => b.score - a.score);
-        if (sorted[0].score - sorted[1].score < 5) return t('edgeEven');
-        return t('edgeLean', { team:sorted[0].pitcher.teamAbbr || '—', pitcher:sorted[0].pitcher.name });
+        const gap = sorted[0].score - sorted[1].score;
+        if (gap < 4) return t('edgeEven');
+        return t(gap < 12 ? 'edgeSlight' : 'edgeClear', { team:sorted[0].pitcher.teamAbbr || '—', pitcher:sorted[0].pitcher.name });
       }
 
       function matchupPaceText(rows) {
@@ -3995,6 +4053,7 @@
       function matchupConfidence(pitchers) {
         if (pitchers.length < 2) return 'confidenceLimited';
         if (pitchers.some(row => row.role?.cls === 'opener')) return 'confidenceLimited';
+        if (pitchers.some(row => row.roleSample?.limited)) return 'confidenceLimited';
         const complete = pitchers.filter(row => row.periods?.last5?.games >= 5 && row.periods?.season && row.arsenal?.season?.length).length;
         const bvpPa = pitchers.reduce((sum,row) => sum + n(row.bvp?.pa), 0);
         if (complete === 2 && bvpPa >= 60) return 'confidenceHigh';
