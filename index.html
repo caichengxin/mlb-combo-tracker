@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="dark" />
-  <title>MLB Game Center & Combo Tracker v36</title>
+  <title>MLB Game Center & Combo Tracker v37</title>
   <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     :root {
@@ -4731,14 +4731,16 @@
             const byTeam = choice.choice.match(/^([A-Z]{2,3})\s+by\s+(\d+(?:\.5)?)/i);
             const straightTeam = choice.choice.match(/^([A-Z]{2,3})(?:\s+(?:moneyline|ml))?$/i);
             const selectedAbbr = (byTeam?.[1] || straightTeam?.[1] || '').toUpperCase();
-            if (selectedAbbr && pendingMatchup?.includes(selectedAbbr)) {
+            if (selectedAbbr) {
               const isYes = choice.answer === 'YES';
-              // Robinhood's team spread choice keeps the named team on both
-              // sides of the contract: Yes = named team -line, No = named
-              // team +line. A straight moneyline No still selects the opponent.
-              const finalTeam = byTeam
-                ? selectedAbbr
-                : (isYes ? selectedAbbr : pendingMatchup.find(team => team !== selectedAbbr));
+              // Robinhood's expanded result is authoritative: "No · TEAM by
+              // X" settles as the opponent +X, while "Yes" is TEAM -X.
+              // Both spread No and moneyline No therefore require the paired
+              // matchup so the opponent is never guessed from the abbreviation.
+              const opponent = pendingMatchup?.includes(selectedAbbr)
+                ? pendingMatchup.find(team => team !== selectedAbbr)
+                : null;
+              const finalTeam = isYes ? selectedAbbr : opponent;
               if (finalTeam) {
                 results.push({
                   type: 'GAME', teamAbbr: finalTeam,
@@ -4749,6 +4751,9 @@
                 pendingMatchup = null;
                 continue;
               }
+              // Do not let an unresolved "No · TEAM by X" fall through to
+              // the generic TEAM-by-X parser, which would silently reverse it.
+              if (!isYes) continue;
             }
           }
           const byTeam = line.match(/\b([A-Z]{2,3})\s+by\s+(\d+(?:\.5)?)/i);
