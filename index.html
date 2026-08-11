@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="dark" />
-  <title>MLB Game Center & Combo Tracker v37</title>
+  <title>MLB Game Center & Combo Tracker v38</title>
   <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     :root {
@@ -4647,6 +4647,11 @@
 
       function normalizeOcrLine(value) {
         const normalized = String(value || '')
+          // Tesseract frequently reads the initial O in names such as
+          // "O. Lopez" as zero. Repair only a leading abbreviated-name
+          // pattern (optionally following Robinhood's Yes/No marker), so
+          // scores, targets, and spread values are never rewritten.
+          .replace(/^(\s*(?:(?:yes|no)\b\s*[·•«»‹›.\-:]?\s*)?)0(?=\s*\.\s*[A-Za-zÀ-ÿ])/i, '$1O')
           // A capital I in an abbreviated name is often read as a vertical
           // bar. Repair it before removing unrelated separators.
           .replace(/\|(?=\s*\.)/g, 'I')
@@ -4666,6 +4671,7 @@
 
       function parseOcrChoiceLine(value) {
         const normalized = String(value || '')
+          .replace(/^(\s*(?:(?:yes|no)\b\s*[·•«»‹›.\-:]?\s*)?)0(?=\s*\.\s*[A-Za-zÀ-ÿ])/i, '$1O')
           .replace(/\|(?=\s*\.)/g, 'I')
           .replace(/[|•]/g, ' ')
           .replace(/[–—]/g, ' - ')
@@ -4684,6 +4690,7 @@
 
       function normalizeOcrPlayerName(value) {
         const cleaned = String(value || '')
+          .replace(/^\s*0(?=\s*\.\s*[A-Za-zÀ-ÿ])/i, 'O')
           .replace(/^\s*[|l](?=\s*\.)/i, 'I')
           .replace(/[•·«»‹›]/g, ' ')
           .replace(/[’‘`´]/g, "'")
@@ -4768,7 +4775,16 @@
           }
           const found = marketMap.find(([rx]) => rx.test(line));
           if (!found) continue;
-          const targetMatch = line.match(/(?:over\s*)?(\d+(?:\.5)?)\s*\+?/i) || line.match(/\b(\d+(?:\.5)?)\b/);
+          const marketMatch = line.match(found[0]);
+          const beforeMarket = marketMatch ? line.slice(0, marketMatch.index) : line;
+          const afterMarket = marketMatch ? line.slice(marketMatch.index + marketMatch[0].length) : '';
+          // Read the number attached to the market first. This prevents an
+          // OCR-confused name initial such as "0. Lopez" from becoming the
+          // target in rows like "0. Lopez 3+ Strikeouts".
+          const targetMatch = beforeMarket.match(/(?:over\s*)?(\d+(?:\.5)?)\s*\+?\s*$/i)
+            || afterMarket.match(/^\s*(?:over\s*)?(\d+(?:\.5)?)\s*\+?/i)
+            || line.match(/(?:over\s*)?(\d+(?:\.5)?)\s*\+?/i)
+            || line.match(/\b(\d+(?:\.5)?)\b/);
           const target = Math.max(1, Math.ceil(Number(targetMatch?.[1] || 1)));
           let name = normalizeOcrPlayerName(line.replace(found[0], ' '));
           // Support a genuine two-line layout (name on one line, market on
