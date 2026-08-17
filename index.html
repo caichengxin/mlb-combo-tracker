@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="dark" />
-  <title>MLB Game Center & Combo Tracker v38</title>
+  <title>MLB Game Center & Combo Tracker v39</title>
   <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     :root {
@@ -4691,7 +4691,15 @@
       function normalizeOcrPlayerName(value) {
         const cleaned = String(value || '')
           .replace(/^\s*0(?=\s*\.\s*[A-Za-zÀ-ÿ])/i, 'O')
-          .replace(/^\s*[|l](?=\s*\.)/i, 'I')
+          // Repair only a vertical bar or a genuinely lowercase l before a
+          // name-initial period. The former case-insensitive expression also
+          // changed a valid capital L. (L. Hicks) into I. Hicks.
+          .replace(/^\s*(?:\||l)(?=\s*\.)/, 'I')
+          // Tesseract can insert a currency/symbol glyph between an initial
+          // and its period (for example S$. McClanahan). Remove it only in
+          // that leading abbreviated-name structure so monetary values and
+          // prop targets elsewhere on the row remain untouched.
+          .replace(/^(\s*[A-Za-z])[$§¢€£¥]+(?=\s*\.\s*[A-Za-zÀ-ÿ])/, '$1')
           .replace(/[•·«»‹›]/g, ' ')
           .replace(/[’‘`´]/g, "'")
           .replace(/[‐‑‒–—―]/g, '-')
