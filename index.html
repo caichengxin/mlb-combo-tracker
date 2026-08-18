@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-  <title>MLB Game Center & Combo Tracker v40</title>
+  <title>MLB Game Center & Combo Tracker v41</title>
   <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     :root {
@@ -5020,6 +5020,15 @@
       function findOcrPlayerInContext(candidate, rosters) {
         const scoped = ocrPlayerSourcesForCandidate(candidate, rosters);
         let player = findOcrPlayer(candidate, scoped);
+        // If OCR drops or corrupts a matchup heading, pendingMatchup can still
+        // point at the previous game and incorrectly hide an entire player
+        // group. Recover only a unique, exact structural match from the full
+        // day (full name or exact initial + surname). Fuzzy matches stay
+        // scoped and unresolved, so this cannot turn a typo into a guess.
+        if (!player) {
+          const unscoped = findOcrPlayer(candidate, rosters);
+          if (unscoped && scoreOcrPlayerName(candidate.name, unscoped.name) >= 108) player = unscoped;
+        }
         if (player || candidate?.market !== 'SO') return player;
         // When identical pitcher initials exist in one matchup, a strikeout
         // contract almost always targets the announced starter. Use that only
@@ -5032,6 +5041,40 @@
         if (!probableIds.size) return null;
         const probablePools = scoped.map(pool => (pool || []).filter(item => probableIds.has(String(item?.id || ''))));
         return findOcrPlayer(candidate, probablePools);
+      }
+
+      // Verified MLB-ID fallbacks for newly active players that can briefly be
+      // absent from the Active Roster or pregame boxscore endpoints. A fallback
+      // is accepted only when the OCR abbreviation is exact and its official
+      // team is one side of the matchup printed above the leg.
+      const verifiedOcrPlayerAliases = [
+        { id: 701398, name: 'Sal Stewart', aliases: ['S. Stewart', 'Sal Stewart'], teamAbbr: 'CIN' },
+        { id: 676475, name: 'Alec Burleson', aliases: ['A. Burleson', 'Alec Burleson'], teamAbbr: 'STL' },
+        { id: 691023, name: 'Jordan Walker', aliases: ['J. Walker', 'Jordan Walker'], teamAbbr: 'STL' }
+      ];
+
+      function findVerifiedOcrPlayer(candidate) {
+        const wantedName = normalizedPersonName(candidate?.name);
+        const verified = verifiedOcrPlayerAliases.find(entry =>
+          entry.aliases.some(alias => normalizedPersonName(alias) === wantedName)
+        );
+        if (!verified) return null;
+        const gameIndexes = ocrGameIndexesForMatchup(candidate?.matchupTeams);
+        for (const index of gameIndexes) {
+          const game = gamesForEditor[index];
+          const awayMatches = normalizedTeamAbbr(game?.awayAbbr) === normalizedTeamAbbr(verified.teamAbbr);
+          const homeMatches = normalizedTeamAbbr(game?.homeAbbr) === normalizedTeamAbbr(verified.teamAbbr);
+          if (!awayMatches && !homeMatches) continue;
+          return {
+            id: verified.id,
+            name: verified.name,
+            number: '',
+            position: '',
+            teamId: awayMatches ? game.awayId : game.homeId,
+            teamAbbr: awayMatches ? game.awayAbbr : game.homeAbbr
+          };
+        }
+        return null;
       }
 
       function findOcrGameForCandidate(candidate, player, gamePlayerRosters) {
@@ -5173,13 +5216,15 @@
           const rosters = await Promise.all(gamesForEditor.map(game => ensureRosterForGame(game.gamePk)));
           let playerSources = rosters;
           let gamePlayerRosters = rosters;
-          const needsGameFallback = parsed.some(candidate => candidate.type === 'PLAYER' && !findOcrPlayerInContext(candidate, playerSources));
+          const needsGameFallback = parsed.some(candidate => candidate.type === 'PLAYER'
+            && !findOcrPlayerInContext(candidate, playerSources) && !findVerifiedOcrPlayer(candidate));
           if (needsGameFallback) {
             const gamePools = await ensureOcrGamePlayerPools();
             gamePlayerRosters = rosters.map((active, index) => [...active, ...(gamePools[index] || [])]);
             playerSources = gamePlayerRosters;
           }
-          const needsLeagueFallback = parsed.some(candidate => candidate.type === 'PLAYER' && !findOcrPlayerInContext(candidate, playerSources));
+          const needsLeagueFallback = parsed.some(candidate => candidate.type === 'PLAYER'
+            && !findOcrPlayerInContext(candidate, playerSources) && !findVerifiedOcrPlayer(candidate));
           if (needsLeagueFallback) {
             const leaguePlayers = leaguePlayersForEditorGames(await ensureLeaguePlayerPool(selectedDate));
             if (leaguePlayers.length) playerSources = [...gamePlayerRosters, leaguePlayers];
@@ -5196,7 +5241,7 @@
               } else unresolved.push(candidate.source || candidate.teamAbbr);
               return;
             }
-            const match = findOcrPlayerInContext(candidate, playerSources);
+            const match = findOcrPlayerInContext(candidate, playerSources) || findVerifiedOcrPlayer(candidate);
             const game = match ? findOcrGameForCandidate(candidate, match, gamePlayerRosters) : null;
             if (match && game) {
               addLegEditor({ gamePk: game.gamePk, playerId: match.id, playerName: match.name, teamAbbr: match.teamAbbr, market: candidate.market, target: candidate.target });
