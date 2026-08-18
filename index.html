@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-  <title>MLB Game Center & Combo Tracker v41</title>
+  <title>MLB Game Center & Combo Tracker v42</title>
   <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     :root {
@@ -5058,8 +5058,16 @@
         const verified = verifiedOcrPlayerAliases.find(entry =>
           entry.aliases.some(alias => normalizedPersonName(alias) === wantedName)
         );
-        if (!verified) return null;
-        const gameIndexes = ocrGameIndexesForMatchup(candidate?.matchupTeams);
+        // Require evidence that this OCR row belongs to a matchup block, but
+        // allow that block to be stale when its heading was dropped. This is
+        // safe for these exact aliases because the official player ID and team
+        // are both fixed, and the team must be playing on the selected date.
+        if (!verified || !(candidate?.matchupTeams || []).length) return null;
+        const scopedIndexes = ocrGameIndexesForMatchup(candidate?.matchupTeams);
+        const gameIndexes = [
+          ...scopedIndexes,
+          ...gamesForEditor.map((_, index) => index).filter(index => !scopedIndexes.includes(index))
+        ];
         for (const index of gameIndexes) {
           const game = gamesForEditor[index];
           const awayMatches = normalizedTeamAbbr(game?.awayAbbr) === normalizedTeamAbbr(verified.teamAbbr);
