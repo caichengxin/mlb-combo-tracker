@@ -2,7 +2,7 @@
   "id": "./",
   "name": "MLB Game Center & Combo Tracker",
   "short_name": "MLB Combo",
-  "description": "MLB scores, player props, Combo tracking, and change-only lock-screen alerts.",
+  "description": "MLB scores, smart player picks, recorded model review, Combo tracking, and change-only lock-screen alerts.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

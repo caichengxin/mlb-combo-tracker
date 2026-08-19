@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mlb-combo-v43-shell';
+const CACHE_NAME = 'mlb-combo-v44-shell';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', event => {

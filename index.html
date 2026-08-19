@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-  <title>MLB Game Center & Combo Tracker v43</title>
+  <title>MLB Game Center & Combo Tracker v44</title>
   <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     :root {
@@ -825,6 +825,67 @@
     .recommend-score strong { display: block; color: var(--green); font-size: 12px; }
     .recommend-score span { display: block; margin-top: 2px; color: var(--muted); font-size: 7px; }
     .recommend-disclaimer { margin-top: 9px; color: var(--muted); font-size: 8px; line-height: 1.45; }
+    .strategy-dialog { width:min(1180px,calc(100vw - 24px)); }
+    .strategy-dialog .modal-body { min-height:560px; }
+    .strategy-tabs { display:flex; gap:7px; padding:4px; border:1px solid var(--border); border-radius:12px; background:rgba(7,15,27,.48); }
+    .strategy-tab { flex:1; min-height:40px; border:0; border-radius:9px; color:var(--muted); background:transparent; font-size:11px; font-weight:850; }
+    .strategy-tab.active { color:#fff; background:linear-gradient(135deg,rgba(67,143,247,.62),rgba(113,104,245,.56)); }
+    .strategy-layout { display:grid; grid-template-columns:minmax(250px,.78fr) minmax(0,1.62fr); gap:13px; margin-top:13px; }
+    .strategy-panel { min-width:0; padding:13px; border:1px solid var(--border); border-radius:15px; background:rgba(7,15,27,.44); }
+    .strategy-panel-title { font-size:13px; font-weight:900; }
+    .strategy-panel-note { margin-top:4px; color:var(--muted); font-size:9px; line-height:1.5; }
+    .strategy-label { margin:13px 0 7px; color:#d6e4f8; font-size:9px; font-weight:850; letter-spacing:.03em; }
+    .strategy-game-list { display:grid; gap:7px; max-height:285px; overflow:auto; }
+    .strategy-game-option { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:9px; align-items:center; padding:9px 10px; border:1px solid rgba(98,165,255,.2); border-radius:10px; color:var(--text); background:rgba(24,45,75,.22); cursor:pointer; }
+    .strategy-game-option.selected { border-color:rgba(66,211,146,.56); background:rgba(66,211,146,.08); }
+    .strategy-game-option input { accent-color:var(--green); }
+    .strategy-game-name { min-width:0; font-size:10px; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .strategy-game-time { color:var(--muted); font-size:8px; }
+    .strategy-game-ready { color:var(--green); font-size:8px; font-weight:850; }
+    .strategy-chip-row { display:flex; flex-wrap:wrap; gap:7px; }
+    .strategy-chip { min-width:58px; padding:8px 10px; border:1px solid rgba(98,165,255,.28); border-radius:10px; color:var(--muted); background:rgba(24,45,75,.22); font-size:10px; font-weight:850; }
+    .strategy-chip.active { color:#fff; border-color:var(--accent); background:rgba(98,165,255,.2); }
+    .strategy-control-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .strategy-select { width:100%; min-height:39px; border:1px solid var(--border); border-radius:9px; padding:7px 9px; color:var(--text); background:#0d182a; font-size:10px; }
+    .strategy-run { width:100%; min-height:43px; margin-top:13px; }
+    .strategy-status { padding:12px; border:1px dashed #365070; border-radius:12px; color:var(--muted); font-size:10px; line-height:1.55; text-align:center; }
+    .strategy-status.loading { color:var(--accent); }
+    .strategy-status.error { color:var(--red); }
+    .strategy-result-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px; }
+    .strategy-result-summary { color:var(--muted); font-size:9px; line-height:1.5; }
+    .strategy-result-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:7px; }
+    .strategy-picks { display:grid; gap:8px; }
+    .strategy-pick { display:grid; grid-template-columns:31px minmax(0,1fr) auto; gap:10px; align-items:center; padding:10px 11px; border:1px solid rgba(98,165,255,.25); border-radius:12px; background:linear-gradient(135deg,rgba(24,45,75,.4),rgba(7,15,27,.5)); }
+    .strategy-pick-rank { display:grid; place-items:center; width:31px; height:31px; border-radius:10px; color:var(--yellow); background:rgba(244,201,93,.09); font-size:11px; font-weight:950; }
+    .strategy-pick-name { font-size:12px; font-weight:880; }
+    .strategy-pick-meta { margin-top:3px; color:var(--muted); font-size:8px; line-height:1.45; }
+    .strategy-pick-reason { margin-top:4px; color:#bed3f2; font-size:8px; line-height:1.4; }
+    .strategy-pick-prob { min-width:67px; text-align:right; }
+    .strategy-pick-prob strong { display:block; color:var(--green); font-size:18px; }
+    .strategy-pick-prob span { display:block; margin-top:2px; color:var(--muted); font-size:7px; }
+    .strategy-review-hero { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; margin-top:13px; }
+    .strategy-kpi { padding:12px; border:1px solid rgba(98,165,255,.24); border-radius:12px; background:rgba(24,45,75,.28); }
+    .strategy-kpi strong { display:block; font-size:22px; }
+    .strategy-kpi span { display:block; margin-top:4px; color:var(--muted); font-size:8px; line-height:1.4; }
+    .strategy-kpi.good strong { color:var(--green); }
+    .strategy-kpi.warn strong { color:var(--yellow); }
+    .strategy-review-grid { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr); gap:12px; margin-top:12px; }
+    .strategy-market-row { display:grid; grid-template-columns:52px 1fr auto; gap:9px; align-items:center; padding:9px 0; border-bottom:1px solid rgba(38,58,89,.55); }
+    .strategy-market-row:last-child { border-bottom:0; }
+    .strategy-market-code { color:#fff; font-size:12px; font-weight:900; }
+    .strategy-market-bar { height:7px; overflow:hidden; border-radius:999px; background:#081427; }
+    .strategy-market-bar span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--accent),var(--green)); }
+    .strategy-market-value { min-width:80px; color:var(--muted); font-size:8px; text-align:right; }
+    .strategy-history { display:grid; gap:6px; max-height:360px; overflow:auto; }
+    .strategy-history-row { display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:8px; align-items:center; padding:8px 9px; border:1px solid rgba(38,58,89,.68); border-radius:9px; background:rgba(7,15,27,.36); }
+    .strategy-history-name { min-width:0; font-size:9px; font-weight:780; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .strategy-history-meta { margin-top:2px; color:var(--muted); font-size:7px; }
+    .strategy-history-prob { color:#c8d8ef; font-size:9px; }
+    .strategy-history-status { min-width:54px; font-size:8px; font-weight:900; text-align:right; }
+    .strategy-history-status.matched { color:var(--green); }
+    .strategy-history-status.failed { color:var(--red); }
+    .strategy-history-status.pending { color:var(--yellow); }
+    .strategy-calibration-note { margin-top:11px; padding:10px 11px; border:1px solid rgba(244,201,93,.28); border-radius:10px; color:#d8cfae; background:rgba(244,201,93,.06); font-size:8px; line-height:1.55; }
     .pitch-analysis-shell { display:grid; gap:12px; }
     .pitch-analysis-hero {
       padding:13px; border:1px solid rgba(177,126,255,.38); border-radius:15px;
@@ -1050,6 +1111,13 @@
       .recommend-section-label span { text-align:left; }
       .recommend-grid { grid-template-columns: 1fr; }
       .recommend-weight input { min-height: 40px; font-size: 12px; }
+      .strategy-layout,.strategy-review-grid { grid-template-columns:1fr; }
+      .strategy-review-hero { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .strategy-result-head { flex-direction:column; }
+      .strategy-result-actions,.strategy-result-actions .btn { width:100%; }
+      .strategy-game-list { max-height:none; }
+      .strategy-pick { grid-template-columns:31px minmax(0,1fr); }
+      .strategy-pick-prob { grid-column:2; text-align:left; display:flex; align-items:baseline; gap:7px; }
       .pitch-analysis-head { flex-direction:column; }
       .pitch-analysis-actions { width:100%; }
       .pitch-analysis-actions .btn { flex:1; min-height:42px; }
@@ -1099,6 +1167,7 @@
           <button class="btn" id="accountBtn" type="button">登录 / 同步</button>
         </div>
         <button class="btn" id="notifyBtn"><span data-i18n="enableNotifications">🔔 开启通知</span></button>
+        <button class="btn" id="strategyBtn" data-i18n="strategyCenter">🧠 策略中心</button>
         <button class="btn" id="ocrComboBtn" data-i18n="ocrCombo">📷 截图建 Combo</button>
         <button class="btn" id="demoBtn" data-i18n="loadDemo">载入演示 Combo</button>
         <button class="btn" id="exportBtn" data-i18n="export">导出</button>
@@ -1354,6 +1423,23 @@
     <div class="modal-body" id="gameDetailBody"></div>
   </dialog>
 
+  <dialog class="strategy-dialog" id="strategyDialog">
+    <div class="modal-head">
+      <div>
+        <div class="eyebrow">STRATEGY CENTER · v44</div>
+        <div class="modal-title" data-i18n="strategyTitle">策略中心</div>
+      </div>
+      <button class="btn icon" id="closeStrategyDialog" type="button" aria-label="关闭" data-i18n-aria="close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="strategy-tabs">
+        <button class="strategy-tab active" type="button" data-strategy-tab="pick" data-i18n="strategyPickTab">智能挑选</button>
+        <button class="strategy-tab" type="button" data-strategy-tab="review" data-i18n="strategyReviewTab">模型复盘</button>
+      </div>
+      <div id="strategyBody"></div>
+    </div>
+  </dialog>
+
   <dialog class="metric-help-dialog" id="metricHelpDialog">
     <div class="modal-head">
       <div>
@@ -1413,7 +1499,20 @@
       const I18N = {
         zh: {
           pageTitle: 'MLB Game Center & Combo Tracker', subtitle: '比分 · 首发阵容 · 球员赛季数据 · Combo 自动追踪',
-          enableNotifications: '🔔 开启通知', loadDemo: '载入演示 Combo', export: '导出', import: '导入', addCombo: '＋ 添加 Combo',
+          enableNotifications: '🔔 开启通知', strategyCenter: '🧠 策略中心', strategyTitle: '策略中心', strategyPickTab: '智能挑选', strategyReviewTab: '模型复盘',
+          strategyPickTitle: '跨比赛智能挑选', strategyPickHint: '只使用双方 9 人首发已公布、且尚未开赛的比赛。选择比赛、项目和数量后自动排序。',
+          strategyGames: '选择比赛（可多选）', strategyNoGames: '当前日期没有双方首发齐全且尚未开赛的比赛。', strategyMarkets: '选择项目（可多选）',
+          strategyCount: '推荐数量', strategyMode: '组合风格', strategySafe: '稳健', strategyBalanced: '平衡', strategyUpside: '高回报', strategyGenerate: '生成并留存推荐',
+          strategyNeedInput: '请至少选择一场比赛和一个项目。', strategyLoading: '正在读取所选比赛全部首发球员的近况与赛季数据…', strategyEmpty: '设置条件后生成推荐；每次生成都会保存赛前快照，赛后自动进入复盘。',
+          strategyResults: '智能推荐结果', strategyResultSummary: '共 {count} 项 · {games} 场比赛 · {mode}', strategyAddCombo: '＋ 加入新 Combo', strategySaved: '推荐快照已保存', strategySavedMsg: '已记录 {count} 项，赛后将自动核对真实结果。',
+          strategyAddTitle: '已建立 Combo 草稿', strategyAddMsg: '已加入 {count} 个推荐项目，请核对后保存。', strategyProbability: '模型概率', strategyBaseProbability: '基础 {base} · 校准 {adjust}',
+          strategyReason: '{period} 加权 {rate}/场 · 打序 #{order}', strategyNoResult: '当前条件下没有足够的有效球员数据。', strategyGeneratedAt: '生成于 {time}',
+          strategyReviewTitle: '真实推荐复盘', strategyReviewHint: '只统计推荐当时保存的赛前快照，再与正式赛果核对；不会用赛后数据倒推历史推荐。',
+          strategyHitRate: '实际命中率', strategyExpected: '模型平均概率', strategyGap: '实际 − 模型', strategySample: '已结算样本', strategyPending: '{count} 项待结算',
+          strategyMarketReview: '分项目表现', strategyRecent: '最近推荐记录', strategyNoHistory: '尚无推荐快照。先在“智能挑选”生成一组，比赛结束后这里会显示命中率。',
+          strategyCalibrationOff: '样本不足 30 条：下一场仍使用基础模型，不进行自动校准。', strategyCalibrationOn: '校准已启用：按项目参考历史偏差，并把每次修正限制在 ±{cap} 个百分点。',
+          strategyCalibrationValue: '校准 {value}', strategyHistoryMatched: '命中', strategyHistoryFailed: '未中', strategyHistoryPending: '待赛果', strategySyncNote: '登录后快照会同步到 Supabase；未登录时保存在本机并在打开页面时结算。',
+          loadDemo: '载入演示 Combo', export: '导出', import: '导入', addCombo: '＋ 添加 Combo',
           pinCombo: '📌 Pin 状态', unpinCombo: '取消 Pin', pinnedStatus: '锁屏提醒已启用',
           pinLoginRequired: '请先登录账号，才能在网页关闭后继续追踪。', pinEnabling: '正在启用后台通知…',
           pinEnabledTitle: '已 Pin Combo', pinEnabledMsg: '{name} 有进度变化时会发送锁屏通知。',
@@ -1538,7 +1637,20 @@
         },
         en: {
           pageTitle: 'MLB Game Center & Combo Tracker', subtitle: 'Scores · Starting lineups · Season stats · Automatic combo tracking',
-          enableNotifications: '🔔 Enable alerts', loadDemo: 'Load demo combo', export: 'Export', import: 'Import', addCombo: '＋ Add Combo',
+          enableNotifications: '🔔 Enable alerts', strategyCenter: '🧠 Strategy Center', strategyTitle: 'Strategy Center', strategyPickTab: 'Smart Picks', strategyReviewTab: 'Model Review',
+          strategyPickTitle: 'Multi-game Smart Pick Builder', strategyPickHint: 'Uses only games with both nine-player lineups confirmed and first pitch still pending. Select games, markets, and a pick count.',
+          strategyGames: 'Select games (multiple allowed)', strategyNoGames: 'No unstarted games with both confirmed lineups are available for this date.', strategyMarkets: 'Select markets (multiple allowed)',
+          strategyCount: 'Pick count', strategyMode: 'Build style', strategySafe: 'Safer', strategyBalanced: 'Balanced', strategyUpside: 'Upside', strategyGenerate: 'Generate & save snapshot',
+          strategyNeedInput: 'Select at least one game and one market.', strategyLoading: 'Loading recent and season data for all selected starting hitters…', strategyEmpty: 'Choose the slate and generate picks. Each run saves a pregame snapshot for later review.',
+          strategyResults: 'Smart Pick Results', strategyResultSummary: '{count} picks · {games} games · {mode}', strategyAddCombo: '＋ Add to new Combo', strategySaved: 'Snapshot saved', strategySavedMsg: '{count} picks were recorded and will be checked after the games.',
+          strategyAddTitle: 'Combo draft created', strategyAddMsg: '{count} recommended legs were added. Review them before saving.', strategyProbability: 'Model probability', strategyBaseProbability: 'Base {base} · calibration {adjust}',
+          strategyReason: '{period} weighted {rate}/G · batting #{order}', strategyNoResult: 'There is not enough valid player data for these settings.', strategyGeneratedAt: 'Generated {time}',
+          strategyReviewTitle: 'Recorded Recommendation Review', strategyReviewHint: 'Only saved pregame snapshots are compared with official results; postgame data is never used to recreate old picks.',
+          strategyHitRate: 'Actual hit rate', strategyExpected: 'Average model probability', strategyGap: 'Actual − model', strategySample: 'Settled sample', strategyPending: '{count} pending',
+          strategyMarketReview: 'Performance by market', strategyRecent: 'Recent snapshots', strategyNoHistory: 'No saved recommendation snapshots yet. Generate a slate in Smart Picks and results will appear here after games finish.',
+          strategyCalibrationOff: 'Fewer than 30 settled picks: the base model remains unchanged and no automatic calibration is applied.', strategyCalibrationOn: 'Calibration is active by market, with every adjustment capped at ±{cap} percentage points.',
+          strategyCalibrationValue: 'Calibration {value}', strategyHistoryMatched: 'Hit', strategyHistoryFailed: 'Miss', strategyHistoryPending: 'Pending', strategySyncNote: 'Signed-in snapshots sync to Supabase; signed-out snapshots stay on this device and settle when the page is opened.',
+          loadDemo: 'Load demo combo', export: 'Export', import: 'Import', addCombo: '＋ Add Combo',
           pinCombo: '📌 Pin status', unpinCombo: 'Unpin', pinnedStatus: 'Lock-screen alerts enabled',
           pinLoginRequired: 'Sign in first so tracking can continue after the page closes.', pinEnabling: 'Enabling background alerts…',
           pinEnabledTitle: 'Combo pinned', pinEnabledMsg: '{name} will send a lock-screen alert when its progress changes.',
@@ -1701,6 +1813,17 @@
       let lineupRecommendationError = false;
       let lineupRecommendationGamePk = '';
       let recommendationPitcherCache = new Map();
+      let strategyTab = 'pick';
+      let strategySelectedGames = new Set();
+      let strategyMarkets = new Set(['H']);
+      let strategyMode = 'balanced';
+      let strategyCount = 5;
+      let strategyResults = [];
+      let strategyLoading = false;
+      let strategyError = '';
+      let strategyGeneratedAt = '';
+      let strategyPredictions = Array.isArray(settings.strategyPredictions) ? settings.strategyPredictions : [];
+      let strategyHistoryLoading = false;
       let pitcherAnalysisPeriod = 'last5';
       let pitcherAnalysisVisible = false;
       let pitcherAnalysisLoading = false;
@@ -1746,6 +1869,7 @@
         mobilePlayerDialog: $('mobilePlayerDialog'), mobilePlayerSearch: $('mobilePlayerSearch'), mobilePlayerTeams: $('mobilePlayerTeams'), mobilePlayerList: $('mobilePlayerList'),
         gameGrid: $('gameGrid'), dashboardLoadingBar: $('dashboardLoadingBar'), gameDialog: $('gameDialog'),
         gameDialogTitle: $('gameDialogTitle'), gameDetailBody: $('gameDetailBody'), metricHelpDialog: $('metricHelpDialog'),
+        strategyDialog: $('strategyDialog'), strategyBody: $('strategyBody'),
         authDialog: $('authDialog'), authForm: $('authForm'), authEmail: $('authEmail'),
         authPassword: $('authPassword'), authStatus: $('authStatus'), syncStatus: $('syncStatus'),
         accountEmail: $('accountEmail'), signedInActions: $('signedInActions')
@@ -1773,6 +1897,8 @@
         el.datePicker.addEventListener('change', () => setSelectedDate(el.datePicker.value));
         $('refreshBtn').addEventListener('click', () => checkAllCombos(true));
         $('addComboBtn').addEventListener('click', () => openComboDialog());
+        $('strategyBtn').addEventListener('click', openStrategyCenter);
+        $('closeStrategyDialog').addEventListener('click', () => el.strategyDialog.close());
         $('closeDialog').addEventListener('click', closeDialog);
         $('cancelDialog').addEventListener('click', closeDialog);
         $('closeMobilePlayerDialog').addEventListener('click', closeMobilePlayerPicker);
@@ -1820,6 +1946,8 @@
         $('syncNowBtn').addEventListener('click', () => syncWithCloud(true));
         $('closeGameDialog').addEventListener('click', () => el.gameDialog.close());
         $('closeMetricHelpDialog').addEventListener('click', () => el.metricHelpDialog.close());
+        el.strategyDialog.addEventListener('click', handleStrategyClick);
+        el.strategyDialog.addEventListener('change', handleStrategyChange);
         el.gameGrid.addEventListener('click', (event) => {
           const modelButton = event.target.closest('[data-model-run]');
           if (modelButton) {
@@ -3064,9 +3192,9 @@
         }).join('')}</div>`;
       }
 
-      function scoreRecommendationMetric(players, field, game) {
+      function scoreRecommendationMetric(players, field, game, weightOverride = null) {
         const periods = ['last3', 'last5', 'season'];
-        const weights = recommendationMetricWeights(field);
+        const weights = weightOverride || recommendationMetricWeights(field);
         const rows = players.map(player => {
           const statsByPeriod = {
             last3: playerStatsCache.get(lineupPeriodStatsKey(player.id, game, 'last3')),
@@ -3124,6 +3252,355 @@
       function formatRecommendationRate(value) {
         return Number.isFinite(value) ? value.toFixed(2) : '—';
       }
+
+      function strategyAvailableGames() {
+        return dashboardGames.filter(game => game.date === selectedDate
+          && effectiveGameState(game) === 'Preview'
+          && (game.awayLineup || []).length >= 9
+          && (game.homeLineup || []).length >= 9);
+      }
+
+      async function openStrategyCenter() {
+        const available = strategyAvailableGames();
+        const valid = new Set(available.map(game => String(game.gamePk)));
+        strategySelectedGames = new Set([...strategySelectedGames].filter(id => valid.has(String(id))));
+        if (!strategySelectedGames.size && available.length === 1) strategySelectedGames.add(String(available[0].gamePk));
+        strategyError = '';
+        renderStrategyCenter();
+        el.strategyDialog.showModal();
+        strategyHistoryLoading = true;
+        renderStrategyCenter();
+        try {
+          await loadStrategyHistory();
+          await settleStrategyPredictions();
+        } finally {
+          strategyHistoryLoading = false;
+          if (el.strategyDialog.open) renderStrategyCenter();
+        }
+      }
+
+      function renderStrategyCenter() {
+        if (!el.strategyBody) return;
+        el.strategyDialog.querySelectorAll('[data-strategy-tab]').forEach(button => {
+          button.classList.toggle('active', button.dataset.strategyTab === strategyTab);
+        });
+        el.strategyBody.innerHTML = strategyTab === 'review' ? strategyReviewHtml() : strategyPickHtml();
+      }
+
+      function strategyPickHtml() {
+        const available = strategyAvailableGames();
+        const modeLabel = t(strategyMode === 'safe' ? 'strategySafe' : strategyMode === 'upside' ? 'strategyUpside' : 'strategyBalanced');
+        const gamesHtml = available.length ? available.map(game => {
+          const id = String(game.gamePk);
+          const selected = strategySelectedGames.has(id);
+          return `<label class="strategy-game-option${selected ? ' selected' : ''}">
+            <input type="checkbox" data-strategy-game="${escapeAttr(id)}" ${selected ? 'checked' : ''} />
+            <span><span class="strategy-game-name">${escapeHtml(`${game.awayAbbr} @ ${game.homeAbbr}`)}</span><span class="strategy-game-time">${escapeHtml(game.timeLabel || game.detail || '')}</span></span>
+            <span class="strategy-game-ready">9 + 9 ✓</span>
+          </label>`;
+        }).join('') : `<div class="strategy-status">${escapeHtml(t('strategyNoGames'))}</div>`;
+        const marketChips = [['H','H'],['HR','HR'],['H_R_RBI','H+R+RBI']].map(([code,label]) =>
+          `<button class="strategy-chip${strategyMarkets.has(code) ? ' active' : ''}" type="button" data-strategy-market="${code}">${label}</button>`).join('');
+        const result = strategyLoading
+          ? `<div class="strategy-status loading">${escapeHtml(t('strategyLoading'))}</div>`
+          : strategyError
+            ? `<div class="strategy-status error">${escapeHtml(strategyError)}</div>`
+            : strategyResults.length ? strategyResultsHtml(modeLabel)
+              : `<div class="strategy-status">${escapeHtml(t('strategyEmpty'))}</div>`;
+        return `<div class="strategy-layout">
+          <section class="strategy-panel">
+            <div class="strategy-panel-title">${escapeHtml(t('strategyPickTitle'))}</div>
+            <div class="strategy-panel-note">${escapeHtml(t('strategyPickHint'))}</div>
+            <div class="strategy-label">${escapeHtml(t('strategyGames'))}</div>
+            <div class="strategy-game-list">${gamesHtml}</div>
+            <div class="strategy-label">${escapeHtml(t('strategyMarkets'))}</div>
+            <div class="strategy-chip-row">${marketChips}</div>
+            <div class="strategy-control-grid">
+              <label><div class="strategy-label">${escapeHtml(t('strategyCount'))}</div><select class="strategy-select" data-strategy-count>${[3,5,7,10,13].map(value => `<option value="${value}" ${strategyCount === value ? 'selected' : ''}>${value}</option>`).join('')}</select></label>
+              <label><div class="strategy-label">${escapeHtml(t('strategyMode'))}</div><select class="strategy-select" data-strategy-mode><option value="safe" ${strategyMode === 'safe' ? 'selected' : ''}>${escapeHtml(t('strategySafe'))}</option><option value="balanced" ${strategyMode === 'balanced' ? 'selected' : ''}>${escapeHtml(t('strategyBalanced'))}</option><option value="upside" ${strategyMode === 'upside' ? 'selected' : ''}>${escapeHtml(t('strategyUpside'))}</option></select></label>
+            </div>
+            <button class="btn primary strategy-run" type="button" data-strategy-generate ${strategyLoading || !available.length ? 'disabled' : ''}>${escapeHtml(t('strategyGenerate'))}</button>
+            <div class="strategy-panel-note" style="margin-top:9px">${escapeHtml(t('strategySyncNote'))}</div>
+          </section>
+          <section class="strategy-panel">${result}</section>
+        </div>`;
+      }
+
+      function strategyResultsHtml(modeLabel) {
+        return `<div class="strategy-result-head">
+          <div><div class="strategy-panel-title">${escapeHtml(t('strategyResults'))}</div><div class="strategy-result-summary">${escapeHtml(t('strategyResultSummary', { count:strategyResults.length, games:new Set(strategyResults.map(row => row.gamePk)).size, mode:modeLabel }))}${strategyGeneratedAt ? `<br>${escapeHtml(t('strategyGeneratedAt', { time:formatStrategyTime(strategyGeneratedAt) }))}` : ''}</div></div>
+          <div class="strategy-result-actions"><button class="btn primary small" type="button" data-strategy-add-combo>${escapeHtml(t('strategyAddCombo'))}</button></div>
+        </div>
+        <div class="strategy-picks">${strategyResults.map((row,index) => `<article class="strategy-pick">
+          <div class="strategy-pick-rank">#${index + 1}</div>
+          <div><div class="strategy-pick-name">${escapeHtml(row.playerName)} · ${escapeHtml(strategyMarketLabel(row.market))}</div><div class="strategy-pick-meta">${escapeHtml(`${row.teamAbbr} · ${row.gameLabel}`)}</div><div class="strategy-pick-reason">${escapeHtml(t('strategyReason', { period:'L3/L5/S', rate:formatRecommendationRate(row.weightedRate), order:row.battingOrder }))}</div></div>
+          <div class="strategy-pick-prob"><strong>${strategyPct(row.calibratedProbability)}</strong><span>${escapeHtml(t('strategyBaseProbability', { base:strategyPct(row.baseProbability), adjust:strategySignedPct(row.calibrationAdjustment) }))}</span></div>
+        </article>`).join('')}</div>`;
+      }
+
+      function handleStrategyClick(event) {
+        const tab = event.target.closest('[data-strategy-tab]');
+        if (tab) {
+          strategyTab = tab.dataset.strategyTab === 'review' ? 'review' : 'pick';
+          renderStrategyCenter();
+          return;
+        }
+        const market = event.target.closest('[data-strategy-market]');
+        if (market) {
+          const code = market.dataset.strategyMarket;
+          if (strategyMarkets.has(code)) strategyMarkets.delete(code); else strategyMarkets.add(code);
+          renderStrategyCenter();
+          return;
+        }
+        if (event.target.closest('[data-strategy-generate]')) generateStrategyPicks();
+        if (event.target.closest('[data-strategy-add-combo]')) addStrategyPicksToCombo();
+      }
+
+      function handleStrategyChange(event) {
+        const game = event.target.closest('[data-strategy-game]');
+        if (game) {
+          const id = String(game.dataset.strategyGame);
+          if (game.checked) strategySelectedGames.add(id); else strategySelectedGames.delete(id);
+          renderStrategyCenter();
+          return;
+        }
+        if (event.target.matches('[data-strategy-count]')) {
+          strategyCount = Math.max(1, Number(event.target.value) || 5);
+          return;
+        }
+        if (event.target.matches('[data-strategy-mode]')) strategyMode = ['safe','balanced','upside'].includes(event.target.value) ? event.target.value : 'balanced';
+      }
+
+      function strategyWeights(field) {
+        if (field === 'homeRuns') return { last3:20, last5:30, season:50 };
+        if (field === 'hrr') return { last3:30, last5:35, season:35 };
+        return { last3:35, last5:35, season:30 };
+      }
+
+      async function generateStrategyPicks() {
+        const games = strategyAvailableGames().filter(game => strategySelectedGames.has(String(game.gamePk)));
+        if (!games.length || !strategyMarkets.size) {
+          strategyError = t('strategyNeedInput');
+          renderStrategyCenter();
+          return;
+        }
+        strategyLoading = true;
+        strategyError = '';
+        strategyResults = [];
+        renderStrategyCenter();
+        try {
+          await Promise.all(games.flatMap(game => [ensureLineupRecentStats(game, 'last3'), ensureLineupRecentStats(game, 'last5')]));
+          const marketFields = { H:'hits', HR:'homeRuns', H_R_RBI:'hrr' };
+          const candidates = [];
+          games.forEach(game => {
+            const players = [
+              ...(game.awayLineup || []).map(player => ({ ...player, teamAbbr:game.awayAbbr })),
+              ...(game.homeLineup || []).map(player => ({ ...player, teamAbbr:game.homeAbbr }))
+            ];
+            strategyMarkets.forEach(market => {
+              const field = marketFields[market];
+              scoreRecommendationMetric(players, field, game, strategyWeights(field)).forEach(row => {
+                if (!Number.isFinite(row.weightedRate) || row.weightedRate <= 0) return;
+                const calibration = strategyCalibrationForMarket(market);
+                const baseProbability = strategyBaseProbability(market, row.weightedRate, row.score);
+                const calibratedProbability = clamp(baseProbability + calibration.adjustment, .02, market === 'HR' ? .62 : .94);
+                candidates.push({
+                  gamePk:String(game.gamePk), gameDate:game.date || selectedDate,
+                  gameLabel:`${game.awayAbbr} @ ${game.homeAbbr}`, playerId:String(row.player.id), playerName:row.player.name,
+                  teamAbbr:row.player.teamAbbr, battingOrder:n(row.player.order), market, target:1,
+                  weightedRate:row.weightedRate, modelScore:row.score, baseProbability, calibratedProbability,
+                  calibrationAdjustment:calibration.adjustment,
+                  rankScore:calibratedProbability * 100 + row.score * .18 + strategyModeBonus(strategyMode, market)
+                });
+              });
+            });
+          });
+          candidates.sort((a,b) => b.rankScore - a.rankScore || b.calibratedProbability - a.calibratedProbability);
+          const chosen = [];
+          const playersUsed = new Set();
+          const perGame = new Map();
+          const maxPerGame = Math.max(2, Math.ceil(strategyCount / Math.max(1, games.length)));
+          candidates.forEach(row => {
+            if (chosen.length >= strategyCount || playersUsed.has(row.playerId) || n(perGame.get(row.gamePk)) >= maxPerGame) return;
+            chosen.push(row); playersUsed.add(row.playerId); perGame.set(row.gamePk, n(perGame.get(row.gamePk)) + 1);
+          });
+          if (chosen.length < strategyCount) candidates.forEach(row => {
+            if (chosen.length >= strategyCount || playersUsed.has(row.playerId)) return;
+            chosen.push(row); playersUsed.add(row.playerId);
+          });
+          strategyResults = chosen;
+          strategyGeneratedAt = new Date().toISOString();
+          if (!chosen.length) strategyError = t('strategyNoResult');
+          else await saveStrategySnapshot(chosen, strategyGeneratedAt);
+        } catch (error) {
+          console.error(error);
+          strategyError = error.message || t('strategyNoResult');
+        } finally {
+          strategyLoading = false;
+          renderStrategyCenter();
+        }
+      }
+
+      function strategyBaseProbability(market, rate, score) {
+        const poisson = 1 - Math.exp(-Math.max(0, rate));
+        const scoreAdjustment = (clamp(score, 0, 100) - 50) * .0012;
+        return clamp(poisson + scoreAdjustment, market === 'HR' ? .025 : .08, market === 'HR' ? .58 : .91);
+      }
+
+      function strategyModeBonus(mode, market) {
+        if (mode === 'safe') return market === 'H' ? 8 : market === 'H_R_RBI' ? 3 : -8;
+        if (mode === 'upside') return market === 'HR' ? 8 : market === 'H_R_RBI' ? 3 : 0;
+        return market === 'H' ? 2 : market === 'H_R_RBI' ? 1 : 0;
+      }
+
+      function strategyCalibrationForMarket(market) {
+        const settled = strategyPredictions.filter(row => row.market === market && ['MATCHED','FAILED'].includes(row.status));
+        const count = settled.length;
+        if (count < 30) return { count, adjustment:0, cap:0 };
+        const expected = settled.reduce((sum,row) => sum + Number(row.base_probability ?? row.baseProbability ?? 0), 0) / count;
+        const actual = settled.filter(row => row.status === 'MATCHED').length / count;
+        const cap = count >= 100 ? .05 : .03;
+        const reliability = Math.min(1, count / 100);
+        return { count, expected, actual, cap, adjustment:clamp((actual - expected) * reliability, -cap, cap) };
+      }
+
+      async function saveStrategySnapshot(results, createdAt) {
+        const slateId = makeUuid();
+        const rows = results.map(row => ({
+          id:makeUuid(), slate_id:slateId, model_version:'v44', game_pk:Number(row.gamePk), game_date:row.gameDate,
+          market:row.market, target:row.target, player_id:Number(row.playerId), player_name:row.playerName,
+          team_abbr:row.teamAbbr, batting_order:row.battingOrder, base_probability:Number(row.baseProbability.toFixed(6)),
+          calibrated_probability:Number(row.calibratedProbability.toFixed(6)), score:Number(row.modelScore.toFixed(3)),
+          strategy_mode:strategyMode, input_snapshot:{ weighted_rate:Number(row.weightedRate.toFixed(4)), calibration_adjustment:Number(row.calibrationAdjustment.toFixed(6)), selected_games:[...strategySelectedGames], selected_markets:[...strategyMarkets] },
+          status:'PENDING', actual_value:null, created_at:createdAt, settled_at:null, cloud_synced:false
+        }));
+        strategyPredictions = [...rows, ...strategyPredictions].slice(0, 500);
+        persistStrategyPredictions();
+        if (authSession?.access_token) await syncStrategyPredictionRows(rows);
+        toast(t('strategySaved'), t('strategySavedMsg', { count:rows.length }), 'good');
+      }
+
+      async function syncStrategyPredictionRows(rows) {
+        if (!authSession?.access_token || !rows.length) return;
+        const payload = rows.map(row => ({
+          id:row.id, user_id:authSession.user.id, slate_id:row.slate_id, model_version:row.model_version,
+          game_pk:row.game_pk, game_date:row.game_date, market:row.market, target:row.target,
+          player_id:row.player_id, player_name:row.player_name, team_abbr:row.team_abbr,
+          batting_order:row.batting_order, base_probability:row.base_probability,
+          calibrated_probability:row.calibrated_probability, score:row.score, strategy_mode:row.strategy_mode,
+          input_snapshot:row.input_snapshot, status:row.status, actual_value:row.actual_value,
+          created_at:row.created_at, settled_at:row.settled_at
+        }));
+        try {
+          await supabaseRequest('/rest/v1/strategy_predictions?on_conflict=id', {
+            method:'POST', headers:{ Prefer:'resolution=merge-duplicates,return=minimal' }, body:payload
+          });
+          const ids = new Set(rows.map(row => row.id));
+          strategyPredictions.forEach(row => { if (ids.has(row.id)) row.cloud_synced = true; });
+          persistStrategyPredictions();
+        } catch (error) {
+          console.warn('Strategy snapshot cloud sync', error);
+        }
+      }
+
+      async function loadStrategyHistory() {
+        if (!authSession?.access_token) return;
+        try {
+          const rows = await supabaseRequest(`/rest/v1/strategy_predictions?user_id=eq.${encodeURIComponent(authSession.user.id)}&select=*&order=created_at.desc&limit=500`, { method:'GET' });
+          const merged = new Map(strategyPredictions.map(row => [row.id,row]));
+          (rows || []).forEach(row => merged.set(row.id, { ...row, cloud_synced:true }));
+          strategyPredictions = [...merged.values()].sort((a,b) => String(b.created_at).localeCompare(String(a.created_at))).slice(0,500);
+          persistStrategyPredictions();
+          const unsynced = strategyPredictions.filter(row => !row.cloud_synced);
+          if (unsynced.length) await syncStrategyPredictionRows(unsynced);
+        } catch (error) {
+          console.warn('Strategy history load', error);
+        }
+      }
+
+      async function settleStrategyPredictions() {
+        const pending = strategyPredictions.filter(row => row.status === 'PENDING');
+        if (!pending.length) return;
+        const groups = new Map();
+        pending.forEach(row => {
+          const key = String(row.game_pk);
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(row);
+        });
+        const changed = [];
+        await Promise.all([...groups.entries()].slice(0,30).map(async ([gamePk,rows]) => {
+          try {
+            const feed = await fetchGameFeed(gamePk);
+            const status = normalizeGameState(feed.gameData?.status?.abstractGameState, feed.gameData?.status?.detailedState);
+            if (status !== 'Final') return;
+            const boxscore = feed.liveData?.boxscore || {};
+            rows.forEach(row => {
+              const player = boxscore.teams?.away?.players?.[`ID${row.player_id}`] || boxscore.teams?.home?.players?.[`ID${row.player_id}`];
+              const batting = player?.stats?.batting || {};
+              row.actual_value = getMarketValue(row.market, batting);
+              row.status = row.actual_value >= n(row.target || 1) ? 'MATCHED' : 'FAILED';
+              row.settled_at = new Date().toISOString();
+              changed.push(row);
+            });
+          } catch (error) {
+            console.warn('Strategy result settlement', gamePk, error);
+          }
+        }));
+        if (!changed.length) return;
+        persistStrategyPredictions();
+        if (authSession?.access_token) await Promise.allSettled(changed.filter(row => row.cloud_synced).map(row => supabaseRequest(`/rest/v1/strategy_predictions?id=eq.${encodeURIComponent(row.id)}`, {
+          method:'PATCH', headers:{ Prefer:'return=minimal' }, body:{ status:row.status, actual_value:row.actual_value, settled_at:row.settled_at }
+        })));
+      }
+
+      function strategyReviewHtml() {
+        const settled = strategyPredictions.filter(row => ['MATCHED','FAILED'].includes(row.status));
+        const pending = strategyPredictions.filter(row => row.status === 'PENDING').length;
+        if (!strategyPredictions.length && !strategyHistoryLoading) return `<div class="strategy-panel" style="margin-top:13px"><div class="strategy-panel-title">${escapeHtml(t('strategyReviewTitle'))}</div><div class="strategy-panel-note">${escapeHtml(t('strategyReviewHint'))}</div><div class="strategy-status" style="margin-top:14px">${escapeHtml(t('strategyNoHistory'))}</div></div>`;
+        const hits = settled.filter(row => row.status === 'MATCHED').length;
+        const actual = settled.length ? hits / settled.length : 0;
+        const expected = settled.length ? settled.reduce((sum,row) => sum + Number(row.calibrated_probability ?? row.calibratedProbability ?? 0), 0) / settled.length : 0;
+        const gap = actual - expected;
+        const marketRows = ['H','HR','H_R_RBI'].map(market => {
+          const rows = settled.filter(row => row.market === market);
+          const rate = rows.length ? rows.filter(row => row.status === 'MATCHED').length / rows.length : 0;
+          const calibration = strategyCalibrationForMarket(market);
+          return `<div class="strategy-market-row"><div class="strategy-market-code">${escapeHtml(strategyMarketLabel(market))}</div><div class="strategy-market-bar"><span style="width:${Math.round(rate * 100)}%"></span></div><div class="strategy-market-value">${rows.length ? strategyPct(rate) : '—'} · n=${rows.length}<br>${escapeHtml(t('strategyCalibrationValue', { value:strategySignedPct(calibration.adjustment) }))}</div></div>`;
+        }).join('');
+        const history = strategyPredictions.slice(0,80).map(row => {
+          const key = row.status === 'MATCHED' ? 'strategyHistoryMatched' : row.status === 'FAILED' ? 'strategyHistoryFailed' : 'strategyHistoryPending';
+          const cls = row.status === 'MATCHED' ? 'matched' : row.status === 'FAILED' ? 'failed' : 'pending';
+          return `<div class="strategy-history-row"><div><div class="strategy-history-name">${escapeHtml(row.player_name || row.playerName || '')} · ${escapeHtml(strategyMarketLabel(row.market))}</div><div class="strategy-history-meta">${escapeHtml(`${row.team_abbr || row.teamAbbr || '—'} · ${row.game_date || row.gameDate || ''}`)}</div></div><div class="strategy-history-prob">${strategyPct(Number(row.calibrated_probability ?? row.calibratedProbability ?? 0))}</div><div class="strategy-history-status ${cls}">${escapeHtml(t(key))}${row.actual_value != null ? ` · ${escapeHtml(String(row.actual_value))}` : ''}</div></div>`;
+        }).join('');
+        const activeCalibration = ['H','HR','H_R_RBI'].map(strategyCalibrationForMarket).filter(row => row.count >= 30);
+        const cap = activeCalibration.some(row => row.cap === .05) ? 5 : 3;
+        return `<div class="strategy-panel" style="margin-top:13px"><div class="strategy-panel-title">${escapeHtml(t('strategyReviewTitle'))}</div><div class="strategy-panel-note">${escapeHtml(t('strategyReviewHint'))}</div>
+          <div class="strategy-review-hero"><div class="strategy-kpi good"><strong>${settled.length ? strategyPct(actual) : '—'}</strong><span>${escapeHtml(t('strategyHitRate'))}</span></div><div class="strategy-kpi"><strong>${settled.length ? strategyPct(expected) : '—'}</strong><span>${escapeHtml(t('strategyExpected'))}</span></div><div class="strategy-kpi ${gap >= 0 ? 'good' : 'warn'}"><strong>${settled.length ? strategySignedPct(gap) : '—'}</strong><span>${escapeHtml(t('strategyGap'))}</span></div><div class="strategy-kpi"><strong>${settled.length}</strong><span>${escapeHtml(t('strategySample'))}<br>${escapeHtml(t('strategyPending', { count:pending }))}</span></div></div>
+          <div class="strategy-review-grid"><section><div class="strategy-label">${escapeHtml(t('strategyMarketReview'))}</div>${marketRows}<div class="strategy-calibration-note">${escapeHtml(t(activeCalibration.length ? 'strategyCalibrationOn' : 'strategyCalibrationOff', { cap }))}</div></section><section><div class="strategy-label">${escapeHtml(t('strategyRecent'))}</div><div class="strategy-history">${history || `<div class="strategy-status">${escapeHtml(t('strategyNoHistory'))}</div>`}</div></section></div></div>`;
+      }
+
+      async function addStrategyPicksToCombo() {
+        if (!strategyResults.length) return;
+        const picks = [...strategyResults];
+        el.strategyDialog.close();
+        await openComboDialog();
+        el.legsEditor.innerHTML = '';
+        picks.forEach(row => addLegEditor({ gamePk:row.gamePk, playerId:row.playerId, playerName:row.playerName, teamAbbr:row.teamAbbr, market:row.market, target:row.target }));
+        updateAutoComboName(true);
+        toast(t('strategyAddTitle'), t('strategyAddMsg', { count:picks.length }), 'good');
+      }
+
+      function persistStrategyPredictions() {
+        settings.strategyPredictions = strategyPredictions.slice(0,500);
+        saveJson(SETTINGS_KEY, settings);
+        scheduleCloudSync();
+      }
+
+      function strategyMarketLabel(code) { return code === 'H_R_RBI' ? 'H+R+RBI' : code; }
+      function strategyPct(value) { return Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(1)}%` : '—'; }
+      function strategySignedPct(value) { return Number.isFinite(Number(value)) ? `${Number(value) >= 0 ? '+' : ''}${(Number(value) * 100).toFixed(1)}%` : '—'; }
+      function formatStrategyTime(value) { const date = new Date(value); return Number.isNaN(date.getTime()) ? '' : date.toLocaleString(currentLanguage === 'zh' ? 'zh-CN' : 'en-US', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' }); }
+      function makeUuid() { return crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}-${Math.random().toString(16).slice(2)}`; }
 
       function gameProjectionHtml(game) {
         const key = String(game?.gamePk || '');
@@ -6187,8 +6664,12 @@
             method: 'GET'
           });
           if (initial && rows?.length) {
+            const localStrategy = strategyPredictions;
             combos = Array.isArray(rows[0].combos) ? rows[0].combos : combos;
             settings = rows[0].settings && typeof rows[0].settings === 'object' ? rows[0].settings : settings;
+            const mergedStrategy = new Map([...(Array.isArray(settings.strategyPredictions) ? settings.strategyPredictions : []), ...localStrategy].map(row => [row.id,row]));
+            strategyPredictions = [...mergedStrategy.values()].sort((a,b) => String(b.created_at).localeCompare(String(a.created_at))).slice(0,500);
+            settings.strategyPredictions = strategyPredictions;
             currentLanguage = settings.language === 'en' ? 'en' : 'zh';
             saveJson(STORAGE_KEY, combos);
             saveJson(SETTINGS_KEY, settings);
@@ -6443,6 +6924,7 @@
             renderGameDetails(game);
           }
         }
+        if (el.strategyDialog?.open) renderStrategyCenter();
       }
 
       function resetGameBetOptions() {
